@@ -1,0 +1,5 @@
+[flake8]
+ignore = E501, W503, W605
+exclude = .git,__pycache__,versions
+max-line-length = 100
+max-complexity = 18
