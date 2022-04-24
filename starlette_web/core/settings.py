@@ -86,7 +86,7 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "standard"}},
     "loggers": {
         "uvicorn": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
-        "modules": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "starlette_web": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "common": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "app": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
     },

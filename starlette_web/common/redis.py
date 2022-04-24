@@ -6,7 +6,7 @@ from typing import Iterable, Any, Union
 
 import redis
 
-from common.utils import get_logger
+from starlette_web.common.utils import get_logger
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")

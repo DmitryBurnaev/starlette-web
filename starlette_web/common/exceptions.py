@@ -1,4 +1,4 @@
-from common.statuses import ResponseStatus
+from starlette_web.common.statuses import ResponseStatus
 
 
 class BaseApplicationError(Exception):

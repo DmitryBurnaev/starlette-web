@@ -4,8 +4,8 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import ModelBase
-from common.models import ModelMixin
+from starlette_web.core.database import ModelBase
+from starlette_web.common.models import ModelMixin
 from starlette_web.auth.hasher import PBKDF2PasswordHasher
 
 

@@ -10,7 +10,7 @@ from starlette.middleware import Middleware
 from starlette.routing import Route
 from webargs_starlette import WebargsHTTPException
 
-from common.typing import AppClass
+from starlette_web.common.typing import AppClass
 from starlette_web.common.db_utils import make_session_maker
 from starlette_web.core import settings
 from starlette_web.core.routes import routes as core_routes

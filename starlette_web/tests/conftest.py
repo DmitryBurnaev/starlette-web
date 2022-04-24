@@ -6,6 +6,7 @@ from typing import Tuple
 from unittest.mock import patch, AsyncMock
 
 import pytest
+import sqlalchemy
 from alembic.config import main
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,13 +30,6 @@ def test_settings():
     settings.RETRY_UPLOAD_TIMEOUT = 0
 
 
-@pytest.fixture(autouse=True)
-def cap_log(caplog):
-    # trying to print out logs for failed tests
-    caplog.set_level(logging.INFO)
-    logging.getLogger("modules").setLevel(logging.INFO)
-
-
 @pytest.fixture(autouse=True, scope="session")
 def client() -> WebTestClient:
     from core.app import get_app
@@ -54,8 +48,9 @@ def dbs(loop) -> AsyncSession:
 
 @pytest.fixture(autouse=True, scope="session")
 def db_migration():
-    ini_path = settings.PROJECT_ROOT_DIR / "alembic.ini"
-    main(["--raiseerr", f"-c{ini_path}", "upgrade", "head"])
+    # TODO: use sqlalchemy for DB's and tables creation
+    # engine = sqlalchemy.create_engine("postgres://postgres@/postgres")
+    pass
 
 
 @pytest.fixture
@@ -66,7 +61,7 @@ def mocked_process(monkeypatch) -> MockProcess:
 @pytest.fixture
 def mocked_auth_send() -> AsyncMock:
     mocked_send_email = AsyncMock()
-    patcher = patch("modules.auth.views.send_email", new=mocked_send_email)
+    patcher = patch("starlette_web.auth.views.send_email", new=mocked_send_email)
     patcher.start()
     yield mocked_send_email
     del mocked_send_email
