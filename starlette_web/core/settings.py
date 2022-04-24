@@ -22,9 +22,9 @@ SECRET_KEY = config("SECRET_KEY", default="project-secret")
 
 TEST_MODE = "test" in sys.argv[0]
 
-db_name = config("DB_NAME", default="web-project")
+DB_NAME = config("DB_NAME", default="web-project")
 if TEST_MODE:
-    db_name = config("DB_NAME_TEST", default="web_project_test")
+    DB_NAME = config("DB_NAME_TEST", default="web_project_test")
 
 DATABASE = {
     "driver": "postgresql+asyncpg",
@@ -32,7 +32,7 @@ DATABASE = {
     "port": config("DB_PORT", cast=int, default=None),
     "username": config("DB_USERNAME", default=None),
     "password": config("DB_PASSWORD", cast=Secret, default=None),
-    "database": db_name,
+    "database": DB_NAME,
     "pool_min_size": config("DB_POOL_MIN_SIZE", cast=int, default=1),
     "pool_max_size": config("DB_POOL_MAX_SIZE", cast=int, default=16),
     "ssl": config("DB_SSL", default=None),
