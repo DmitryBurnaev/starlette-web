@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import type_api as sa_type_api
 
-from common.typing import EnumClass
-from core import settings
+from starlette_web.common.typing import EnumClass
+from starlette_web.core import settings
 
 
 class ChoiceType(types.TypeDecorator):

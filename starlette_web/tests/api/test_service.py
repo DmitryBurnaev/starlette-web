@@ -11,7 +11,7 @@ class TestHealthCheckAPIView(BaseTestAPIView):
         response_data = self.assert_ok_response(response)
         assert response_data == {"services": {"postgres": "ok"}, "errors": []}
 
-    @patch("common.models.ModelMixin.async_filter")
+    @patch("starlette_web.common.models.ModelMixin.async_filter")
     def test_health__fail(self, mock_filter, client):
         mock_filter.side_effect = RuntimeError("Oops")
         response = client.get(self.url)

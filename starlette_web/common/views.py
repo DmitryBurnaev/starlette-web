@@ -9,16 +9,16 @@ from marshmallow import Schema, ValidationError, fields
 from starlette.responses import JSONResponse, Response
 from webargs_starlette import parser, WebargsHTTPException
 
-from auth.models import User
-from common.exceptions import (
+from starlette_web.auth.models import User
+from starlette_web.common.exceptions import (
     NotFoundError,
     UnexpectedError,
     BaseApplicationError,
     InvalidParameterError,
 )
-from common.statuses import ResponseStatus
-from common.models import DBModel
-from common.utils import get_logger
+from starlette_web.common.statuses import ResponseStatus
+from starlette_web.common.models import DBModel
+from starlette_web.common.utils import get_logger
 from starlette_web.auth.utils import TokenCollection
 from starlette_web.auth.backend import LoginRequiredAuthBackend
 

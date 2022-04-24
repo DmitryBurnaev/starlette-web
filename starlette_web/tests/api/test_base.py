@@ -2,8 +2,8 @@ from typing import Union, Optional
 
 from requests import Response
 
-from common.models import ModelMixin
-from common.statuses import ResponseStatus
+from starlette_web.common.models import ModelMixin
+from starlette_web.common.statuses import ResponseStatus
 
 
 class BaseTestCase:
@@ -27,8 +27,12 @@ class BaseTestAPIView(BaseTestCase):
 
     @staticmethod
     def assert_ok_response(response: Response, status_code: int = 200) -> Union[dict, list]:
-        response_data = response.json()
         assert response.status_code == status_code
+
+        try:
+            response_data = response.json()
+        except Exception:
+            raise AssertionError(response.text)
         assert "payload" in response_data, response_data
         assert response_data["status"] == ResponseStatus.OK
         return response_data["payload"]

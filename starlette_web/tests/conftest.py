@@ -1,15 +1,15 @@
 import asyncio
-import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import Tuple
 from unittest.mock import patch, AsyncMock
 
 import pytest
-from alembic.config import main
+import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util import concurrency
 
-from starlette_web.core import settings
+from starlette_web.core import settings, database
 from starlette_web.auth.models import UserInvite
 from starlette_web.tests.helpers import (
     WebTestClient,
@@ -18,6 +18,7 @@ from starlette_web.tests.helpers import (
     mock_target_class,
     create_user_session,
     make_db_session,
+    await_,
 )
 from starlette_web.tests.mocks import MockProcess
 
@@ -27,13 +28,6 @@ def test_settings():
     settings.APP_DEBUG = True
     settings.MAX_UPLOAD_ATTEMPT = 1
     settings.RETRY_UPLOAD_TIMEOUT = 0
-
-
-@pytest.fixture(autouse=True)
-def cap_log(caplog):
-    # trying to print out logs for failed tests
-    caplog.set_level(logging.INFO)
-    logging.getLogger("modules").setLevel(logging.INFO)
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -54,8 +48,13 @@ def dbs(loop) -> AsyncSession:
 
 @pytest.fixture(autouse=True, scope="session")
 def db_migration():
-    ini_path = settings.PROJECT_ROOT_DIR / "alembic.ini"
-    main(["--raiseerr", f"-c{ini_path}", "upgrade", "head"])
+    # TODO: create test's DB with SQLAlchemy
+
+    def create_tables():
+        engine = sqlalchemy.create_engine(settings.DATABASE_DSN)
+        database.ModelBase.metadata.create_all(engine)
+
+    await_(concurrency.greenlet_spawn(create_tables))
 
 
 @pytest.fixture
@@ -66,7 +65,7 @@ def mocked_process(monkeypatch) -> MockProcess:
 @pytest.fixture
 def mocked_auth_send() -> AsyncMock:
     mocked_send_email = AsyncMock()
-    patcher = patch("modules.auth.views.send_email", new=mocked_send_email)
+    patcher = patch("starlette_web.auth.views.send_email", new=mocked_send_email)
     patcher.start()
     yield mocked_send_email
     del mocked_send_email
