@@ -13,18 +13,15 @@ Common parts are related to starlette web-framework and can be used for building
 
 ### REQUIRED Variables
 
-| argument              |                    description                    |                          example |
-|:----------------------|:-------------------------------------------------:|---------------------------------:|
-| APP_HOST              | App default host running (used by docker compose) |                        127.0.0.1 |
-| APP_PORT              | App default port running (used by docker compose) |                             9000 |
-| APP_SERVICE           |  Run service (web/celery/test) via entrypoint.sh  |                              web |
-| SECRET_KEY            |           Django secret key (security)            |             _abc3412j345j1f2d3f_ |
-| SITE_URL              |   URL address to the UI-part of the podcast APP   |         https://podcast.site.com |
-| DB_HOST               |             PostgreSQL database host              |                        127.0.0.1 |
-| DB_PORT               |             PostgreSQL database port              |                             5432 |
-| DB_NAME               |             PostgreSQL database name              |                          podcast |
-| DB_USERNAME           |           PostgreSQL database username            |                          podcast |
-| DB_PASSWORD           |           PostgreSQL database password            |                  podcast_asf2342 |
+| argument              |                    description                    |                 example |
+|:----------------------|:-------------------------------------------------:|------------------------:|
+| SECRET_KEY            |           Django secret key (security)            |    _abc3412j345j1f2d3f_ |
+| SITE_URL              |     URL address to the UI-part of the web APP     | https://web.project.com |
+| DB_HOST               |             PostgreSQL database host              |               127.0.0.1 |
+| DB_PORT               |             PostgreSQL database port              |                    5432 |
+| DB_NAME               |             PostgreSQL database name              |                 podcast |
+| DB_USERNAME           |           PostgreSQL database username            |                 podcast |
+| DB_PASSWORD           |           PostgreSQL database password            |         podcast_asf2342 |
 
 ### OPTIONAL Variables
 

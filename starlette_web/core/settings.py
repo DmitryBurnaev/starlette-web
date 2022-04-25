@@ -14,15 +14,12 @@ PROJECT_ROOT_DIR = Path(os.path.dirname(BASE_DIR))
 
 config = Config(PROJECT_ROOT_DIR / ".env")
 
-APP_HOST = config("APP_HOST", default="0.0.0.0")
-APP_PORT = config("APP_PORT", default="8000")
 APP_DEBUG = config("APP_DEBUG", cast=bool, default=False)
-
 SECRET_KEY = config("SECRET_KEY", default="project-secret")
 
 TEST_MODE = "test" in sys.argv[0]
 
-DB_NAME = config("DB_NAME", default="web-project")
+DB_NAME = config("DB_NAME", default="web_project")
 if TEST_MODE:
     DB_NAME = config("DB_NAME_TEST", default="web_project_test")
 
@@ -70,7 +67,7 @@ SENDGRID_API_VERSION = "v3"
 EMAIL_FROM = config("EMAIL_FROM", default="").strip("'\"")
 INVITE_LINK_EXPIRES_IN = 3 * 24 * 3600  # 3 day
 RESET_PASSWORD_LINK_EXPIRES_IN = 3 * 3600  # 3 hours
-SITE_URL = config("SITE_URL", default="") or "https://ui.site.com"
+SITE_URL = config("SITE_URL", default="") or "https://web.project.com"
 
 SENTRY_DSN = config("SENTRY_DSN", default=None)
 LOG_LEVEL = config("LOG_LEVEL", default="INFO")

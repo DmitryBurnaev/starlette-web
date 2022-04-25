@@ -6,8 +6,10 @@ from unittest.mock import patch, AsyncMock
 
 import pytest
 import sqlalchemy
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.engine import URL
 from sqlalchemy.util import concurrency
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from starlette_web.core import settings, database
 from starlette_web.auth.models import UserInvite
@@ -46,15 +48,52 @@ def dbs(loop) -> AsyncSession:
         yield db_session
 
 
+def db_prep():
+    print("Dropping the old test db…")
+    postgres_db_dsn = URL.create(
+        drivername="postgresql",
+        username=settings.DATABASE["username"],
+        password=settings.DATABASE["password"],
+        host=settings.DATABASE["host"],
+        port=settings.DATABASE["port"],
+        database="postgres",
+    )
+    engine = sqlalchemy.create_engine(postgres_db_dsn)
+    conn = engine.connect()
+    try:
+        conn = conn.execution_options(autocommit=False)
+        conn.execute("ROLLBACK")
+        conn.execute(f"DROP DATABASE {settings.DB_NAME}")
+    except ProgrammingError:
+        print("Could not drop the database, probably does not exist.")
+        conn.execute("ROLLBACK")
+    except OperationalError:
+        print("Could not drop database because it’s being accessed by other users")
+        conn.execute("ROLLBACK")
+
+    print(f"Test db dropped! about to create {settings.DB_NAME}")
+    conn.execute(f"CREATE DATABASE {settings.DB_NAME}")
+    username, password = settings.DATABASE["username"], settings.DATABASE["password"]
+
+    try:
+        conn.execute(f"CREATE USER {username} WITH ENCRYPTED PASSWORD '{password}'")
+    except Exception as e:
+        print(f"User already exists. ({e})")
+        conn.execute(f"GRANT ALL PRIVILEGES ON DATABASE {settings.DB_NAME} TO {username}")
+
+    conn.close()
+
+
 @pytest.fixture(autouse=True, scope="session")
 def db_migration():
-    # TODO: create test's DB with SQLAlchemy
-
     def create_tables():
+        db_prep()
+        print("Creating tables...")
         engine = sqlalchemy.create_engine(settings.DATABASE_DSN)
         database.ModelBase.metadata.create_all(engine)
 
     await_(concurrency.greenlet_spawn(create_tables))
+    print("DB and tables were successful created.")
 
 
 @pytest.fixture
