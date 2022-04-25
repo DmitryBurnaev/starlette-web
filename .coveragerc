@@ -1,0 +1,10 @@
+[run]
+source = starlette_web/
+omit =
+    *__init__.py
+    starlette_web/tests/*
+
+[report]
+omit =
+    *__init__.py
+    starlette_web/tests/*
