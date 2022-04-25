@@ -1,5 +1,7 @@
 import logging
 import logging.config
+from importlib import import_module
+from typing import Type
 
 import httpx
 from starlette import status
@@ -111,3 +113,17 @@ def cut_string(source_string: str, max_length: int, finish_seq: str = "...") -> 
         return source_string[:slice_length] + finish_seq if (slice_length > 0) else ""
 
     return source_string
+
+
+def import_string(dotted_path) -> Type[object]:
+    try:
+        module_path, class_name = dotted_path.rsplit('.', 1)
+    except ValueError as err:
+        raise ImportError("%s doesn't look like a module path" % dotted_path) from err
+
+    module = import_module(module_path)
+
+    try:
+        return getattr(module, class_name)
+    except AttributeError as err:
+        raise ImportError('Module "%s" does not define a "%s" attribute/class' % (module_path, class_name)) from err
