@@ -1,0 +1,41 @@
+name: Test Web Project
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - tests-run
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: "web_project"
+          POSTGRES_PASSWORD: "web_password"
+          POSTGRES_DB: "web_project"
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Prepare .env file
+        env:
+          DB_NAME: "web_project"
+          DB_USERNAME: "web_project"
+          DB_PASSWORD: "web_password"
+          DB_HOST: "172.17.0.1"
+          DB_PORT: 5432
+        run: |
+          cp .env.template .env
+          env >> .env
+
+      - name: Build image
+        run: docker image build -t starlette-web .
+
+      - name: Run tests
+        run: docker run -t --env-file .env starlette-web
