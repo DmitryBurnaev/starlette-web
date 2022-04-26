@@ -2,10 +2,7 @@ name: Test Web Project
 on:
   pull_request:
     branches:
-      - master
-  push:
-    branches:
-      - tests-run
+      - main
 
 jobs:
   test:
