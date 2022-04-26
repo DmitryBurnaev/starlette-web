@@ -46,13 +46,17 @@ class BaseCommand:
         return parser
 
     def add_arguments(self, parser: CommandParser):
+        # Redefine in inherited classes
         pass
 
     async def handle(self, **options):
         raise NotImplementedError
 
     def prepare_command_coroutine(self, argv, called_from_command_line) -> Awaitable:
-        self.parser = self.create_parser(argv, called_from_command_line=called_from_command_line)
+        self.parser = self.create_parser(
+            argv,
+            called_from_command_line=called_from_command_line,
+        )
         self.add_arguments(self.parser)
         namespace = self.parser.parse_args(args=argv[2:])
         kwargs = namespace.__dict__
@@ -73,10 +77,10 @@ def _fetch_commands_and_paths() -> Dict[str, Path]:
     command_files = {}
     for d in command_files_iter:
         if d.stem in command_files:
-            raise CommandError(f'Command "{d.stem}" is declared in multiple modules.')
-
+            raise CommandError(
+                f'Command "{d.stem}" is declared in multiple modules.'
+            )
         command_files[d.stem] = d
-
     return command_files
 
 
@@ -109,7 +113,10 @@ def fetch_command_by_name(command_name: str) -> Type[BaseCommand]:
                 for kls in command.__mro__
                 if kls == BaseCommand
             ])
-            assert is_instance, f"Command must be inherited from common.management.base.BaseCommand"
+            if not is_instance:
+                raise CommandError(
+                    "Command must be inherited from common.management.base.BaseCommand"
+                )
 
             return command
         except (ImportError, AssertionError) as exc:

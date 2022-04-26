@@ -6,7 +6,8 @@ from starlette_web.common.management.base import fetch_command_by_name, CommandE
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        raise CommandError('Missing command name. Correct syntax is: "python command.py command_name ..."')
+        raise CommandError(
+            'Missing command name. Correct syntax is: "python command.py command_name ..."')
 
     command = fetch_command_by_name(sys.argv[1])
 

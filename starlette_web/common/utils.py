@@ -94,7 +94,8 @@ async def send_email(recipient_email: str, subject: str, html_content: str):
                 request_url=request_url,
             )
         else:
-            request_logger.info("Email sent to %s. Status code: %s", recipient_email, status_code)
+            request_logger.info(
+                "Email sent to %s. Status code: %s", recipient_email, status_code)
 
 
 def cut_string(source_string: str, max_length: int, finish_seq: str = "...") -> str:
@@ -126,4 +127,6 @@ def import_string(dotted_path) -> Type[object]:
     try:
         return getattr(module, class_name)
     except AttributeError as err:
-        raise ImportError('Module "%s" does not define a "%s" attribute/class' % (module_path, class_name)) from err
+        error_description = 'Module "%s" does not define a "%s" attribute/class' % (
+            module_path, class_name)
+        raise ImportError(error_description) from err

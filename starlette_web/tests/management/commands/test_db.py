@@ -8,7 +8,6 @@ class Command(BaseCommand):
     help = 'Command to test database connection'
 
     async def handle(self, **options):
-        test_user_uuid = uuid.uuid4()
         test_user_password = str(uuid.uuid4())
 
         email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
