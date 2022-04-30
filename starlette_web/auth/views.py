@@ -288,7 +288,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
         user = await self._validate(request)
         token = self._generate_token(user)
         await self._send_email(user, token)
-        return self._response(data={"user_id": user.id, "email": user.email, "token": token})
+        return self._response({"user_id": user.id, "email": user.email, "token": token})
 
     async def _validate(self, request, *_) -> User:
         cleaned_data = await super()._validate(request)

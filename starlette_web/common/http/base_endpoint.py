@@ -1,24 +1,24 @@
-from typing import Type, Union, Iterable, Any, ClassVar
+from typing import Type, Union, Iterable, Any, ClassVar, Optional, Mapping
 
 from marshmallow import Schema, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+from starlette.background import BackgroundTasks
 from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
-from starlette.responses import JSONResponse, Response
 from webargs_starlette import parser, WebargsHTTPException
 
-from starlette_web.common.http.requests import PRequest
-from starlette_web.common.models import DBModel
+from starlette_web.auth.backend import LoginRequiredAuthBackend
 from starlette_web.common.http.exceptions import (
     NotFoundError,
     UnexpectedError,
     BaseApplicationError,
     InvalidParameterError,
 )
+from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
+from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.statuses import ResponseStatus
-from starlette_web.auth.utils import TokenCollection
-from starlette_web.auth.backend import LoginRequiredAuthBackend
+from starlette_web.common.models import DBModel
 from starlette_web.common.utils import get_logger
 
 
@@ -37,6 +37,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     schema_request: ClassVar[Type[Schema]]
     schema_response: ClassVar[Type[Schema]]
     auth_backend = LoginRequiredAuthBackend
+    renderer: Type[BaseRenderer] = JSONRenderer
 
     async def dispatch(self) -> None:
         """
@@ -118,22 +119,25 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
     def _response(
         self,
-        instance: Union[DBModel, Iterable[DBModel], TokenCollection, dict] = None,
-        data: Any = None,
+        data: Union[DBModel, Iterable[DBModel], dict] = None,
         status_code: int = status.HTTP_200_OK,
         response_status: ResponseStatus = ResponseStatus.OK,
-    ) -> Response:
-        """Returns JSON-Response (with single instance or list of them) or empty Response"""
-
-        response_instance = instance if (instance is not None) else data
-        payload = {}
-        if response_instance is not None:
+        headers: Mapping[str, str] = None,
+        background: Optional[BackgroundTasks] = None,
+    ) -> BaseRenderer:
+        if (data is not None) and self.schema_response:
             schema_kwargs = {}
-            if isinstance(response_instance, Iterable) and not isinstance(response_instance, dict):
+            if isinstance(data, Iterable) and not isinstance(data, dict):
                 schema_kwargs["many"] = True
 
-            payload = self.schema_response(**schema_kwargs).dump(response_instance)
+            payload = self.schema_response(**schema_kwargs).dump(data)
+        else:
+            payload = data
 
-        return JSONResponse(
-            {"status": response_status, "payload": payload}, status_code=status_code
+        # TODO: Pass only payload to renderer? Maybe pass string-like response_status independently?
+        return self.renderer(
+            {"status": response_status, "payload": payload},
+            status_code=status_code,
+            headers=headers,
+            background=background,
         )
