@@ -1,4 +1,4 @@
-from typing import Type, Union, Iterable, Any, ClassVar, Optional, Mapping
+from typing import Type, Union, Iterable, ClassVar, Optional, Mapping
 
 from marshmallow import Schema, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +6,7 @@ from starlette import status
 from starlette.background import BackgroundTasks
 from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
-from webargs_starlette import parser, WebargsHTTPException, StarletteParser
+from webargs_starlette import WebargsHTTPException, StarletteParser
 
 from starlette_web.auth.backend import LoginRequiredAuthBackend
 from starlette_web.common.http.exceptions import (
@@ -78,6 +78,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
         await response(self.scope, self.receive, self.send)
 
+    # TODO: move outside of BaseHTTPEndpoint,
+    #  since it contains attributes specific for contrib-module common.auth
     async def _get_object(
         self, instance_id, db_model: Type[DBModel] = None, **filter_kwargs
     ) -> DBModel:
