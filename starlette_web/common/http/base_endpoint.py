@@ -6,7 +6,7 @@ from starlette import status
 from starlette.background import BackgroundTasks
 from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
-from webargs_starlette import parser, WebargsHTTPException
+from webargs_starlette import parser, WebargsHTTPException, StarletteParser
 
 from starlette_web.auth.backend import LoginRequiredAuthBackend
 from starlette_web.common.http.exceptions import (
@@ -37,7 +37,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     schema_request: ClassVar[Type[Schema]]
     schema_response: ClassVar[Type[Schema]]
     auth_backend = LoginRequiredAuthBackend
-    renderer: Type[BaseRenderer] = JSONRenderer
+    request_parser: Type[StarletteParser] = StarletteParser
+    response_renderer: Type[BaseRenderer] = JSONRenderer
 
     async def dispatch(self) -> None:
         """
@@ -98,7 +99,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
     async def _validate(
         self, request, schema: Type[Schema] = None, partial_: bool = False, location: str = None
-    ) -> dict:
+    ) -> Optional[Mapping]:
         """Simple validation, based on marshmallow's schemas"""
 
         schema_request = schema or self.schema_request
@@ -108,7 +109,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
         schema, cleaned_data = schema_request(**schema_kwargs), {}
         try:
-            cleaned_data = await parser.parse(schema, request, location=location)
+            cleaned_data = await self.request_parser().parse(schema, request, location=location)
             if hasattr(schema, "is_valid") and callable(schema.is_valid):
                 schema.is_valid(cleaned_data)
 
@@ -135,7 +136,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             payload = data
 
         # TODO: Pass only payload to renderer? Maybe pass string-like response_status independently?
-        return self.renderer(
+        return self.response_renderer(
             {"status": response_status, "payload": payload},
             status_code=status_code,
             headers=headers,
