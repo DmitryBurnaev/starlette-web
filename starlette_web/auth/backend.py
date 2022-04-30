@@ -1,8 +1,8 @@
 from typing import Tuple
 
 from jwt import InvalidTokenError, ExpiredSignatureError
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from starlette_web.common.authorization.backends import BaseAuthenticationBackend
 from starlette_web.common.http.exceptions import (
     AuthenticationFailedError,
     AuthenticationRequiredError,
@@ -16,16 +16,12 @@ from starlette_web.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
 logger = get_logger(__name__)
 
 
-class BaseAuthJWTBackend:
+class BaseAuthJWTBackend(BaseAuthenticationBackend):
     """Core of authenticate system, based on JWT auth approach"""
 
     keyword = "Bearer"
 
-    def __init__(self, request):
-        self.request = request
-        self.db_session: AsyncSession = request.db_session
-
-    async def authenticate(self) -> Tuple[User, str]:
+    async def authenticate(self) -> User:
         request = self.request
         auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
         if not auth_header:
@@ -40,7 +36,9 @@ class BaseAuthJWTBackend:
             raise AuthenticationFailedError("Invalid token header. Keyword mismatch.")
 
         user, _, session_id = await self.authenticate_user(jwt_token=auth[1])
-        return user, session_id
+        self.request.user_session_id = session_id
+
+        return user
 
     async def authenticate_user(
         self,

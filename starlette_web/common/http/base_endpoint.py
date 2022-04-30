@@ -59,9 +59,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
                 if self.auth_backend:
                     backend = self.auth_backend(self.request)
-                    user, session_id = await backend.authenticate()
+                    user = await backend.authenticate()
                     self.scope["user"] = user
-                    self.request.user_session_id = session_id
 
                 response = await handler(self.request)  # noqa
                 await self.db_session.commit()
