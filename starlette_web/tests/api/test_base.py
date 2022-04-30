@@ -3,7 +3,7 @@ from typing import Union, Optional
 from requests import Response
 
 from starlette_web.common.models import ModelMixin
-from starlette_web.common.statuses import ResponseStatus
+from starlette_web.common.http.statuses import ResponseStatus
 
 
 class BaseTestCase:

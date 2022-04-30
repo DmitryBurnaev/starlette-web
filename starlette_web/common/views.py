@@ -16,7 +16,7 @@ from starlette_web.common.http.exceptions import (
     BaseApplicationError,
     InvalidParameterError,
 )
-from starlette_web.common.statuses import ResponseStatus
+from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.models import DBModel
 from starlette_web.common.utils import get_logger
 from starlette_web.auth.utils import TokenCollection

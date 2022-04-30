@@ -8,7 +8,7 @@ from typing import Tuple, Optional, Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from starlette_web.common.statuses import ResponseStatus
+from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.core import settings
 from starlette_web.common.views import BaseHTTPEndpoint
 from starlette_web.common.utils import send_email, get_logger
