@@ -10,7 +10,7 @@ from starlette.responses import JSONResponse, Response
 from webargs_starlette import parser, WebargsHTTPException
 
 from starlette_web.auth.models import User
-from starlette_web.common.exceptions import (
+from starlette_web.common.http.exceptions import (
     NotFoundError,
     UnexpectedError,
     BaseApplicationError,

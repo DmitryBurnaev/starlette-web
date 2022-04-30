@@ -10,7 +10,7 @@ from webargs_starlette import WebargsHTTPException
 
 from starlette_web.core import settings
 from starlette_web.common.statuses import ResponseStatus
-from starlette_web.common.exceptions import BaseApplicationError, SendRequestError
+from starlette_web.common.http.exceptions import BaseApplicationError, SendRequestError
 
 
 def get_logger(name: str = None):

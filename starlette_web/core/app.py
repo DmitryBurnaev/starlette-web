@@ -15,7 +15,7 @@ from starlette_web.common.db_utils import make_session_maker
 from starlette_web.core import settings
 from starlette_web.core.routes import routes as core_routes
 from starlette_web.common.utils import custom_exception_handler
-from starlette_web.common.exceptions import BaseApplicationError
+from starlette_web.common.http.exceptions import BaseApplicationError
 
 exception_handlers = {
     BaseApplicationError: custom_exception_handler,

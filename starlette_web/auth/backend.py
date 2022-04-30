@@ -3,7 +3,7 @@ from typing import Tuple
 from jwt import InvalidTokenError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from starlette_web.common.exceptions import (
+from starlette_web.common.http.exceptions import (
     AuthenticationFailedError,
     AuthenticationRequiredError,
     PermissionDeniedError,

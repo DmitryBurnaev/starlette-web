@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from starlette_web.common.exceptions import (
+from starlette_web.common.http.exceptions import (
     AuthenticationRequiredError,
     AuthenticationFailedError,
     PermissionDeniedError,
