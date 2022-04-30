@@ -68,11 +68,12 @@ class BaseCommand:
         asyncio.get_event_loop().run_until_complete(coroutine)
 
     async def run_from_code(self, argv: List[str]):
-        coroutine = self.prepare_command_coroutine(argv, True)
+        coroutine = self.prepare_command_coroutine(argv, False)
         await coroutine
 
 
 def _fetch_commands_and_paths() -> Dict[str, Path]:
+    # TODO: get commands from settings.INSTALLED_APPS
     command_files_iter = settings.PROJECT_ROOT_DIR.glob('*/*/management/commands/*.py')
     command_files = {}
     for d in command_files_iter:
