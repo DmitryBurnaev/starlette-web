@@ -10,9 +10,9 @@ from starlette import status
 
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.core import settings
-from starlette_web.common.views import BaseHTTPEndpoint
-from starlette_web.common.utils import send_email, get_logger
+from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
+from starlette_web.common.utils import send_email, get_logger
 from starlette_web.auth.models import User, UserSession, UserInvite
 from starlette_web.auth.hasher import PBKDF2PasswordHasher, get_salt
 from starlette_web.auth.backend import AdminRequiredAuthBackend, LoginRequiredAuthBackend

@@ -16,8 +16,8 @@ from starlette_web.auth.utils import (
     TOKEN_TYPE_REFRESH,
     TOKEN_TYPE_ACCESS,
 )
-from tests.api.test_base import BaseTestAPIView
-from tests.helpers import await_
+from starlette_web.tests.api.test_base import BaseTestAPIView
+from starlette_web.tests.helpers import await_
 
 INVALID_SIGN_IN_DATA = [
     [{"email": "fake-email"}, {"email": "Not a valid email address."}],
