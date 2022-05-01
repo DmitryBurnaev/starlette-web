@@ -63,24 +63,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
                 self.request.db_session = session
                 self.db_session = session
 
-                if self.auth_backend:
-                    backend = self.auth_backend(self.request, self.scope)
-                    user = await backend.authenticate()
-                    self.scope["user"] = user
-                else:
-                    self.scope['user'] = AnonymousUser()
-
-                for permission_class in self.permission_classes:
-                    try:
-                        has_permission = await permission_class()\
-                            .has_permission(self.request, self.scope)
-                        if not has_permission:
-                            raise PermissionDeniedError
-                    # Exception may be raised inside permission_class, to pass additional details
-                    except PermissionDeniedError as exc:
-                        raise exc
-                    except Exception as exc:
-                        raise PermissionDeniedError from exc
+                await self._authenticate()
+                await self._check_permissions()
 
                 response = await handler(self.request)  # noqa
                 await self.db_session.commit()
@@ -96,6 +80,28 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             raise UnexpectedError(msg_template % (err,))
 
         await response(self.scope, self.receive, self.send)
+
+    async def _authenticate(self):
+        if self.auth_backend:
+            backend = self.auth_backend(self.request, self.scope)
+            user = await backend.authenticate()
+            self.scope["user"] = user
+        else:
+            self.scope['user'] = AnonymousUser()
+
+    async def _check_permissions(self):
+        for permission_class in self.permission_classes:
+            try:
+                has_permission = (
+                    await permission_class().has_permission(self.request, self.scope)
+                )
+                if not has_permission:
+                    raise PermissionDeniedError
+            # Exception may be raised inside permission_class, to pass additional details
+            except PermissionDeniedError as exc:
+                raise exc
+            except Exception as exc:
+                raise PermissionDeniedError from exc
 
     # TODO: move outside of BaseHTTPEndpoint,
     #  since it contains attributes specific for contrib-module common.auth

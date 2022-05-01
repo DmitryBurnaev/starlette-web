@@ -44,7 +44,7 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         return user
 
     @staticmethod
-    def _get_jwt_payload_from_jwt_token(jwt_token: str, token_type: str):
+    def _parse_jwt_payload(jwt_token: str, token_type: str) -> dict:
         logger.debug("Logging via JWT auth. Got token: %s", jwt_token)
         try:
             # TODO: class-based JWT decoder
@@ -70,14 +70,13 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         token_type: str = TOKEN_TYPE_ACCESS,
     ) -> Tuple[User, dict, str]:
         """Allows to find active user by jwt_token"""
-        jwt_payload = self._get_jwt_payload_from_jwt_token(jwt_token, token_type)
+        jwt_payload = self._parse_jwt_payload(jwt_token, token_type)
 
-        session_id = jwt_payload.get("session_id", "00000000-0000-0000-0000-000000000000")
+        session_id = jwt_payload.get("session_id")
         if not session_id:
             raise AuthenticationFailedError("Incorrect data in JWT: session_id is missed")
 
         user_id = jwt_payload.get("user_id")
-        self.scope['user_id'] = user_id
 
         user = await User.get_active(self.db_session, user_id)
         if not user:
@@ -89,7 +88,6 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
             self.db_session,
             public_id=session_id,
             is_active=True,
-            user_id=user.id,
         )
         if not user_session:
             raise AuthenticationFailedError(

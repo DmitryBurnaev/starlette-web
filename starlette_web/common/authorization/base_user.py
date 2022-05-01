@@ -1,10 +1,10 @@
-class BaseUser:
+class BaseUserMixin:
     @property
     def is_authenticated(self) -> bool:
         raise NotImplementedError
 
 
-class AnonymousUser(BaseUser):
+class AnonymousUser(BaseUserMixin):
     @property
     def is_authenticated(self) -> bool:
         raise False
