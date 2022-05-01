@@ -1,4 +1,4 @@
-# Copied from https://github.com/encode/django-rest-framework/blob/master/rest_framework/permissions.py
+# Copied from https://github.com/encode/django-rest-framework/blob/master/rest_framework/permissions.py  # noqa E501
 
 from starlette.types import Scope
 
@@ -52,8 +52,8 @@ class AND:
 
     async def has_permission(self, request: PRequest, scope: Scope):
         return (
-            (await self.op1.has_permission(request, scope)) and
-            (await self.op2.has_permission(request, scope))
+            (await self.op1.has_permission(request, scope))
+            and (await self.op2.has_permission(request, scope))
         )
 
 
@@ -64,8 +64,8 @@ class OR:
 
     async def has_permission(self, request: PRequest, scope: Scope):
         return (
-            (await self.op1.has_permission(request, scope)) or
-            (await self.op2.has_permission(request, scope))
+            (await self.op1.has_permission(request, scope))
+            or (await self.op2.has_permission(request, scope))
         )
 
 

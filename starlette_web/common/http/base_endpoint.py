@@ -1,4 +1,4 @@
-from typing import Type, Union, Iterable, ClassVar, Optional, Mapping
+from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List
 
 from marshmallow import Schema, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,12 +8,17 @@ from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
 from webargs_starlette import WebargsHTTPException, StarletteParser
 
-from starlette_web.auth.backend import LoginRequiredAuthBackend
+from starlette_web.common.authorization.backends import (
+    BaseAuthenticationBackend, NoAuthenticationBackend,
+)
+from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
+from starlette_web.common.authorization.base_user import AnonymousUser
 from starlette_web.common.http.exceptions import (
     NotFoundError,
     UnexpectedError,
     BaseApplicationError,
     InvalidParameterError,
+    PermissionDeniedError,
 )
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.requests import PRequest
@@ -36,7 +41,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     db_session: AsyncSession
     schema_request: ClassVar[Type[Schema]]
     schema_response: ClassVar[Type[Schema]]
-    auth_backend = LoginRequiredAuthBackend
+    auth_backend: Type[BaseAuthenticationBackend] = NoAuthenticationBackend
+    permission_classes: List[Union[Type[BasePermission], OperandHolder]] = []
     request_parser: Type[StarletteParser] = StarletteParser
     response_renderer: Type[BaseRenderer] = JSONRenderer
 
@@ -58,9 +64,23 @@ class BaseHTTPEndpoint(HTTPEndpoint):
                 self.db_session = session
 
                 if self.auth_backend:
-                    backend = self.auth_backend(self.request)
+                    backend = self.auth_backend(self.request, self.scope)
                     user = await backend.authenticate()
                     self.scope["user"] = user
+                else:
+                    self.scope['user'] = AnonymousUser()
+
+                for permission_class in self.permission_classes:
+                    try:
+                        has_permission = await permission_class()\
+                            .has_permission(self.request, self.scope)
+                        if not has_permission:
+                            raise PermissionDeniedError
+                    # Exception may be raised inside permission_class, to pass additional details
+                    except PermissionDeniedError as exc:
+                        raise exc
+                    except Exception as exc:
+                        raise PermissionDeniedError from exc
 
                 response = await handler(self.request)  # noqa
                 await self.db_session.commit()

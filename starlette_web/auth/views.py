@@ -15,7 +15,8 @@ from starlette_web.common.http.exceptions import AuthenticationFailedError, Inva
 from starlette_web.common.utils import send_email, get_logger
 from starlette_web.auth.models import User, UserSession, UserInvite
 from starlette_web.auth.hasher import PBKDF2PasswordHasher, get_salt
-from starlette_web.auth.backend import AdminRequiredAuthBackend, LoginRequiredAuthBackend
+from starlette_web.auth.backend import JWTAuthenticationBackend
+from starlette_web.auth.permissions import IsSuperuserPermission
 from starlette_web.auth.utils import (
     encode_jwt,
     TokenCollection,
@@ -138,7 +139,7 @@ class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
         return self._response(token_collection, status_code=status.HTTP_201_CREATED)
 
     async def _validate(self, request, *_) -> dict:
-        cleaned_data = await super()._validate(request)
+        cleaned_data = (await super()._validate(request)) or dict()
         email = cleaned_data["email"]
 
         if await User.async_get(self.db_session, email=email):
@@ -172,6 +173,7 @@ class SignOutAPIView(BaseHTTPEndpoint):
      - remove JWT token on front-end side
      - deactivate current session on BE (this allows to block use regular or refresh token)
     """
+    auth_backend = JWTAuthenticationBackend
 
     async def delete(self, request):
         user = request.user
@@ -217,7 +219,9 @@ class RefreshTokenAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     async def _validate(self, request, *args, **kwargs) -> Tuple[User, str, Optional[str]]:
         cleaned_data = await super()._validate(request)
         refresh_token = cleaned_data["refresh_token"]
-        user, jwt_payload, _ = await LoginRequiredAuthBackend(request).authenticate_user(
+        user, jwt_payload, _ = await JWTAuthenticationBackend(
+            request, self.scope,
+        ).authenticate_user(
             refresh_token, token_type="refresh"
         )
         return user, refresh_token, jwt_payload.get("session_id")
@@ -228,6 +232,7 @@ class InviteUserAPIView(BaseHTTPEndpoint):
 
     schema_request = UserInviteRequestSchema
     schema_response = UserInviteResponseSchema
+    auth_backend = JWTAuthenticationBackend
 
     async def post(self, request):
         cleaned_data = await self._validate(request)
@@ -270,7 +275,8 @@ class InviteUserAPIView(BaseHTTPEndpoint):
         )
 
     async def _validate(self, request, *_) -> dict:
-        cleaned_data = await super()._validate(request)
+        cleaned_data = (await super()._validate(request)) or dict()
+
         if exists_user := await User.async_get(self.db_session, email=cleaned_data["email"]):
             raise InvalidParameterError(f"User with email=[{exists_user.email}] already exists.")
 
@@ -282,7 +288,8 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
 
     schema_request = ResetPasswordRequestSchema
     schema_response = ResetPasswordResponseSchema
-    auth_backend = AdminRequiredAuthBackend
+    auth_backend = JWTAuthenticationBackend
+    permission_classes = [IsSuperuserPermission]
 
     async def post(self, request):
         user = await self._validate(request)
@@ -337,7 +344,7 @@ class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     async def post(self, request):
         """Check is email unique and create new User"""
         cleaned_data = await self._validate(request)
-        user, _, _ = await LoginRequiredAuthBackend(request).authenticate_user(
+        user, _, _ = await JWTAuthenticationBackend(request, self.scope).authenticate_user(
             jwt_token=cleaned_data["token"],
             token_type=TOKEN_TYPE_RESET_PASSWORD,
         )
@@ -352,6 +359,7 @@ class ProfileApiView(BaseHTTPEndpoint):
     """Simple retrieves profile information (for authenticated user)"""
 
     schema_response = UserResponseSchema
+    auth_backend = JWTAuthenticationBackend
 
     async def get(self, request):
         return self._response(request.user)

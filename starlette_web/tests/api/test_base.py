@@ -33,6 +33,7 @@ class BaseTestAPIView(BaseTestCase):
             response_data = response.json()
         except Exception:
             raise AssertionError(response.text)
+
         assert "payload" in response_data, response_data
         assert response_data["status"] == ResponseStatus.OK
         return response_data["payload"]
