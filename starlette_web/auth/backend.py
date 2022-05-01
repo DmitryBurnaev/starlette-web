@@ -72,17 +72,17 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         """Allows to find active user by jwt_token"""
         jwt_payload = self._parse_jwt_payload(jwt_token, token_type)
 
-        session_id = jwt_payload.get("session_id")
-        if not session_id:
-            raise AuthenticationFailedError("Incorrect data in JWT: session_id is missed")
-
         user_id = jwt_payload.get("user_id")
-
+        
         user = await User.get_active(self.db_session, user_id)
         if not user:
             msg = "Couldn't found active user with id=%s."
             logger.warning(msg, user_id)
             raise AuthenticationFailedError(details=(msg % (user_id,)))
+
+        session_id = jwt_payload.get("session_id")
+        if not session_id:
+            raise AuthenticationFailedError("Incorrect data in JWT: session_id is missed")
 
         user_session = await UserSession.async_get(
             self.db_session,
