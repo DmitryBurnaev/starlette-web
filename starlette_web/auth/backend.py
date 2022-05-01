@@ -73,7 +73,7 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         jwt_payload = self._parse_jwt_payload(jwt_token, token_type)
 
         user_id = jwt_payload.get("user_id")
-        
+
         user = await User.get_active(self.db_session, user_id)
         if not user:
             msg = "Couldn't found active user with id=%s."
