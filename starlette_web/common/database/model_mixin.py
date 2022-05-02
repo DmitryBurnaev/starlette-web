@@ -83,6 +83,50 @@ class ModelMixin:
             await db_session.commit()
         return instance
 
+    @classmethod
+    async def async_create_or_update(
+        cls,
+        db_session: AsyncSession,
+        filter_kwargs: dict,
+        update_data: dict,
+        db_commit=False,
+        force_update=False,
+        update_to_null=False,
+    ):
+        # TODO: contrib.postgres.PostgresModelMixin with this method reloaded (using on_conflict do update)
+        instance = await cls.async_get(db_session, **filter_kwargs)
+        if instance:
+            if cls._object_needs_update(
+                instance.to_dict(),
+                update_data,
+                force_update=force_update,
+                update_to_null=update_to_null,
+            ):
+                await cls.async_update(
+                    db_session,
+                    filter_kwargs=filter_kwargs,
+                    update_data=update_data,
+                    db_commit=db_commit,
+                )
+        else:
+            await cls.async_create(
+                db_session,
+                **filter_kwargs,
+                **update_data,
+                commit=db_commit,
+            )
+
+    @classmethod
+    async def async_get_or_create(
+        cls, db_session: AsyncSession, filter_kwargs: dict, extra_data: dict, db_commit=False,
+    ) -> "DBModel":
+        instance = await cls.async_get(db_session, **filter_kwargs)
+        if not instance:
+            instance = await cls.async_create(
+                db_session, **filter_kwargs, **extra_data, db_commit=db_commit,
+            )
+        return instance
+
     async def update(self, db_session: AsyncSession, db_commit=False, **update_data):
         if hasattr(self, "updated_at"):
             update_data["updated_at"] = datetime.datetime.utcnow()
@@ -134,6 +178,18 @@ class ModelMixin:
                 raise NotImplementedError(f"Unexpected criteria: {criteria}")
 
         return and_(True, *filters)
+
+    @staticmethod
+    def _object_needs_update(dict_original, dict_new, force_update=False, update_to_null=True) -> bool:
+        if force_update:
+            return True
+
+        for key in dict_new:
+            if dict_new[key] is None and not update_to_null:
+                return False
+            if dict_original.get(key) != dict_new[key]:
+                return True
+        return False
 
 
 DBModel = TypeVar("DBModel", bound=ModelMixin)
