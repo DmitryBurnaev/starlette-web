@@ -11,10 +11,9 @@ from starlette_web.common.typing import EnumClass
 class EnumTypeColumn(Column):
     """Just wrapper for ChoiceType db column
 
-    # TODO: fix docstring
     >>> import enum
-    >>> from core.database import ModelBase
     >>> from sqlalchemy import String
+    >>> from starlette_web.core.database import ModelBase
 
     >>> class UserType(enum.Enum):
     >>>    admin = 'admin'
