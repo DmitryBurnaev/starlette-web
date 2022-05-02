@@ -15,7 +15,9 @@ class ModelMixin:
         order_by = ()
 
     @classmethod
-    def prepare_query(cls, limit: int = None, offset: int = None, order_by=(), **filter_kwargs) -> Select:
+    def prepare_query(
+        cls, limit: int = None, offset: int = None, order_by=(), **filter_kwargs,
+    ) -> Select:
         _order_by = []
 
         if order_by:
@@ -52,7 +54,9 @@ class ModelMixin:
         return result.scalars().first()
 
     @classmethod
-    async def async_update(cls, db_session: AsyncSession, filter_kwargs: dict, update_data: dict, db_commit=False):
+    async def async_update(
+        cls, db_session: AsyncSession, filter_kwargs: dict, update_data: dict, db_commit=False,
+    ):
         query = (
             update(cls)
             .where(cls._filter_criteria(filter_kwargs))
@@ -93,7 +97,8 @@ class ModelMixin:
         force_update=False,
         update_to_null=False,
     ):
-        # TODO: contrib.postgres.PostgresModelMixin with this method reloaded (using on_conflict do update)
+        # TODO: contrib.postgres.PostgresModelMixin with this method reloaded
+        #  (using on_conflict do update)
         instance = await cls.async_get(db_session, **filter_kwargs)
         if instance:
             if cls._object_needs_update(
@@ -180,7 +185,9 @@ class ModelMixin:
         return and_(True, *filters)
 
     @staticmethod
-    def _object_needs_update(dict_original, dict_new, force_update=False, update_to_null=True) -> bool:
+    def _object_needs_update(
+        dict_original, dict_new, force_update=False, update_to_null=True,
+    ) -> bool:
         if force_update:
             return True
 
@@ -189,6 +196,7 @@ class ModelMixin:
                 return False
             if dict_original.get(key) != dict_new[key]:
                 return True
+
         return False
 
 
