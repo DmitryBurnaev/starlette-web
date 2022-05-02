@@ -2,12 +2,9 @@ from typing import Type
 
 import sqlalchemy as sa
 from sqlalchemy import types, Column
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import type_api as sa_type_api
 
 from starlette_web.common.typing import EnumClass
-from starlette_web.core import settings
 
 
 class ChoiceType(types.TypeDecorator):
@@ -18,7 +15,7 @@ class ChoiceType(types.TypeDecorator):
     a list of tuple been passed to the constructor. If a subclass of
     :class:`enum.Enum` is passed, columns will be coerced to value of :class:`enum.Enum`
 
-
+    # TODO: fix docstring
     >>> import enum
     >>> from core.database import ModelBase
     >>> from sqlalchemy import Column, String
@@ -80,6 +77,7 @@ class ChoiceType(types.TypeDecorator):
 class EnumTypeColumn(Column):
     """Just wrapper for ChoiceType db column
 
+    # TODO: fix docstring
     >>> import enum
     >>> from core.database import ModelBase
     >>> from sqlalchemy import String
@@ -108,8 +106,3 @@ class EnumTypeColumn(Column):
 
         impl = impl or cls.impl
         return Column(ChoiceType(enum_class, impl=impl), *args, **kwargs)
-
-
-def make_session_maker() -> sessionmaker:
-    db_engine = create_async_engine(settings.DATABASE_DSN, echo=settings.DB_ECHO)
-    return sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)

@@ -1,5 +1,5 @@
 import datetime
-from typing import TypeVar
+from typing import TypeVar, List
 
 from sqlalchemy import and_, select, update, delete
 from sqlalchemy.engine import ScalarResult
@@ -13,7 +13,7 @@ class ModelMixin:
     id: int = NotImplemented
 
     class Meta:
-        order_by = ("id",)
+        order_by = ("id", )
 
     @classmethod
     def prepare_query(cls, limit: int = None, offset: int = None, **filter_kwargs) -> Select:
@@ -83,7 +83,7 @@ class ModelMixin:
         await db_session.delete(self)
         await db_session.flush()
 
-    def to_dict(self, excluded_fields: list[str] = None) -> dict:
+    def to_dict(self, excluded_fields: List[str] = None) -> dict:
         excluded_fields = excluded_fields or []
         res = {}
         for field in self.__dict__:
