@@ -8,6 +8,7 @@ from sqlalchemy.sql import Select
 
 
 class ModelMixin:
+    # TODO: maybe rename "db_commit" to "commit" ?
     """Base model for Gino (sqlalchemy) ORM"""
 
     id: int = NotImplemented
@@ -47,7 +48,7 @@ class ModelMixin:
         return result.scalars().first()
 
     @classmethod
-    async def async_update(cls, db_session: AsyncSession, filter_kwargs: dict, update_data: dict):
+    async def async_update(cls, db_session: AsyncSession, filter_kwargs: dict, update_data: dict, db_commit=False):
         query = (
             update(cls)
             .where(cls._filter_criteria(filter_kwargs))
@@ -55,15 +56,19 @@ class ModelMixin:
             .execution_options(synchronize_session="fetch")
         )
         await db_session.execute(query)
+        if db_commit:
+            await db_session.commit()
 
     @classmethod
-    async def async_delete(cls, db_session: AsyncSession, filter_kwargs: dict):
+    async def async_delete(cls, db_session: AsyncSession, filter_kwargs: dict, db_commit=False):
         query = (
             delete(cls)
             .where(cls._filter_criteria(filter_kwargs))
             .execution_options(synchronize_session="fetch")
         )
         await db_session.execute(query)
+        if db_commit:
+            await db_session.commit()
 
     @classmethod
     async def async_create(cls, db_session: AsyncSession, db_commit=False, **data):
@@ -74,14 +79,18 @@ class ModelMixin:
             await db_session.commit()
         return instance
 
-    async def update(self, db_session: AsyncSession, **update_data):
+    async def update(self, db_session: AsyncSession, db_commit=False, **update_data):
         if hasattr(self, "updated_at"):
             update_data["updated_at"] = datetime.datetime.utcnow()
         await self.async_update(db_session, {"id": self.id}, update_data=update_data)
+        if db_commit:
+            await db_session.commit()
 
-    async def delete(self, db_session: AsyncSession):
+    async def delete(self, db_session: AsyncSession, db_commit=False):
         await db_session.delete(self)
         await db_session.flush()
+        if db_commit:
+            await db_session.commit()
 
     def to_dict(self, excluded_fields: List[str] = None) -> dict:
         excluded_fields = excluded_fields or []
