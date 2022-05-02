@@ -4,30 +4,34 @@ from typing import TypeVar, List
 from sqlalchemy import and_, select, update, delete
 from sqlalchemy.engine import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.inspection import inspect
 from sqlalchemy.sql import Select
 
 
 class ModelMixin:
     # TODO: maybe rename "db_commit" to "commit" ?
     """Base model for Gino (sqlalchemy) ORM"""
-
-    id: int = NotImplemented
-
     class Meta:
-        order_by = ("id", )
+        order_by = ()
 
     @classmethod
-    def prepare_query(cls, limit: int = None, offset: int = None, **filter_kwargs) -> Select:
-        order_by = []
-        for field in cls.Meta.order_by:
-            if field.startswith("-"):
-                order_by.append(getattr(cls, field.replace("-", "")).desc())
-            else:
-                order_by.append(getattr(cls, field))
+    def prepare_query(cls, limit: int = None, offset: int = None, order_by=(), **filter_kwargs) -> Select:
+        _order_by = []
 
-        query = select(cls).filter(cls._filter_criteria(filter_kwargs)).order_by(*order_by)
+        if order_by:
+            _order_by = [o for o in order_by]
+        else:
+            for field in cls.Meta.order_by:
+                if field.startswith("-"):
+                    _order_by.append(getattr(cls, field.replace("-", "")).desc())
+                else:
+                    _order_by.append(getattr(cls, field))
+
+        query = select(cls).filter(cls._filter_criteria(filter_kwargs)).order_by(*_order_by)
+
         if limit is not None:
             query = query.limit(limit)
+
         if offset is not None:
             query = query.offset(offset)
 
@@ -82,7 +86,11 @@ class ModelMixin:
     async def update(self, db_session: AsyncSession, db_commit=False, **update_data):
         if hasattr(self, "updated_at"):
             update_data["updated_at"] = datetime.datetime.utcnow()
-        await self.async_update(db_session, {"id": self.id}, update_data=update_data)
+
+        primary_keys_names = [key.name for key in inspect(self.__class__).primary_key]
+        filter_kwargs = {key: getattr(self, key) for key in primary_keys_names}
+        await self.async_update(db_session, filter_kwargs, update_data)
+
         if db_commit:
             await db_session.commit()
 

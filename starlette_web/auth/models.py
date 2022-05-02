@@ -19,6 +19,9 @@ class User(ModelBase, BaseUserMixin, ModelMixin):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
 
+    class Meta:
+        order_by = ("id", )
+
     def __repr__(self):
         return f"<User #{self.id} {self.email}>"
 
@@ -58,6 +61,9 @@ class UserInvite(ModelBase, ModelMixin):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     owner_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False)
 
+    class Meta:
+        order_by = ("id", )
+
     def __repr__(self):
         return f"<UserInvite #{self.id} {self.token}>"
 
@@ -77,6 +83,9 @@ class UserSession(ModelBase, ModelMixin):
     expired_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     refreshed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    class Meta:
+        order_by = ("id", )
 
     def __repr__(self):
         return f"<UserSession #{self.id} {self.user_id}>"
