@@ -10,6 +10,7 @@ from sqlalchemy.sql import Select
 
 class ModelMixin:
     # TODO: maybe rename "db_commit" to "commit" ?
+    # TODO: add bulk methods
     """Base model for Gino (sqlalchemy) ORM"""
     class Meta:
         order_by = ()
