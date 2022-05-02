@@ -20,7 +20,7 @@ def _get_duration_components(duration):
     return days, hours, minutes, seconds, microseconds
 
 
-def duration_iso_string(duration):
+def _duration_iso_string(duration):
     if duration < datetime.timedelta(0):
         sign = '-'
         duration *= -1
@@ -35,6 +35,15 @@ def duration_iso_string(duration):
 class StarletteJSONEncoder(json.JSONEncoder):
     """
     JSONEncoder subclass that knows how to encode date/time, decimal types, and UUIDs.
+
+    >>> import json
+    >>> import datetime
+    >>> from decimal import Decimal
+    >>> from starlette_web.common.utils.json import StarletteJSONEncoder
+    >>> obj = {'key_decimal': Decimal('10.02'), 'key_timedelta': datetime.timedelta(days=1, seconds=13876)}  ## noqa E501
+    >>> obj = {**obj, 'key_time': datetime.time(13,3,6,999), "key_date": datetime.date(2020,1,1)}
+    >>> json.dumps(obj, cls=StarletteJSONEncoder)
+    [0] '{"key_decimal": "10.02", "key_timedelta": "P1DT03H51M16S", "key_time": "13:03:06.000", "key_date": "2020-01-01"}'  ## noqa E501
     """
     def default(self, o):
         # See "Date Time String Format" in the ECMA-262 specification.
@@ -48,12 +57,9 @@ class StarletteJSONEncoder(json.JSONEncoder):
         elif isinstance(o, datetime.date):
             return o.isoformat()
         elif isinstance(o, datetime.time):
-            r = o.isoformat()
-            if o.microsecond:
-                r = r[:12]
-            return r
+            return o.isoformat()
         elif isinstance(o, datetime.timedelta):
-            return duration_iso_string(o)
+            return _duration_iso_string(o)
         elif isinstance(o, (decimal.Decimal, uuid.UUID)):
             return str(o)
         else:
