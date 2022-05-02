@@ -23,6 +23,7 @@ def camelize(data, **options):
     [0] OrderedDict([('keyItem', 1), ('valuesList', [OrderedDict([('objectId', 1), ('objectValue', 'new_object_value')])])])  # noqa E501
     """
     ignore_fields = options.get("ignore_fields") or ()
+
     if isinstance(data, dict):
         new_dict = OrderedDict()
         for key, value in data.items():
@@ -35,8 +36,10 @@ def camelize(data, **options):
             else:
                 new_dict[new_key] = value
         return new_dict
+
     if _is_iterable(data) and not isinstance(data, str):
         return [camelize(item, **options) for item in data]
+
     return data
 
 
@@ -63,9 +66,6 @@ def underscoreize(data, **options):
     """
     ignore_fields = options.get("ignore_fields") or ()
 
-    if isinstance(data, str):
-        return _camel_to_underscore(data, **options)
-
     if isinstance(data, dict):
         new_dict = {}
         for key, value in data.items():
@@ -83,7 +83,7 @@ def underscoreize(data, **options):
 
         return new_dict
 
-    if _is_iterable(data):
+    if _is_iterable(data) and not isinstance(data, str):
         return [underscoreize(item, **options) for item in data]
 
     return data
