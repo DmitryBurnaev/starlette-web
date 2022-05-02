@@ -1,32 +1,28 @@
 from typing import Tuple
 
 from jwt import InvalidTokenError, ExpiredSignatureError
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from starlette_web.common.exceptions import (
+from starlette_web.auth.models import User, UserSession
+from starlette_web.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
+from starlette_web.common.authorization.backends import BaseAuthenticationBackend
+from starlette_web.common.http.exceptions import (
     AuthenticationFailedError,
     AuthenticationRequiredError,
-    PermissionDeniedError,
     SignatureExpiredError,
 )
 from starlette_web.common.utils import get_logger
-from starlette_web.auth.models import User, UserSession
-from starlette_web.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
 
 logger = get_logger(__name__)
 
 
-class BaseAuthJWTBackend:
+class JWTAuthenticationBackend(BaseAuthenticationBackend):
     """Core of authenticate system, based on JWT auth approach"""
 
     keyword = "Bearer"
 
-    def __init__(self, request):
-        self.request = request
-        self.db_session: AsyncSession = request.db_session
-
-    async def authenticate(self) -> Tuple[User, str]:
+    async def authenticate(self) -> User:
         request = self.request
+
         auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
         if not auth_header:
             raise AuthenticationRequiredError("Invalid token header. No credentials provided.")
@@ -40,17 +36,18 @@ class BaseAuthJWTBackend:
             raise AuthenticationFailedError("Invalid token header. Keyword mismatch.")
 
         user, _, session_id = await self.authenticate_user(jwt_token=auth[1])
-        return user, session_id
 
-    async def authenticate_user(
-        self,
-        jwt_token: str,
-        token_type: str = TOKEN_TYPE_ACCESS,
-    ) -> Tuple[User, dict, str]:
-        """Allows to find active user by jwt_token"""
+        self.request.user_session_id = session_id
+        self.scope['user_session_id'] = session_id
+        self.scope['user'] = user
 
+        return user
+
+    @staticmethod
+    def _parse_jwt_payload(jwt_token: str, token_type: str) -> dict:
         logger.debug("Logging via JWT auth. Got token: %s", jwt_token)
         try:
+            # TODO: class-based JWT decoder
             jwt_payload = decode_jwt(jwt_token)
         except ExpiredSignatureError:
             logger.debug("JWT signature has been expired for token %s", jwt_token)
@@ -65,7 +62,18 @@ class BaseAuthJWTBackend:
                 f"Token type '{token_type}' expected, got '{jwt_payload['token_type']}' instead."
             )
 
+        return jwt_payload
+
+    async def authenticate_user(
+        self,
+        jwt_token: str,
+        token_type: str = TOKEN_TYPE_ACCESS,
+    ) -> Tuple[User, dict, str]:
+        """Allows to find active user by jwt_token"""
+        jwt_payload = self._parse_jwt_payload(jwt_token, token_type)
+
         user_id = jwt_payload.get("user_id")
+
         user = await User.get_active(self.db_session, user_id)
         if not user:
             msg = "Couldn't found active user with id=%s."
@@ -77,28 +85,13 @@ class BaseAuthJWTBackend:
             raise AuthenticationFailedError("Incorrect data in JWT: session_id is missed")
 
         user_session = await UserSession.async_get(
-            self.db_session, public_id=session_id, is_active=True
+            self.db_session,
+            public_id=session_id,
+            is_active=True,
         )
         if not user_session:
             raise AuthenticationFailedError(
                 f"Couldn't found active session: {user_id=} | {session_id=}."
             )
-
-        return user, jwt_payload, session_id
-
-
-class LoginRequiredAuthBackend(BaseAuthJWTBackend):
-    """Each request must have filled `user` attribute"""
-
-
-class AdminRequiredAuthBackend(BaseAuthJWTBackend):
-    """Login-ed used must have `is_superuser` attribute"""
-
-    async def authenticate_user(
-        self, jwt_token: str, token_type: str = TOKEN_TYPE_ACCESS
-    ) -> Tuple[User, dict, str]:
-        user, jwt_payload, session_id = await super().authenticate_user(jwt_token)
-        if not user.is_superuser:
-            raise PermissionDeniedError("You don't have an admin privileges.")
 
         return user, jwt_payload, session_id

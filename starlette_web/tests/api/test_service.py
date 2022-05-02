@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from tests.api.test_base import BaseTestAPIView
+from starlette_web.tests.api.test_base import BaseTestAPIView
 
 
 class TestHealthCheckAPIView(BaseTestAPIView):

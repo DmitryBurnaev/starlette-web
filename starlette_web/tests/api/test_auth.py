@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from starlette_web.common.statuses import ResponseStatus
+from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.core import settings
 from starlette_web.auth.models import User, UserSession, UserInvite
 from starlette_web.auth.utils import (
@@ -16,8 +16,8 @@ from starlette_web.auth.utils import (
     TOKEN_TYPE_REFRESH,
     TOKEN_TYPE_ACCESS,
 )
-from tests.api.test_base import BaseTestAPIView
-from tests.helpers import await_
+from starlette_web.tests.api.test_base import BaseTestAPIView
+from starlette_web.tests.helpers import await_
 
 INVALID_SIGN_IN_DATA = [
     [{"email": "fake-email"}, {"email": "Not a valid email address."}],

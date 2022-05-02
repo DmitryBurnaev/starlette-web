@@ -34,7 +34,7 @@ def test_settings():
 
 @pytest.fixture(autouse=True, scope="session")
 def client() -> WebTestClient:
-    from core.app import get_app
+    from starlette_web.core.app import get_app
 
     with WebTestClient(get_app()) as client:
         with make_db_session(asyncio.get_event_loop()) as db_session:
