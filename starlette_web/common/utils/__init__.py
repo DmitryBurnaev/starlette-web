@@ -13,11 +13,13 @@ from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.http.exceptions import BaseApplicationError, SendRequestError
 
 
+# TODO: refactor the file
 def get_logger(name: str = None):
     """Getting configured logger"""
     return logging.getLogger(name or "app")
 
 
+# TODO: move to common.http
 def status_is_success(code):
     return 200 <= code <= 299
 
@@ -40,6 +42,8 @@ def log_message(exc, error_data, level=logging.ERROR):
     logger.log(level, message, exc_info=(level == logging.ERROR))
 
 
+# TODO: move to common.http
+# TODO: use JSONRenderer
 def custom_exception_handler(request, exc):
     """
     Returns the response that should be used for any given exception.
