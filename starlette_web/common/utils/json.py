@@ -22,14 +22,14 @@ def _get_duration_components(duration):
 
 def _duration_iso_string(duration):
     if duration < datetime.timedelta(0):
-        sign = '-'
+        sign = "-"
         duration *= -1
     else:
-        sign = ''
+        sign = ""
 
     days, hours, minutes, seconds, microseconds = _get_duration_components(duration)
-    ms = '.{:06d}'.format(microseconds) if microseconds else ""
-    return '{}P{}DT{:02d}H{:02d}M{:02d}{}S'.format(sign, days, hours, minutes, seconds, ms)
+    ms = ".{:06d}".format(microseconds) if microseconds else ""
+    return "{}P{}DT{:02d}H{:02d}M{:02d}{}S".format(sign, days, hours, minutes, seconds, ms)
 
 
 class StarletteJSONEncoder(json.JSONEncoder):
@@ -45,14 +45,15 @@ class StarletteJSONEncoder(json.JSONEncoder):
     >>> json.dumps(obj, cls=StarletteJSONEncoder)
     [0] '{"key_decimal": "10.02", "key_timedelta": "P1DT03H51M16S", "key_time": "13:03:06.000", "key_date": "2020-01-01"}'  ## noqa E501
     """
+
     def default(self, o):
         # See "Date Time String Format" in the ECMA-262 specification.
         if isinstance(o, datetime.datetime):
             r = o.isoformat()
             if o.microsecond:
                 r = r[:23] + r[26:]
-            if r.endswith('+00:00'):
-                r = r[:-6] + 'Z'
+            if r.endswith("+00:00"):
+                r = r[:-6] + "Z"
             return r
         elif isinstance(o, datetime.date):
             return o.isoformat()

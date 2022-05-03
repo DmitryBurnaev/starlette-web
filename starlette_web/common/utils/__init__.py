@@ -98,8 +98,7 @@ async def send_email(recipient_email: str, subject: str, html_content: str):
                 request_url=request_url,
             )
         else:
-            request_logger.info(
-                "Email sent to %s. Status code: %s", recipient_email, status_code)
+            request_logger.info("Email sent to %s. Status code: %s", recipient_email, status_code)
 
 
 def cut_string(source_string: str, max_length: int, finish_seq: str = "...") -> str:
@@ -122,7 +121,7 @@ def cut_string(source_string: str, max_length: int, finish_seq: str = "...") -> 
 
 def import_string(dotted_path) -> Type[object]:
     try:
-        module_path, class_name = dotted_path.rsplit('.', 1)
+        module_path, class_name = dotted_path.rsplit(".", 1)
     except ValueError as err:
         raise ImportError("%s doesn't look like a module path" % dotted_path) from err
 
@@ -132,5 +131,7 @@ def import_string(dotted_path) -> Type[object]:
         return getattr(module, class_name)
     except AttributeError as err:
         error_description = 'Module "%s" does not define a "%s" attribute/class' % (
-            module_path, class_name)
+            module_path,
+            class_name,
+        )
         raise ImportError(error_description) from err

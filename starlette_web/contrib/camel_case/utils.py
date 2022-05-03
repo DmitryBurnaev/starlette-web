@@ -53,7 +53,8 @@ def _get_underscoreize_re(no_underscore_before_number=False):
 
 def _camel_to_underscore(name, no_underscore_before_number=False):
     underscoreize_re = _get_underscoreize_re(
-        no_underscore_before_number=no_underscore_before_number)
+        no_underscore_before_number=no_underscore_before_number
+    )
     return underscoreize_re.sub(r"\1_\2", name).lower()
 
 

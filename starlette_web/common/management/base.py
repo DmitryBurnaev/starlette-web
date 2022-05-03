@@ -18,6 +18,7 @@ class CommandParser(ArgumentParser):
     SystemExit in several occasions, as SystemExit is unacceptable when a
     command is called programmatically.
     """
+
     def __init__(self, *, missing_args_message=None, called_from_command_line=None, **kwargs):
         self.called_from_command_line = called_from_command_line
         super().__init__(**kwargs)
@@ -38,7 +39,7 @@ class BaseCommand:
 
     def create_parser(self, argv, called_from_command_line=True):
         parser = CommandParser(
-            prog='%s %s' % (argv[0], argv[1]),
+            prog="%s %s" % (argv[0], argv[1]),
             description=self.help or None,
             called_from_command_line=called_from_command_line,
         )
@@ -74,13 +75,11 @@ class BaseCommand:
 
 def _fetch_commands_and_paths() -> Dict[str, Path]:
     # TODO: get commands from settings.INSTALLED_APPS
-    command_files_iter = settings.PROJECT_ROOT_DIR.glob('*/*/management/commands/*.py')
+    command_files_iter = settings.PROJECT_ROOT_DIR.glob("*/*/management/commands/*.py")
     command_files = {}
     for d in command_files_iter:
         if d.stem in command_files:
-            raise CommandError(
-                f'Command "{d.stem}" is declared in multiple modules.'
-            )
+            raise CommandError(f'Command "{d.stem}" is declared in multiple modules.')
         command_files[d.stem] = d
     return command_files
 
@@ -89,14 +88,16 @@ def list_commands() -> Dict[str, str]:
     commands = _fetch_commands_and_paths()
 
     return {
-        command_name: '.'.join([
-            commands[command_name].parent.parent.parent.parent.stem,
-            commands[command_name].parent.parent.parent.stem,
-            commands[command_name].parent.parent.stem,
-            commands[command_name].parent.stem,
-            command_name,
-            'Command',
-        ])
+        command_name: ".".join(
+            [
+                commands[command_name].parent.parent.parent.parent.stem,
+                commands[command_name].parent.parent.parent.stem,
+                commands[command_name].parent.parent.stem,
+                commands[command_name].parent.stem,
+                command_name,
+                "Command",
+            ]
+        )
         for command_name, command_path in commands.items()
     }
 
@@ -109,11 +110,7 @@ def fetch_command_by_name(command_name: str) -> Type[BaseCommand]:
             command = import_string(commands[command_name])
 
             # isinstance not working for class, imported with import_module
-            is_instance = any([
-                kls
-                for kls in command.__mro__
-                if kls == BaseCommand
-            ])
+            is_instance = any([kls for kls in command.__mro__ if kls == BaseCommand])
             if not is_instance:
                 raise CommandError(
                     "Command must be inherited from common.management.base.BaseCommand"
@@ -130,4 +127,4 @@ def fetch_command_by_name(command_name: str) -> Type[BaseCommand]:
 async def call_command(command_name, command_args: List[str]):
     command = fetch_command_by_name(command_name)
     app = get_app()
-    await command(app).run_from_code(['command.py', command_name] + command_args)
+    await command(app).run_from_code(["command.py", command_name] + command_args)
