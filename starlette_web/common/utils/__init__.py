@@ -9,5 +9,4 @@ from starlette_web.common.utils.serializers import (
     JSONSerializer,
     PickleSerializer,
 )
-from starlette_web.common.utils.strings import cut_string
 from starlette_web.common.utils.singleton import Singleton
