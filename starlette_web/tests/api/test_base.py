@@ -2,7 +2,7 @@ from typing import Union, Optional
 
 from requests import Response
 
-from starlette_web.common.models import ModelMixin
+from starlette_web.common.database import ModelMixin
 from starlette_web.common.http.statuses import ResponseStatus
 
 

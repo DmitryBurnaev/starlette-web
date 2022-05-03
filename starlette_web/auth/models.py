@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette_web.core.database import ModelBase
-from starlette_web.common.models import ModelMixin
+from starlette_web.common.database import ModelMixin
 from starlette_web.common.authorization.base_user import BaseUserMixin
 from starlette_web.auth.hasher import PBKDF2PasswordHasher
 
@@ -18,6 +18,9 @@ class User(ModelBase, BaseUserMixin, ModelMixin):
     password = Column(String(length=256), nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+
+    class Meta:
+        order_by = ("id",)
 
     def __repr__(self):
         return f"<User #{self.id} {self.email}>"
@@ -58,6 +61,9 @@ class UserInvite(ModelBase, ModelMixin):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     owner_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False)
 
+    class Meta:
+        order_by = ("id",)
+
     def __repr__(self):
         return f"<UserInvite #{self.id} {self.token}>"
 
@@ -77,6 +83,9 @@ class UserSession(ModelBase, ModelMixin):
     expired_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     refreshed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    class Meta:
+        order_by = ("id",)
 
     def __repr__(self):
         return f"<UserSession #{self.id} {self.user_id}>"
