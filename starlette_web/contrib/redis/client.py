@@ -28,7 +28,7 @@ class RedisClient(metaclass=Singleton):
         self.redis.set(key, self.serializer.serialize(value), ttl)
 
     def get(self, key: str) -> Union[List[Any], Dict[str, Any]]:
-        return self.serializer.deserialize(self.redis.get(key) or "null")
+        return self.serializer.deserialize(self.redis.get(key))
 
     def get_many(self, keys: Iterable[str], pkey: str) -> dict:
         """
