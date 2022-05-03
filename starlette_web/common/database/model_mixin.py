@@ -1,4 +1,3 @@
-import datetime
 from typing import TypeVar, List, Optional
 
 from sqlalchemy import and_, select, update, delete
