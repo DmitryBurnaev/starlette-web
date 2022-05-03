@@ -15,7 +15,6 @@ from starlette_web.common.authorization.backends import (
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
 from starlette_web.common.authorization.base_user import AnonymousUser
 from starlette_web.common.http.exceptions import (
-    NotFoundError,
     UnexpectedError,
     BaseApplicationError,
     InvalidParameterError,

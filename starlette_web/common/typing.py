@@ -1,5 +1,6 @@
 import enum
 from typing import TypeVar
+
 from starlette.applications import Starlette
 
 
