@@ -13,7 +13,7 @@ class EnumTypeColumn(Column):
 
     >>> import enum
     >>> from sqlalchemy import String
-    >>> from starlette_web.core.database import ModelBase
+    >>> from starlette_web.common.database import ModelBase
 
     >>> class UserType(enum.Enum):
     >>>    admin = 'admin'

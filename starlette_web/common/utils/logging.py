@@ -2,13 +2,11 @@ import logging
 import logging.config
 
 
-# TODO: move to common.utils.logging
 def get_logger(name: str = None):
     """Getting configured logger"""
     return logging.getLogger(name or "app")
 
 
-# TODO: move to common.utils.logging
 def log_message(exc, error_data, level=logging.ERROR):
     """
     Helps to log caught errors by exception handler

@@ -16,7 +16,7 @@ class ChoiceType(types.TypeDecorator):
     :class:`enum.Enum` is passed, columns will be coerced to value of :class:`enum.Enum`
 
     >>> import enum
-    >>> from starlette_web.core.database import ModelBase
+    >>> from starlette_web.common.database import ModelBase
     >>> from sqlalchemy import Column, String
 
     >>> class UserType(enum.Enum):
@@ -77,7 +77,7 @@ class EnumTypeColumn(Column):
     """Just wrapper for ChoiceType db column
 
     >>> import enum
-    >>> from starlette_web.core.database import ModelBase
+    >>> from starlette_web.common.database import ModelBase
     >>> from sqlalchemy import String
 
     >>> class UserType(enum.Enum):
