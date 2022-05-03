@@ -8,8 +8,8 @@ from starlette_web.common.http.exceptions import PermissionDeniedError
 
 class IsSuperuserPermission(BasePermission):
     async def has_permission(self, request: PRequest, scope: Scope) -> bool:
-        user: User = scope.get('user')
-        if (not user) or (not getattr(user, 'is_superuser', False)):
+        user: User = scope.get("user")
+        if (not user) or (not getattr(user, "is_superuser", False)):
             raise PermissionDeniedError("You don't have an admin privileges.")
 
         return True

@@ -91,8 +91,9 @@ class TestBackendAuth:
         request, scope = self._prepare_request(dbs, user, user_session)
         with pytest.raises(AuthenticationFailedError) as err:
             await_(
-                JWTAuthenticationBackend(request, scope)
-                .authenticate_user(token, token_type="access")
+                JWTAuthenticationBackend(request, scope).authenticate_user(
+                    token, token_type="access"
+                )
             )
 
         assert err.value.details == f"Token type 'access' expected, got '{token_type}' instead."
