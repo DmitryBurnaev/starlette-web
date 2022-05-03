@@ -12,7 +12,7 @@ EnumClass = TypeVar("EnumClass", bound=enum.Enum)
 
 
 class EnumTypeColumn(Column):
-    """ Just wrapper for ChoiceType db column
+    """Just wrapper for ChoiceType db column
 
     >>> import enum
     >>> from sqlalchemy import String
