@@ -18,12 +18,17 @@ class ModelMixin:
     Certain classes (i.e. starlette_web.common.http.base_endpoint.BaseHTTPEndpoint)
     already handle transaction logic for you.
     """
+
     class Meta:
         order_by = ()
 
     @classmethod
     def prepare_query(
-        cls, limit: int = None, offset: int = None, order_by=(), **filter_kwargs,
+        cls,
+        limit: int = None,
+        offset: int = None,
+        order_by=(),
+        **filter_kwargs,
     ) -> Select:
         _order_by = []
 
@@ -62,7 +67,11 @@ class ModelMixin:
 
     @classmethod
     async def async_update(
-        cls, db_session: AsyncSession, filter_kwargs: dict, update_data: dict, db_commit=False,
+        cls,
+        db_session: AsyncSession,
+        filter_kwargs: dict,
+        update_data: dict,
+        db_commit=False,
     ):
         query = (
             update(cls)
@@ -165,7 +174,10 @@ class ModelMixin:
         if not instance:
             extra_data = extra_data or {}
             instance = await cls.async_create(
-                db_session, **filter_kwargs, **extra_data, db_commit=db_commit,
+                db_session,
+                **filter_kwargs,
+                **extra_data,
+                db_commit=db_commit,
             )
         return instance
 
@@ -223,7 +235,10 @@ class ModelMixin:
 
     @staticmethod
     def _object_needs_update(
-        dict_original, dict_new, force_update=False, update_to_null=True,
+        dict_original,
+        dict_new,
+        force_update=False,
+        update_to_null=True,
     ) -> bool:
         if force_update:
             return True
