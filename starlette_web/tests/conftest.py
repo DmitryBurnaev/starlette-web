@@ -11,7 +11,8 @@ from sqlalchemy.util import concurrency
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from starlette_web.core import settings, database
+from starlette_web.core import settings
+from starlette_web.common import database
 from starlette_web.auth.models import UserInvite
 from starlette_web.tests.helpers import (
     WebTestClient,
