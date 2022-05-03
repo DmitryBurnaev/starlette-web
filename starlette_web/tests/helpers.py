@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.testclient import TestClient
 
 from starlette_web.common.database import make_session_maker
-from starlette_web.auth.utils import encode_jwt
-from starlette_web.auth.models import User, UserSession
+from starlette_web.contrib.auth.utils import encode_jwt
+from starlette_web.contrib.auth.models import User, UserSession
 from starlette_web.tests.mocks import BaseMock
 
 

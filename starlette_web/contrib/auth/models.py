@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette_web.common.database import ModelMixin, ModelBase
 from starlette_web.common.authorization.base_user import BaseUserMixin
-from starlette_web.auth.hasher import PBKDF2PasswordHasher
+from starlette_web.contrib.auth.hasher import PBKDF2PasswordHasher
 
 
 class User(ModelBase, BaseUserMixin, ModelMixin):

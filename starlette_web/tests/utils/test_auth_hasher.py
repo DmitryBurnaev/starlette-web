@@ -1,6 +1,6 @@
 import uuid
 
-from starlette_web.auth.hasher import PBKDF2PasswordHasher
+from starlette_web.contrib.auth.hasher import PBKDF2PasswordHasher
 
 
 def test_password_encode():

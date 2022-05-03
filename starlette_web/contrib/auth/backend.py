@@ -2,8 +2,8 @@ from typing import Tuple
 
 from jwt import InvalidTokenError, ExpiredSignatureError
 
-from starlette_web.auth.models import User, UserSession
-from starlette_web.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
+from starlette_web.contrib.auth.models import User, UserSession
+from starlette_web.contrib.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
 from starlette_web.common.authorization.backends import BaseAuthenticationBackend
 from starlette_web.common.http.exceptions import (
     AuthenticationFailedError,

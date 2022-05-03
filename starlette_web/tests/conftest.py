@@ -13,7 +13,7 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from starlette_web.core import settings
 from starlette_web.common import database
-from starlette_web.auth.models import UserInvite
+from starlette_web.contrib.auth.models import UserInvite
 from starlette_web.tests.helpers import (
     WebTestClient,
     get_user_data,
@@ -105,7 +105,7 @@ def mocked_process(monkeypatch) -> MockProcess:
 @pytest.fixture
 def mocked_auth_send() -> AsyncMock:
     mocked_send_email = AsyncMock()
-    patcher = patch("starlette_web.auth.views.send_email", new=mocked_send_email)
+    patcher = patch("starlette_web.contrib.auth.views.send_email", new=mocked_send_email)
     patcher.start()
     yield mocked_send_email
     del mocked_send_email
