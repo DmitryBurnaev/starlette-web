@@ -5,7 +5,7 @@ from starlette_web.auth.models import User
 
 
 class Command(BaseCommand):
-    help = 'Command to test database connection'
+    help = "Command to test database connection"
 
     async def handle(self, **options):
         test_user_password = str(uuid.uuid4())
@@ -16,5 +16,5 @@ class Command(BaseCommand):
         with self.app.session_maker() as session:
             user = await User.async_create(session, email=email, password=password)
 
-            await User.async_delete(session, {'id': user.id})
+            await User.async_delete(session, {"id": user.id})
             await session.commit()

@@ -3,14 +3,15 @@ from typing import Any
 
 from starlette.responses import Response, BackgroundTask
 
+from starlette_web.common.utils.json import StarletteJSONEncoder
+
 
 class BaseRenderer(Response):
     pass
 
 
 class JSONRenderer(BaseRenderer):
-    # TODO: encode with custom JSONEncoder (imported from Django)
-    json_encode_class = json.JSONEncoder
+    json_encode_class = StarletteJSONEncoder
     media_type = "application/json"
 
     # Copied from starlette.responses.JSONResponse

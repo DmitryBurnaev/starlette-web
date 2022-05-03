@@ -9,7 +9,8 @@ from starlette.endpoints import HTTPEndpoint
 from webargs_starlette import WebargsHTTPException, StarletteParser
 
 from starlette_web.common.authorization.backends import (
-    BaseAuthenticationBackend, NoAuthenticationBackend,
+    BaseAuthenticationBackend,
+    NoAuthenticationBackend,
 )
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
 from starlette_web.common.authorization.base_user import AnonymousUser
@@ -87,14 +88,12 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             user = await backend.authenticate()
             self.scope["user"] = user
         else:
-            self.scope['user'] = AnonymousUser()
+            self.scope["user"] = AnonymousUser()
 
     async def _check_permissions(self):
         for permission_class in self.permission_classes:
             try:
-                has_permission = (
-                    await permission_class().has_permission(self.request, self.scope)
-                )
+                has_permission = await permission_class().has_permission(self.request, self.scope)
                 if not has_permission:
                     raise PermissionDeniedError
             # Exception may be raised inside permission_class, to pass additional details

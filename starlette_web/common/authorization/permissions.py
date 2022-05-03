@@ -51,9 +51,8 @@ class AND:
         self.op2 = op2
 
     async def has_permission(self, request: PRequest, scope: Scope):
-        return (
-            (await self.op1.has_permission(request, scope))
-            and (await self.op2.has_permission(request, scope))
+        return (await self.op1.has_permission(request, scope)) and (
+            await self.op2.has_permission(request, scope)
         )
 
 
@@ -63,9 +62,8 @@ class OR:
         self.op2 = op2
 
     async def has_permission(self, request: PRequest, scope: Scope):
-        return (
-            (await self.op1.has_permission(request, scope))
-            or (await self.op2.has_permission(request, scope))
+        return (await self.op1.has_permission(request, scope)) or (
+            await self.op2.has_permission(request, scope)
         )
 
 
@@ -93,8 +91,8 @@ class AllowAnyPermission(BasePermission):
 
 class IsAuthenticatedPermission(BasePermission):
     async def has_permission(self, request: PRequest, scope: Scope) -> bool:
-        if 'user' not in scope:
+        if "user" not in scope:
             return False
 
-        user: BaseUserMixin = scope['user']
+        user: BaseUserMixin = scope["user"]
         return user.is_authenticated

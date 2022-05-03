@@ -173,6 +173,7 @@ class SignOutAPIView(BaseHTTPEndpoint):
      - remove JWT token on front-end side
      - deactivate current session on BE (this allows to block use regular or refresh token)
     """
+
     auth_backend = JWTAuthenticationBackend
 
     async def delete(self, request):
@@ -220,10 +221,9 @@ class RefreshTokenAPIView(JWTSessionMixin, BaseHTTPEndpoint):
         cleaned_data = await super()._validate(request)
         refresh_token = cleaned_data["refresh_token"]
         user, jwt_payload, _ = await JWTAuthenticationBackend(
-            request, self.scope,
-        ).authenticate_user(
-            refresh_token, token_type="refresh"
-        )
+            request,
+            self.scope,
+        ).authenticate_user(refresh_token, token_type="refresh")
         return user, refresh_token, jwt_payload.get("session_id")
 
 
