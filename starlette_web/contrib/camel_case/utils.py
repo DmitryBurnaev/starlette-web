@@ -1,8 +1,8 @@
 # Copy from https://github.com/vbabiy/djangorestframework-camel-case
 
 import re
-from collections import OrderedDict
 from typing import Union
+from collections import Container
 
 camelize_re = re.compile(r"[a-z0-9]?_[a-z0-9]")
 JSONType = Union[dict, list, str, bool, None]
@@ -16,16 +16,16 @@ def _underscore_to_camel(match):
         return group[1].upper()
 
 
-def camelize(data: JSONType, ignore_fields=()) -> JSONType:
+def camelize(data: JSONType, ignore_fields: Container = ()) -> JSONType:
     """
     Recursively swaps snake_case to camelCase in keys of nested dictionaries, leaving values as is.
 
-    >>> from starlette_web.contrib.camel_case import underscoreize
-    >>> camelize({'key_item': 1, 'values_list': [{'object_id': 1, 'object_value': 'new_object_value'}]})
-    [0] OrderedDict([('keyItem', 1), ('valuesList', [OrderedDict([('objectId', 1), ('objectValue', 'new_object_value')])])])  # noqa E501
+    >>> from starlette_web.contrib.camel_case import camelize
+    >>> camelize({'key_item': 1, 'values_list': [{'object_id': 1, 'object_value': 'new_object_value'}]})  # noqa E501
+    [0] {'keyItem': 1, 'valuesList': [{'objectId': 1, 'objectValue': 'new_object_value'}]}
     """
     if isinstance(data, dict):
-        new_dict = OrderedDict()
+        new_dict = dict()
         for key, value in data.items():
             if isinstance(key, str) and "_" in key:
                 new_key = re.sub(camelize_re, _underscore_to_camel, key)
@@ -58,7 +58,11 @@ def _camel_to_underscore(name, no_underscore_before_number=False):
     return underscoreize_re.sub(r"\1_\2", name).lower()
 
 
-def underscoreize(data: JSONType, ignore_fields=(), no_underscore_before_number=False) -> JSONType:
+def underscoreize(
+    data: JSONType,
+    ignore_fields: Container = (),
+    no_underscore_before_number: bool = False,
+) -> JSONType:
     """
     Recursively swaps camelCase to snake_case in keys of nested dictionaries, leaving values as is.
 
