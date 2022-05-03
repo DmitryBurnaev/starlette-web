@@ -121,8 +121,7 @@ class ModelMixin:
         """
         # TODO: contrib.postgres.PostgresModelMixin with this method reloaded
         #  (using on_conflict do update)
-        instance = await cls.async_get(db_session, **filter_kwargs)
-        if instance:
+        if instance := await cls.async_get(db_session, **filter_kwargs):
             if cls._object_needs_update(
                 instance.to_dict(),
                 update_data,
