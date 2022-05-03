@@ -1,6 +1,6 @@
 from starlette.types import Scope
 
-from starlette_web.auth.models import User
+from starlette_web.contrib.auth.models import User
 from starlette_web.common.authorization.permissions import BasePermission
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.exceptions import PermissionDeniedError

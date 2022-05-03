@@ -13,17 +13,17 @@ from starlette_web.core import settings
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
 from starlette_web.common.utils import send_email, get_logger
-from starlette_web.auth.models import User, UserSession, UserInvite
-from starlette_web.auth.hasher import PBKDF2PasswordHasher, get_salt
-from starlette_web.auth.backend import JWTAuthenticationBackend
-from starlette_web.auth.permissions import IsSuperuserPermission
-from starlette_web.auth.utils import (
+from starlette_web.contrib.auth.models import User, UserSession, UserInvite
+from starlette_web.contrib.auth.hasher import PBKDF2PasswordHasher, get_salt
+from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
+from starlette_web.contrib.auth.permissions import IsSuperuserPermission
+from starlette_web.contrib.auth.utils import (
     encode_jwt,
     TokenCollection,
     TOKEN_TYPE_REFRESH,
     TOKEN_TYPE_RESET_PASSWORD,
 )
-from starlette_web.auth.schemas import (
+from starlette_web.contrib.auth.schemas import (
     SignInSchema,
     SignUpSchema,
     JWTResponseSchema,

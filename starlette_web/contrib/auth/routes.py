@@ -1,5 +1,5 @@
 from starlette.routing import Route, Mount
-from starlette_web.auth import views
+from starlette_web.contrib.auth import views
 
 routes = [
     Mount(

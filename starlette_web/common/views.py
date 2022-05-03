@@ -1,7 +1,7 @@
 from starlette import status
 from marshmallow import Schema, fields
 
-from starlette_web.auth.models import User
+from starlette_web.contrib.auth.models import User
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.http.statuses import ResponseStatus

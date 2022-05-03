@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.core import settings
-from starlette_web.auth.models import User, UserSession, UserInvite
-from starlette_web.auth.utils import (
+from starlette_web.contrib.auth.models import User, UserSession, UserInvite
+from starlette_web.contrib.auth.utils import (
     decode_jwt,
     encode_jwt,
     TOKEN_TYPE_RESET_PASSWORD,
