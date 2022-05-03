@@ -3,7 +3,7 @@ import multiprocessing
 from unittest.mock import Mock
 
 
-from starlette_web.common.redis import RedisClient
+from starlette_web.contrib.redis import RedisClient
 
 
 class BaseMock:
