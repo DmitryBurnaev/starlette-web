@@ -15,9 +15,8 @@ class ChoiceType(types.TypeDecorator):
     a list of tuple been passed to the constructor. If a subclass of
     :class:`enum.Enum` is passed, columns will be coerced to value of :class:`enum.Enum`
 
-    # TODO: fix docstring
     >>> import enum
-    >>> from core.database import ModelBase
+    >>> from starlette_web.core.database import ModelBase
     >>> from sqlalchemy import Column, String
 
     >>> class UserType(enum.Enum):
@@ -77,9 +76,8 @@ class ChoiceType(types.TypeDecorator):
 class EnumTypeColumn(Column):
     """Just wrapper for ChoiceType db column
 
-    # TODO: fix docstring
     >>> import enum
-    >>> from core.database import ModelBase
+    >>> from starlette_web.core.database import ModelBase
     >>> from sqlalchemy import String
 
     >>> class UserType(enum.Enum):
