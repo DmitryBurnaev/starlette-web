@@ -102,27 +102,6 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             except Exception as exc:
                 raise PermissionDeniedError from exc
 
-    # TODO: move outside of BaseHTTPEndpoint,
-    #  since it contains attributes specific for contrib-module common.auth
-    async def _get_object(
-        self, instance_id, db_model: Type[DBModel] = None, **filter_kwargs
-    ) -> DBModel:
-        """
-        Returns current object (only for logged-in or admin user) for CRUD API
-        """
-
-        db_model = db_model or self.db_model
-        if not self.request.user.is_superuser:
-            filter_kwargs["owner_id"] = self.request.user.id
-
-        instance = await db_model.async_get(self.db_session, id=instance_id, **filter_kwargs)
-        if not instance:
-            raise NotFoundError(
-                f"{db_model.__name__} #{instance_id} does not exist or belongs to another user"
-            )
-
-        return instance
-
     async def _validate(
         self, request, schema: Type[Schema] = None, partial_: bool = False, location: str = None
     ) -> Optional[Mapping]:
