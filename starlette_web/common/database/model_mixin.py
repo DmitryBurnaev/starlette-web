@@ -1,5 +1,5 @@
 import datetime
-from typing import TypeVar, List
+from typing import TypeVar, List, Optional
 
 from sqlalchemy import and_, select, update, delete
 from sqlalchemy.engine import ScalarResult
@@ -87,7 +87,7 @@ class ModelMixin:
             await db_session.commit()
 
     @classmethod
-    async def async_create(cls, db_session: AsyncSession, db_commit=False, **data):
+    async def async_create(cls, db_session: AsyncSession, db_commit=False, **data) -> "DBModel":
         instance = cls(**data)  # noqa
         db_session.add_all([instance])
 
@@ -107,7 +107,19 @@ class ModelMixin:
         db_commit=False,
         force_update=False,
         update_to_null=False,
-    ):
+    ) -> "DBModel":
+        """
+        Allows to create entry, if not exists, or update an existing query.
+
+        :param db_session: active instance of AsyncSession
+        :param filter_kwargs: function will search entry by these conditions
+        :param update_data: function will update these fields.
+            "update_data" has priority over "filter_kwargs" in case of a new entry.
+        :param db_commit: bool, whether to execute db_session.commit()
+        :param force_update: bool, whether to do update is instance exists and has not been changed
+        :param update_to_null: bool, whether to update currently non-null values to new null values
+        :returns: instance of DBModel
+        """
         # TODO: contrib.postgres.PostgresModelMixin with this method reloaded
         #  (using on_conflict do update)
         instance = await cls.async_get(db_session, **filter_kwargs)
@@ -125,19 +137,35 @@ class ModelMixin:
                     db_commit=db_commit,
                 )
         else:
-            await cls.async_create(
+            instance = await cls.async_create(
                 db_session,
                 **filter_kwargs,
                 **update_data,
-                commit=db_commit,
+                db_commit=db_commit,
             )
+        return instance
 
     @classmethod
     async def async_get_or_create(
-        cls, db_session: AsyncSession, filter_kwargs: dict, extra_data: dict, db_commit=False,
+        cls,
+        db_session: AsyncSession,
+        filter_kwargs: dict,
+        extra_data: Optional[dict] = None,
+        db_commit=False,
     ) -> "DBModel":
+        """
+        Allows to get existing instance or create, if not exists.
+        Allows passing additional data upon creation.
+
+        :param db_session: active instance of AsyncSession
+        :param filter_kwargs: function will search entry by these conditions
+        :param extra_data: extra data to create an entry, if not exists
+        :param db_commit: bool, whether to execute db_session.commit()
+        :returns: instance of DBModel
+        """
         instance = await cls.async_get(db_session, **filter_kwargs)
         if not instance:
+            extra_data = extra_data or {}
             instance = await cls.async_create(
                 db_session, **filter_kwargs, **extra_data, db_commit=db_commit,
             )
