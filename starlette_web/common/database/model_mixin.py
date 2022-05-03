@@ -172,9 +172,6 @@ class ModelMixin:
         return instance
 
     async def update(self, db_session: AsyncSession, db_commit=False, **update_data):
-        if hasattr(self, "updated_at"):
-            update_data["updated_at"] = datetime.datetime.utcnow()
-
         primary_keys_names = [key.name for key in inspect(self.__class__).primary_key]
         filter_kwargs = {key: getattr(self, key) for key in primary_keys_names}
         await self.async_update(db_session, filter_kwargs, update_data)
