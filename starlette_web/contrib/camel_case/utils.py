@@ -2,7 +2,7 @@
 
 import re
 from typing import Union
-from collections import Container
+from collections.abc import Container
 
 camelize_re = re.compile(r"[a-z0-9]?_[a-z0-9]")
 JSONType = Union[dict, list, str, bool, None]
