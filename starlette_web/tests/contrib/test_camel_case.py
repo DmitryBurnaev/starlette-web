@@ -28,6 +28,17 @@ def test_contrib_camelcase_camelize():
 
     assert camelize(obj) == result
 
+    obj = [
+        None,
+        {'item_key': 'item_value'},
+        'StringValue',
+        False,
+    ]
+
+    result = [None, OrderedDict([('itemKey', 'item_value')]), 'StringValue', False]
+
+    assert camelize(obj) == result
+
 
 def test_contrib_camelcase_underscoreize():
     obj = {
@@ -57,6 +68,17 @@ def test_contrib_camelcase_underscoreize():
             },
         ],
     }
+
+    assert underscoreize(obj) == result
+
+    obj = [
+        None,
+        {'itemKey': 'itemValue'},
+        'StringValue',
+        False,
+    ]
+
+    result = [None, {'item_key': 'itemValue'}, 'StringValue', False]
 
     assert underscoreize(obj) == result
 
