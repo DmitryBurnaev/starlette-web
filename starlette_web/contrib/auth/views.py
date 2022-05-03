@@ -181,7 +181,9 @@ class SignOutAPIView(BaseHTTPEndpoint):
         logger.info("Log out for user %s", user)
 
         user_session = await UserSession.async_get(
-            self.db_session, public_id=request.user_session_id, is_active=True
+            self.db_session,
+            public_id=self.scope["user_session_id"],
+            is_active=True,
         )
         if user_session:
             logger.info("Session %s exists and active. It will be updated.", user_session)

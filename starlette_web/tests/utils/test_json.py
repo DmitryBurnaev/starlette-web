@@ -2,7 +2,7 @@ import json
 import datetime
 from decimal import Decimal
 
-from starlette_web.common.utils.json import StarletteJSONEncoder
+from starlette_web.common.utils import StarletteJSONEncoder
 
 
 def test_starlette_json_encoder():

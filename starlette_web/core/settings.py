@@ -51,6 +51,8 @@ DATABASE_DSN = config(
 )
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 
+APPLICATION_CLASS = "starlette_web.common.app.BaseStarletteApplication"
+
 REDIS_HOST = config("REDIS_HOST", default="localhost")
 REDIS_PORT = config("REDIS_PORT", default=6379)
 REDIS_DB = config("REDIS_DB", default=0)

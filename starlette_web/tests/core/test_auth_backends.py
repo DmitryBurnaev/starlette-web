@@ -9,7 +9,11 @@ from starlette_web.common.http.exceptions import (
 from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
 from starlette_web.contrib.auth.models import User, UserSession
 from starlette_web.contrib.auth.permissions import IsSuperuserPermission
-from starlette_web.contrib.auth.utils import encode_jwt, TOKEN_TYPE_RESET_PASSWORD, TOKEN_TYPE_REFRESH
+from starlette_web.contrib.auth.utils import (
+    encode_jwt,
+    TOKEN_TYPE_RESET_PASSWORD,
+    TOKEN_TYPE_REFRESH,
+)
 from starlette_web.common.http.requests import PRequest
 from starlette_web.tests.helpers import await_
 

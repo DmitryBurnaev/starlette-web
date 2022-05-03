@@ -37,10 +37,8 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
 
         user, _, session_id = await self.authenticate_user(jwt_token=auth[1])
 
-        self.request.user_session_id = session_id
         self.scope["user_session_id"] = session_id
         self.scope["user"] = user
-
         return user
 
     @staticmethod

@@ -5,8 +5,8 @@ def test_json_serializer():
     serializer = JSONSerializer()
 
     obj = {
-        'list_1': [{'bool_key': True, 'int_key': 1}],
-        'obj_key': {'null_key': None, 'str_key': 'string'},
+        "list_1": [{"bool_key": True, "int_key": 1}],
+        "obj_key": {"null_key": None, "str_key": "string"},
     }
 
     encoded = serializer.serialize(obj)
@@ -23,11 +23,11 @@ def test_pickle_serializer():
     serializer = PickleSerializer()
 
     obj = {
-        'list_1': [{'bool_key': True, 'int_key': 1}],
-        'obj_key': {'null_key': None, 'str_key': 'string'},
-        'class_key': JSONSerializer,
-        'object_key': JSONSerializer(),
-        'method_key': JSONSerializer.serialize,
+        "list_1": [{"bool_key": True, "int_key": 1}],
+        "obj_key": {"null_key": None, "str_key": "string"},
+        "class_key": JSONSerializer,
+        "object_key": JSONSerializer(),
+        "method_key": JSONSerializer.serialize,
     }
 
     encoded = serializer.serialize(obj)

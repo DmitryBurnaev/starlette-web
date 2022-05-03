@@ -22,7 +22,9 @@ class RedisClient(metaclass=Singleton):
 
     def __init__(self):
         self.serializer = self.serializer_class()
-        self.redis = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, max_connections=32)
+        self.redis = redis.Redis(
+            host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, max_connections=32
+        )
 
     def set(self, key: str, value, ttl: int = 120):
         self.redis.set(key, self.serializer.serialize(value), ttl)
@@ -38,7 +40,9 @@ class RedisClient(metaclass=Singleton):
         :return: dict with keys (given from stored records by `pkey`)
 
         """
-        stored_items = map(self.serializer.deserialize, [item for item in self.redis.mget(keys) if item])
+        stored_items = map(
+            self.serializer.deserialize, [item for item in self.redis.mget(keys) if item]
+        )
         try:
             result = {stored_item[pkey]: stored_item for stored_item in stored_items}
         except (TypeError, KeyError) as error:
