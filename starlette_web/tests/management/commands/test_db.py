@@ -10,7 +10,7 @@ class Command(BaseCommand):
     async def handle(self, **options):
         test_user_password = str(uuid.uuid4())
 
-        email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+        email = str(uuid.uuid4()).replace('-', '') + '@test.com'
         password = User.make_password(test_user_password)
 
         with self.app.session_maker() as session:

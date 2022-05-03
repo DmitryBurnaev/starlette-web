@@ -7,7 +7,7 @@ from starlette_web.tests.helpers import await_
 
 
 def test_async_create(dbs: AsyncSession):
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
 
     user = await_(User.async_get(db_session=dbs, email=email, password=password))
@@ -23,11 +23,11 @@ def test_async_create(dbs: AsyncSession):
 
 
 def test_async_update(dbs: AsyncSession):
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     user = await_(User.async_create(db_session=dbs, email=email, password=password))
 
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     await_(User.async_update(
         db_session=dbs,
@@ -41,11 +41,11 @@ def test_async_update(dbs: AsyncSession):
 
 
 def test_async_filter(dbs: AsyncSession):
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     _ = await_(User.async_create(db_session=dbs, email=email, password=password))
 
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     _ = await_(User.async_create(db_session=dbs, email=email, password=password))
 
@@ -55,7 +55,7 @@ def test_async_filter(dbs: AsyncSession):
 
 
 def test_async_create_or_update(dbs: AsyncSession):
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
 
     user = await_(User.async_get(db_session=dbs, email=email, password=password))
@@ -83,7 +83,7 @@ def test_async_create_or_update(dbs: AsyncSession):
     assert user.id == user_id
     assert user.is_superuser
 
-    new_email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    new_email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     new_password = User.make_password(str(uuid.uuid4()))
     user = await_(User.async_create_or_update(
         db_session=dbs,
@@ -96,7 +96,7 @@ def test_async_create_or_update(dbs: AsyncSession):
 
 
 def test_async_get_or_create(dbs: AsyncSession):
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     user = await_(User.async_get_or_create(
         db_session=dbs, filter_kwargs={'email': email, 'password': password}))
@@ -113,7 +113,7 @@ def test_async_get_or_create(dbs: AsyncSession):
         db_session=dbs, filter_kwargs={'email': email, 'password': password}))
     assert user.id == user_id
 
-    email = str(uuid.uuid4()).replace('-', '') + '@yandex.ru'
+    email = str(uuid.uuid4()).replace('-', '') + '@test.com'
     password = User.make_password(str(uuid.uuid4()))
     user = await_(User.async_get_or_create(
         db_session=dbs,

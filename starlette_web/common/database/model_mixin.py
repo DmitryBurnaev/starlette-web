@@ -11,7 +11,7 @@ class ModelMixin:
     # TODO: maybe rename "db_commit" to "commit" ?
     # TODO: add bulk methods
     """
-    Base model for Gino (sqlalchemy) ORM
+    Base model for Sqlalchemy's ORM
 
     All mutable actions are flushed by default (autoflush=True, autocommit=True).
     After executing all queries, use session.commit() or session.rollback().
