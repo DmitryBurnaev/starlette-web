@@ -1,15 +1,18 @@
-from typing import Type
+import enum
+from typing import Type, TypeVar
 
 import sqlalchemy as sa
 from sqlalchemy import Column
 from sqlalchemy.sql import type_api as sa_type_api
 
 from starlette_web.common.database.types import ChoiceType
-from starlette_web.common.typing import EnumClass
+
+
+EnumClass = TypeVar("EnumClass", bound=enum.Enum)
 
 
 class EnumTypeColumn(Column):
-    """Just wrapper for ChoiceType db column
+    """ Just wrapper for ChoiceType db column
 
     >>> import enum
     >>> from sqlalchemy import String

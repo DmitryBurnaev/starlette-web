@@ -1,6 +1,6 @@
 import logging
 import logging.config
-from typing import List, Union, Dict, Callable, Type
+from typing import List, Union, Dict, Callable, Type, TypeVar
 
 import sentry_sdk
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
@@ -11,7 +11,6 @@ from starlette.middleware import Middleware
 from starlette.routing import Route, Mount, WebSocketRoute
 from webargs_starlette import WebargsHTTPException
 
-from starlette_web.common.typing import AppClass
 from starlette_web.common.database import make_session_maker
 from starlette_web.common.http.exception_handlers import (
     BaseApplicationErrorHandler,
@@ -24,6 +23,10 @@ from starlette_web.core.routes import routes as core_routes
 from starlette_web.common.http.exceptions import BaseApplicationError
 
 
+AppClass = TypeVar("AppClass", bound=Starlette)
+ExceptionHandlerType = Callable[[PRequest, Exception], BaseRenderer]
+
+
 class WebApp(Starlette):
     """Simple adaptation of Starlette APP. Small addons here."""
 
@@ -34,9 +37,6 @@ class WebApp(Starlette):
         self.session_maker = make_session_maker()
 
 
-ExceptionHandlerType = Callable[[PRequest, Exception], BaseRenderer]
-
-
 class BaseStarletteApplication:
     app_class: AppClass = WebApp
 
@@ -45,6 +45,7 @@ class BaseStarletteApplication:
         pass
 
     def post_app_init(self, app: AppClass):
+        # TODO: remove
         # To be reloaded in inherited class
         logging.config.dictConfig(settings.LOGGING)
 
@@ -58,6 +59,7 @@ class BaseStarletteApplication:
 
     @property
     def middleware(self):
+        # TODO: remove
         return [Middleware(SentryAsgiMiddleware)]
 
     @property
