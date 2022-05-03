@@ -23,7 +23,7 @@ from starlette_web.common.http.exceptions import (
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.statuses import ResponseStatus
-from starlette_web.common.models import DBModel
+from starlette_web.common.database import DBModel
 from starlette_web.common.utils import get_logger
 
 

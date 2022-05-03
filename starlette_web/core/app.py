@@ -1,5 +1,6 @@
 import logging
 import logging.config
+from typing import List
 
 import sentry_sdk
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
@@ -11,7 +12,7 @@ from starlette.routing import Route
 from webargs_starlette import WebargsHTTPException
 
 from starlette_web.common.typing import AppClass
-from starlette_web.common.db_utils import make_session_maker
+from starlette_web.common.database import make_session_maker
 from starlette_web.core import settings
 from starlette_web.core.routes import routes as core_routes
 from starlette_web.common.utils import custom_exception_handler
@@ -33,7 +34,8 @@ class WebApp(Starlette):
         self.session_maker = make_session_maker()
 
 
-def get_app(app_class: AppClass = WebApp, routes: list[Route] = core_routes):
+# TODO: refactor, make class-based
+def get_app(app_class: AppClass = WebApp, routes: List[Route] = core_routes):
     app = app_class(
         routes=routes,
         exception_handlers=exception_handlers,
