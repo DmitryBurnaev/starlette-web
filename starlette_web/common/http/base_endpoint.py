@@ -130,6 +130,10 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         headers: Mapping[str, str] = None,
         background: Optional[BackgroundTasks] = None,
     ) -> BaseRenderer:
+        """
+        A shorthand for response_renderer plus serializing data and passing text status.
+        To be used primarily with JSONRenderer and such.
+        """
         if (data is not None) and self.schema_response:
             schema_kwargs = {}
             if isinstance(data, Iterable) and not isinstance(data, dict):
@@ -139,7 +143,6 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         else:
             payload = data
 
-        # TODO: Pass only payload to renderer? Maybe pass string-like response_status independently?
         return self.response_renderer(
             {"status": response_status, "payload": payload},
             status_code=status_code,
