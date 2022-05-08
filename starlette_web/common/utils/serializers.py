@@ -4,6 +4,7 @@ import pickle
 from typing import Any
 
 
+# TODO: generic SerializeError, DeserializeError
 class BaseSerializer:
     def serialize(self, content: Any) -> Any:
         raise NotImplementedError
@@ -16,14 +17,18 @@ class BaseSerializer:
 
 
 class JSONSerializer(BaseSerializer):
+    encoder_class = json.JSONEncoder
+    decoder_class = json.JSONDecoder
+
     def serialize(self, content: Any) -> Any:
-        return json.dumps(content)
+        return self.encoder_class().encode(content)
 
     def deserialize(self, content: Any) -> Any:
-        return json.loads(content or "null")
+        return self.decoder_class().decode(content or "null")
 
 
 class PickleSerializer(BaseSerializer):
+    # TODO: maybe add option to use dill ?
     def serialize(self, content: Any) -> Any:
         return pickle.dumps(content)
 
