@@ -1,14 +1,15 @@
 import asyncio
+import logging
 from functools import partial
 from typing import Iterable, Any, Union, List, Dict, Type
 
 import redis
 
-from starlette_web.common.utils import get_logger, Singleton
+from starlette_web.common.utils import Singleton
 from starlette_web.common.utils.serializers import BaseSerializer, JSONSerializer
 from starlette_web.core import settings
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class RedisClient(metaclass=Singleton):

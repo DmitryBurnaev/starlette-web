@@ -1,9 +1,9 @@
 import httpx
+import logging
 
 from starlette_web.core import settings
 from starlette_web.common.http.exceptions import SendRequestError
 from starlette_web.common.http.statuses import status_is_success
-from starlette_web.common.utils.logging import get_logger
 
 
 # TODO: refactor completely
@@ -17,7 +17,7 @@ async def send_email(recipient_email: str, subject: str, html_content: str):
         "content": [{"type": "text/html", "value": html_content}],
     }
     request_header = {"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"}
-    request_logger = get_logger(__name__)
+    request_logger = logging.getLogger(__name__)
     request_logger.info("Send request to %s. Data: %s", request_url, request_data)
 
     async with httpx.AsyncClient() as client:

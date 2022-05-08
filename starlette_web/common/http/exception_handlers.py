@@ -11,11 +11,20 @@ from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.statuses import ResponseStatus, status_is_server_error
 from starlette_web.common.http.exceptions import BaseApplicationError
-from starlette_web.common.utils import log_message
 
 
 class BaseExceptionHandler:
     renderer_class: BaseRenderer = JSONRenderer
+
+    def _log_message(self, exc: Exception, error_data: dict, level=logging.ERROR):
+        logger = logging.getLogger(__name__)
+
+        error_details = {
+            "error": error_data.get("error", "Unbound exception"),
+            "details": error_data.get("details", str(exc)),
+        }
+        message = "{exc.__class__.__name__} '{error}': [{details}]".format(exc=exc, **error_details)
+        logger.log(level, message, exc_info=(level == logging.ERROR))
 
     def _get_error_message(self, request: PRequest, exc: Exception) -> str:
         return "Something went wrong!"
@@ -46,7 +55,7 @@ class BaseExceptionHandler:
         payload = {"error": error_message}
 
         log_level = logging.ERROR if status_is_server_error(status_code) else logging.WARNING
-        log_message(exc, payload, log_level)
+        self._log_message(exc, payload, log_level)
 
     def _get_headers(self, request: PRequest, exc: Exception) -> Optional[dict]:
         return None

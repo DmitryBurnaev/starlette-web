@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 
 from jwt import InvalidTokenError, ExpiredSignatureError
@@ -10,9 +11,8 @@ from starlette_web.common.http.exceptions import (
     AuthenticationRequiredError,
     SignatureExpiredError,
 )
-from starlette_web.common.utils import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class JWTAuthenticationBackend(BaseAuthenticationBackend):

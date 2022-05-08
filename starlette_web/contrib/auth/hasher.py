@@ -1,14 +1,13 @@
 import base64
 import hashlib
 import hmac
+import logging
 import secrets
 import string
 import uuid
 from typing import Tuple
 
-from starlette_web.common.utils import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_salt(length=12) -> str:

@@ -1,3 +1,4 @@
+import logging
 from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List
 
 from marshmallow import Schema, ValidationError
@@ -24,10 +25,9 @@ from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.database import DBModel
-from starlette_web.common.utils import get_logger
 
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseHTTPEndpoint(HTTPEndpoint):
