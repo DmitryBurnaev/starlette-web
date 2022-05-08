@@ -41,12 +41,16 @@ class BaseStarletteApplication:
     app_class: AppClass = WebApp
 
     def pre_app_init(self):
-        # To be reloaded in inherited class
+        """
+        Extra actions before app's initialization (can be overridden)
+        """
         pass
 
     def post_app_init(self, app: AppClass):
-        # TODO: remove
-        # To be reloaded in inherited class
+        """
+        Extra actions after app's initialization (can be overridden)
+        """
+        # TODO: remove logging to Sentry
         logging.config.dictConfig(settings.LOGGING)
 
         if settings.SENTRY_DSN:
@@ -59,7 +63,7 @@ class BaseStarletteApplication:
 
     @property
     def middleware(self):
-        # TODO: remove
+        # TODO: remove sentry middleware
         return [Middleware(SentryAsgiMiddleware)]
 
     @property
