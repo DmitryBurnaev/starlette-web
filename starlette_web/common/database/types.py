@@ -11,7 +11,7 @@ class ChoiceType(types.TypeDecorator):
 
     >>> import enum
     >>> from sqlalchemy import Column, String
-    >>> from starlette_web.core.database import ModelBase
+    >>> from starlette_web.common.database import ModelBase
 
     >>> class UserType(enum.Enum):
     >>>     admin = 'admin'

@@ -1,18 +1,18 @@
+import logging
 from typing import Tuple
 
 from jwt import InvalidTokenError, ExpiredSignatureError
 
-from starlette_web.auth.models import User, UserSession
-from starlette_web.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
+from starlette_web.contrib.auth.models import User, UserSession
+from starlette_web.contrib.auth.utils import decode_jwt, TOKEN_TYPE_ACCESS
 from starlette_web.common.authorization.backends import BaseAuthenticationBackend
 from starlette_web.common.http.exceptions import (
     AuthenticationFailedError,
     AuthenticationRequiredError,
     SignatureExpiredError,
 )
-from starlette_web.common.utils import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class JWTAuthenticationBackend(BaseAuthenticationBackend):
@@ -37,10 +37,8 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
 
         user, _, session_id = await self.authenticate_user(jwt_token=auth[1])
 
-        self.request.user_session_id = session_id
         self.scope["user_session_id"] = session_id
         self.scope["user"] = user
-
         return user
 
     @staticmethod

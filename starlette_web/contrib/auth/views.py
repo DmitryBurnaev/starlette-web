@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import uuid
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -12,18 +13,18 @@ from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.core import settings
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
-from starlette_web.common.utils import send_email, get_logger
-from starlette_web.auth.models import User, UserSession, UserInvite
-from starlette_web.auth.hasher import PBKDF2PasswordHasher, get_salt
-from starlette_web.auth.backend import JWTAuthenticationBackend
-from starlette_web.auth.permissions import IsSuperuserPermission
-from starlette_web.auth.utils import (
+from starlette_web.common.utils import send_email
+from starlette_web.contrib.auth.models import User, UserSession, UserInvite
+from starlette_web.contrib.auth.hasher import PBKDF2PasswordHasher, get_salt
+from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
+from starlette_web.contrib.auth.permissions import IsSuperuserPermission
+from starlette_web.contrib.auth.utils import (
     encode_jwt,
     TokenCollection,
     TOKEN_TYPE_REFRESH,
     TOKEN_TYPE_RESET_PASSWORD,
 )
-from starlette_web.auth.schemas import (
+from starlette_web.contrib.auth.schemas import (
     SignInSchema,
     SignUpSchema,
     JWTResponseSchema,
@@ -36,7 +37,7 @@ from starlette_web.auth.schemas import (
     ResetPasswordResponseSchema,
 )
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class JWTSessionMixin:
@@ -181,7 +182,9 @@ class SignOutAPIView(BaseHTTPEndpoint):
         logger.info("Log out for user %s", user)
 
         user_session = await UserSession.async_get(
-            self.db_session, public_id=request.user_session_id, is_active=True
+            self.db_session,
+            public_id=self.scope["user_session_id"],
+            is_active=True,
         )
         if user_session:
             logger.info("Session %s exists and active. It will be updated.", user_session)

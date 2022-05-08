@@ -1,37 +1,37 @@
 import asyncio
-import json
-import os
+import logging
 from functools import partial
-from typing import Iterable, Any, Union
+from typing import Iterable, Any, Union, List, Dict, Type
 
 import redis
 
-from starlette_web.common.utils import get_logger
+from starlette_web.common.utils import Singleton
+from starlette_web.common.utils.serializers import BaseSerializer, JSONSerializer
+from starlette_web.core import settings
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class RedisClient:
+class RedisClient(metaclass=Singleton):
+    # TODO: inherit from BaseCache
+    # TODO: can we use https://pypi.org/project/aioredis/ instead?
     """The class is used to create a redis connection in a single instance."""
 
     __instance = None
+    serializer_class: Type[BaseSerializer] = JSONSerializer
+    redis = redis.Redis
 
-    def __new__(cls):
-        if cls.__instance is None:
-            cls.__instance = super().__new__(cls)
-            # TODO: can we use https://pypi.org/project/aioredis/ instead?
-            cls.redis = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, max_connections=32)
-
-        return cls.__instance
+    def __init__(self):
+        self.serializer = self.serializer_class()
+        self.redis = redis.Redis(
+            host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, max_connections=32
+        )
 
     def set(self, key: str, value, ttl: int = 120):
-        self.redis.set(key, json.dumps(value), ttl)
+        self.redis.set(key, self.serializer.serialize(value), ttl)
 
-    def get(self, key: str) -> Union[list[Any], dict[str, Any]]:
-        return json.loads(self.redis.get(key) or "null")
+    def get(self, key: str) -> Union[List[Any], Dict[str, Any]]:
+        return self.serializer.deserialize(self.redis.get(key))
 
     def get_many(self, keys: Iterable[str], pkey: str) -> dict:
         """
@@ -41,7 +41,9 @@ class RedisClient:
         :return: dict with keys (given from stored records by `pkey`)
 
         """
-        stored_items = map(json.loads, [item for item in self.redis.mget(keys) if item])
+        stored_items = map(
+            self.serializer.deserialize, [item for item in self.redis.mget(keys) if item]
+        )
         try:
             result = {stored_item[pkey]: stored_item for stored_item in stored_items}
         except (TypeError, KeyError) as error:

@@ -1,3 +1,4 @@
+import logging
 from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List
 
 from marshmallow import Schema, ValidationError
@@ -15,7 +16,6 @@ from starlette_web.common.authorization.backends import (
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
 from starlette_web.common.authorization.base_user import AnonymousUser
 from starlette_web.common.http.exceptions import (
-    NotFoundError,
     UnexpectedError,
     BaseApplicationError,
     InvalidParameterError,
@@ -25,10 +25,9 @@ from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.database import DBModel
-from starlette_web.common.utils import get_logger
 
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseHTTPEndpoint(HTTPEndpoint):
@@ -102,27 +101,6 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             except Exception as exc:
                 raise PermissionDeniedError from exc
 
-    # TODO: move outside of BaseHTTPEndpoint,
-    #  since it contains attributes specific for contrib-module common.auth
-    async def _get_object(
-        self, instance_id, db_model: Type[DBModel] = None, **filter_kwargs
-    ) -> DBModel:
-        """
-        Returns current object (only for logged-in or admin user) for CRUD API
-        """
-
-        db_model = db_model or self.db_model
-        if not self.request.user.is_superuser:
-            filter_kwargs["owner_id"] = self.request.user.id
-
-        instance = await db_model.async_get(self.db_session, id=instance_id, **filter_kwargs)
-        if not instance:
-            raise NotFoundError(
-                f"{db_model.__name__} #{instance_id} does not exist or belongs to another user"
-            )
-
-        return instance
-
     async def _validate(
         self, request, schema: Type[Schema] = None, partial_: bool = False, location: str = None
     ) -> Optional[Mapping]:
@@ -152,6 +130,10 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         headers: Mapping[str, str] = None,
         background: Optional[BackgroundTasks] = None,
     ) -> BaseRenderer:
+        """
+        A shorthand for response_renderer plus serializing data and passing text status.
+        To be used primarily with JSONRenderer and such.
+        """
         if (data is not None) and self.schema_response:
             schema_kwargs = {}
             if isinstance(data, Iterable) and not isinstance(data, dict):
@@ -161,7 +143,6 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         else:
             payload = data
 
-        # TODO: Pass only payload to renderer? Maybe pass string-like response_status independently?
         return self.response_renderer(
             {"status": response_status, "payload": payload},
             status_code=status_code,

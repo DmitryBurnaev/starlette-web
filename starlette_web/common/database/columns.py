@@ -1,11 +1,14 @@
-from typing import Type
+import enum
+from typing import Type, TypeVar
 
 import sqlalchemy as sa
 from sqlalchemy import Column
 from sqlalchemy.sql import type_api as sa_type_api
 
 from starlette_web.common.database.types import ChoiceType
-from starlette_web.common.typing import EnumClass
+
+
+EnumClass = TypeVar("EnumClass", bound=enum.Enum)
 
 
 class EnumTypeColumn(Column):
@@ -13,7 +16,7 @@ class EnumTypeColumn(Column):
 
     >>> import enum
     >>> from sqlalchemy import String
-    >>> from starlette_web.core.database import ModelBase
+    >>> from starlette_web.common.database import ModelBase
 
     >>> class UserType(enum.Enum):
     >>>    admin = 'admin'

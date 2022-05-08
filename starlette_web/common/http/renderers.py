@@ -3,7 +3,7 @@ from typing import Any
 
 from starlette.responses import Response, BackgroundTask
 
-from starlette_web.common.utils.json import StarletteJSONEncoder
+from starlette_web.common.utils import StarletteJSONEncoder
 
 
 class BaseRenderer(Response):

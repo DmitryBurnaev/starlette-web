@@ -1,7 +1,7 @@
 import uuid
 
 from starlette_web.common.management.base import BaseCommand
-from starlette_web.auth.models import User
+from starlette_web.contrib.auth.models import User
 
 
 class Command(BaseCommand):

@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from starlette_web.auth.models import User
+from starlette_web.contrib.auth.models import User
 from starlette_web.tests.helpers import await_
 
 
