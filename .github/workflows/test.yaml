@@ -3,6 +3,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 jobs:
   test:
@@ -18,6 +21,12 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 5
+
     steps:
       - uses: actions/checkout@v1
       - name: Prepare .env file
@@ -27,6 +36,8 @@ jobs:
           DB_PASSWORD: "web_password"
           DB_HOST: "172.17.0.1"
           DB_PORT: 5432
+          REDIS_HOST: "172.17.0.1"
+          REDIS_PORT: 6379
         run: |
           cp .env.template .env
           env >> .env
