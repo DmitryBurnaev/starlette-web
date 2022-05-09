@@ -1,7 +1,8 @@
 import asyncio
+import os
+import pkgutil
 from argparse import ArgumentParser
 from typing import Optional, List, Type, Awaitable, Dict
-from pathlib import Path
 
 from starlette_web.core import settings
 from starlette_web.core.app import get_app
@@ -73,33 +74,23 @@ class BaseCommand:
         await coroutine
 
 
-def _fetch_commands_and_paths() -> Dict[str, Path]:
-    # TODO: get commands from settings.INSTALLED_APPS
-    command_files_iter = settings.PROJECT_ROOT_DIR.glob("*/*/management/commands/*.py")
-    command_files = {}
-    for d in command_files_iter:
-        if d.stem in command_files:
-            raise CommandError(f'Command "{d.stem}" is declared in multiple modules.')
-        command_files[d.stem] = d
-    return command_files
-
-
 def list_commands() -> Dict[str, str]:
-    commands = _fetch_commands_and_paths()
+    command_files = {}
 
-    return {
-        command_name: ".".join(
-            [
-                commands[command_name].parent.parent.parent.parent.stem,
-                commands[command_name].parent.parent.parent.stem,
-                commands[command_name].parent.parent.stem,
-                commands[command_name].parent.stem,
-                command_name,
-                "Command",
-            ]
-        )
-        for command_name, command_path in commands.items()
-    }
+    for app in settings.INSTALLED_APPS:
+        for module_info in pkgutil.iter_modules(
+            [os.sep.join([app.replace(".", os.sep), "management", "commands"])]
+        ):
+            if module_info.name.startswith("_") or module_info.ispkg:
+                continue
+
+            if module_info.name in command_files:
+                raise CommandError(f'Command "{module_info.name}" is declared in multiple modules.')
+
+            command_files[module_info.name] = ".".join(
+                [app, "management", "commands", module_info.name, "Command"]
+            )
+    return command_files
 
 
 def fetch_command_by_name(command_name: str) -> Type[BaseCommand]:

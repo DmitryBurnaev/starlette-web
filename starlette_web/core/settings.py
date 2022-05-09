@@ -19,6 +19,12 @@ SECRET_KEY = config("SECRET_KEY", default="project-secret")
 
 TEST_MODE = "test" in sys.argv[0]
 
+INSTALLED_APPS = [
+    "starlette_web.common",
+    "starlette_web.tests",
+    "starlette_web.contrib.auth",
+]
+
 DB_NAME = config("DB_NAME", default="web_project")
 if TEST_MODE:
     DB_NAME = config("DB_NAME_TEST", default="web_project_test")
