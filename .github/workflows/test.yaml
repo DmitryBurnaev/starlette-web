@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - github-actions-redis
 
 jobs:
   test:
@@ -37,12 +36,14 @@ jobs:
           DB_PASSWORD: "web_password"
           DB_HOST: "172.17.0.1"
           DB_PORT: 5432
+          REDIS_HOST: "172.17.0.1"
+          REDIS_PORT: 6379
         run: |
           cp .env.template .env
           env >> .env
-#
-#      - name: Build image
-#        run: docker image build -t starlette-web .
-#
-#      - name: Run tests
-#        run: docker run -t --env-file .env starlette-web
+
+      - name: Build image
+        run: docker image build -t starlette-web .
+
+      - name: Run tests
+        run: docker run -t --env-file .env starlette-web
