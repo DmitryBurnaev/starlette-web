@@ -33,4 +33,7 @@ class PickleSerializer(BaseSerializer):
         return pickle.dumps(content)
 
     def deserialize(self, content: Any) -> Any:
+        if content is None:
+            return None
+
         return pickle.loads(content)

@@ -1,10 +1,10 @@
-from typing import Sequence, Any, List, Dict, Type, Optional, AsyncContextManager
+from typing import Sequence, Any, List, Dict, Type, Optional, AsyncContextManager, Union
 
 import aioredis
 
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.utils.async_utils import aclosing
-from starlette_web.common.utils.serializers import BaseSerializer, JSONSerializer
+from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 from starlette_web.contrib.redis.redislock import RedisLock
 
 
@@ -19,17 +19,25 @@ def reraise_exception(func):
 
 
 class RedisCache(BaseCache):
-    serializer_class: Type[BaseSerializer] = JSONSerializer
+    serializer_class: Type[BaseSerializer] = PickleSerializer
     redis = aioredis.Redis
 
-    def __init__(self, params: Dict[str, Any]):
-        super().__init__(params)
+    def __init__(self, options: Dict[str, Any]):
+        super().__init__(options)
         self.redis = aioredis.Redis(
-            host=params.get("host"),
-            port=params.get("port"),
-            db=params.get("db"),
-            max_connections=params.get("max_connections", 32),
+            host=options.get("HOST"),
+            port=options.get("PORT"),
+            db=options.get("DB"),
+            max_connections=options.get("max_connections", 32),
         )
+
+    async def start(self):
+        if self.redis:
+            await self.redis.initialize()
+
+    async def close(self):
+        if self.redis:
+            await self.redis.close()
 
     @reraise_exception
     async def async_get(self, key: str) -> Any:
@@ -45,18 +53,18 @@ class RedisCache(BaseCache):
         await self.redis.delete(key)
 
     @reraise_exception
-    async def keys(self, pattern: str) -> List[str]:
-        raise NotImplementedError
+    async def async_keys(self, pattern: str) -> List[str]:
+        return [self._force_str(key) for key in (await self.redis.keys(pattern))]
 
     @reraise_exception
     async def async_get_many(self, keys: Sequence[str]) -> Dict[str, Any]:
         result = dict()
         key_idx = 0
 
-        async with aclosing(self.redis.mget(keys)) as async_generator:
-            async for value in async_generator:
-                result[keys[key_idx]] = self.serializer.deserialize(value)
-                key_idx += 1
+        # redis.mget returns a simple list
+        for value in (await self.redis.mget(keys)):
+            result[keys[key_idx]] = self.serializer.deserialize(value)
+            key_idx += 1
 
         return result
 
@@ -112,3 +120,9 @@ class RedisCache(BaseCache):
             blocking_timeout=blocking_timeout,
             lock_class=RedisLock,
         )
+
+    def _force_str(self, value: Union[bytes, str]):
+        try:
+            return value.decode()
+        except (UnicodeDecodeError, AttributeError):
+            return value

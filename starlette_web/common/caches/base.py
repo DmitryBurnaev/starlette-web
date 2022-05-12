@@ -19,6 +19,12 @@ class BaseCache(metaclass=Singleton):
     def __init__(self, params: Dict[str, Any]):
         self.serializer = self.serializer_class()
 
+    async def start(self):
+        pass
+
+    async def close(self):
+        pass
+
     async def async_get(self, key: str) -> Any:
         raise NotImplementedError
 
@@ -28,11 +34,11 @@ class BaseCache(metaclass=Singleton):
     async def async_delete(self, key: str) -> None:
         raise NotImplementedError
 
-    async def keys(self, pattern: str) -> List[str]:
+    async def async_keys(self, pattern: str) -> List[str]:
         raise NotImplementedError
 
     async def async_has_key(self, key: str) -> bool:
-        return (await self.keys(key)) is not None
+        return (await self.async_keys(key)) is not None
 
     async def async_get_many(self, keys: Sequence[str]) -> Dict[str, Any]:
         result = dict()
