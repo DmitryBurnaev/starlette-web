@@ -60,13 +60,13 @@ DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 APPLICATION_CLASS = "starlette_web.common.app.BaseStarletteApplication"
 
 CACHES = {
-    'default': {
-        'BACKEND': 'starlette_web.contrib.redis.RedisCache',
-        'OPTIONS': {
-            'HOST': config("REDIS_HOST", default="localhost"),
-            'PORT': config("REDIS_PORT", default=6379),
-            'DB': config("REDIS_DB", default=0),
-        }
+    "default": {
+        "BACKEND": "starlette_web.contrib.redis.RedisCache",
+        "OPTIONS": {
+            "HOST": config("REDIS_HOST", default="localhost"),
+            "PORT": config("REDIS_PORT", default=6379),
+            "DB": config("REDIS_DB", default=0),
+        },
     }
 }
 

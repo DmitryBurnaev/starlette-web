@@ -100,7 +100,7 @@ class BaseStarletteApplication:
         on_startup = []
         on_shutdown = []
 
-        if hasattr(settings, 'CACHES'):
+        if hasattr(settings, "CACHES"):
             for key in settings.CACHES:
                 cache = caches[key]
                 on_startup.append(cache.start)

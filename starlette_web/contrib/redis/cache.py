@@ -3,7 +3,6 @@ from typing import Sequence, Any, List, Dict, Type, Optional, AsyncContextManage
 import aioredis
 
 from starlette_web.common.caches.base import BaseCache, CacheError
-from starlette_web.common.utils.async_utils import aclosing
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 from starlette_web.contrib.redis.redislock import RedisLock
 
@@ -62,7 +61,7 @@ class RedisCache(BaseCache):
         key_idx = 0
 
         # redis.mget returns a simple list
-        for value in (await self.redis.mget(keys)):
+        for value in await self.redis.mget(keys):
             result[keys[key_idx]] = self.serializer.deserialize(value)
             key_idx += 1
 
