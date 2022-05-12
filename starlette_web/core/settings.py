@@ -59,10 +59,16 @@ DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 
 APPLICATION_CLASS = "starlette_web.common.app.BaseStarletteApplication"
 
-REDIS_HOST = config("REDIS_HOST", default="localhost")
-REDIS_PORT = config("REDIS_PORT", default=6379)
-REDIS_DB = config("REDIS_DB", default=0)
-REDIS_CON = (REDIS_HOST, REDIS_PORT, REDIS_DB)
+CACHES = {
+    'default': {
+        'BACKEND': 'starlette_web.contrib.redis.RedisCache',
+        'OPTIONS': {
+            'HOST': config("REDIS_HOST", default="localhost"),
+            'PORT': config("REDIS_PORT", default=6379),
+            'DB': config("REDIS_DB", default=0),
+        }
+    }
+}
 
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
 

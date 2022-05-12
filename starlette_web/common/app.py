@@ -11,6 +11,7 @@ from starlette.middleware import Middleware
 from starlette.routing import Route, Mount, WebSocketRoute
 from webargs_starlette import WebargsHTTPException
 
+from starlette_web.common.caches import caches
 from starlette_web.common.database import make_session_maker
 from starlette_web.common.http.exception_handlers import (
     BaseApplicationErrorHandler,
@@ -50,9 +51,10 @@ class BaseStarletteApplication:
         """
         Extra actions after app's initialization (can be overridden)
         """
-        # TODO: remove logging to Sentry
-        logging.config.dictConfig(settings.LOGGING)
+        self._setup_logging(app)
+        self._setup_caches(app)
 
+        # TODO: remove logging to Sentry
         if settings.SENTRY_DSN:
             logging_integration = LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)
             sentry_sdk.init(settings.SENTRY_DSN, integrations=[logging_integration])
@@ -90,3 +92,19 @@ class BaseStarletteApplication:
 
         self.post_app_init(app)
         return app
+
+    def _setup_logging(self, app: AppClass):
+        logging.config.dictConfig(settings.LOGGING)
+
+    def _setup_caches(self, app: AppClass):
+        on_startup = []
+        on_shutdown = []
+
+        if hasattr(settings, 'CACHES'):
+            for key in settings.CACHES:
+                cache = caches[key]
+                on_startup.append(cache.start)
+                on_shutdown.append(cache.close)
+
+        app.router.on_startup += on_startup
+        app.router.on_shutdown += on_shutdown
