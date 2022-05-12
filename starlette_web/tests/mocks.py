@@ -3,9 +3,6 @@ import multiprocessing
 from unittest.mock import Mock
 
 
-from starlette_web.contrib.redis import RedisClient
-
-
 class BaseMock:
     """Base class for class mocking
 
@@ -39,16 +36,6 @@ class BaseMock:
         f = asyncio.Future()
         f.set_result(result)
         return f
-
-
-class MockRedisClient(BaseMock):
-    target_class = RedisClient
-
-    def __init__(self, content=None):
-        self._content = content or {}
-        self.async_get_many = Mock(return_value=self.async_return(self._content))
-        self.get = Mock()
-        self.set = Mock()
 
 
 class MockProcess(BaseMock):
