@@ -30,14 +30,6 @@ class RedisCache(BaseCache):
             max_connections=options.get("max_connections", 32),
         )
 
-    async def start(self):
-        if self.redis:
-            await self.redis.initialize()
-
-    async def close(self):
-        if self.redis:
-            await self.redis.close()
-
     @reraise_exception
     async def async_get(self, key: str) -> Any:
         value = await self.redis.get(key)

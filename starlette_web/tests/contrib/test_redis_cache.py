@@ -25,12 +25,12 @@ def test_redis_cache():
         },
     }
 
-    await_(default_cache.async_set(test_key, value_obj, 4))
+    await_(default_cache.async_set(test_key, value_obj, 2))
     value = await_(default_cache.async_get(test_key))
     assert value == value_obj
     assert await_(default_cache.async_has_key(test_key))
 
-    time.sleep(4)
+    time.sleep(3)
     value = await_(default_cache.async_get(test_key))
     assert value is None
 

@@ -19,12 +19,6 @@ class BaseCache(metaclass=Singleton):
     def __init__(self, params: Dict[str, Any]):
         self.serializer = self.serializer_class()
 
-    async def start(self):
-        pass
-
-    async def close(self):
-        pass
-
     async def async_get(self, key: str) -> Any:
         raise NotImplementedError
 

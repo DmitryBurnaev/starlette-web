@@ -97,14 +97,6 @@ class BaseStarletteApplication:
         logging.config.dictConfig(settings.LOGGING)
 
     def _setup_caches(self, app: AppClass):
-        on_startup = []
-        on_shutdown = []
-
         if hasattr(settings, "CACHES"):
             for key in settings.CACHES:
-                cache = caches[key]
-                on_startup.append(cache.start)
-                on_shutdown.append(cache.close)
-
-        app.router.on_startup += on_startup
-        app.router.on_shutdown += on_shutdown
+                _ = caches[key]
