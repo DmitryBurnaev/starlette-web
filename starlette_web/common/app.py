@@ -51,9 +51,6 @@ class BaseStarletteApplication:
         """
         Extra actions after app's initialization (can be overridden)
         """
-        self._setup_logging(app)
-        self._setup_caches(app)
-
         # TODO: remove logging to Sentry
         if settings.SENTRY_DSN:
             logging_integration = LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)
@@ -90,6 +87,9 @@ class BaseStarletteApplication:
             middleware=self.middleware,
         )
 
+        self._setup_logging(app)
+        self._setup_caches(app)
+
         self.post_app_init(app)
         return app
 
@@ -98,5 +98,5 @@ class BaseStarletteApplication:
 
     def _setup_caches(self, app: AppClass):
         if hasattr(settings, "CACHES"):
-            for key in settings.CACHES:
-                _ = caches[key]
+            for conn_name in settings.CACHES:
+                _ = caches[conn_name]
