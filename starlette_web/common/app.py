@@ -2,9 +2,6 @@ import logging
 import logging.config
 from typing import List, Union, Dict, Callable, Type, TypeVar
 
-import sentry_sdk
-from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
-from sentry_sdk.integrations.logging import LoggingIntegration
 from sqlalchemy.orm import sessionmaker
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
@@ -41,37 +38,29 @@ class WebApp(Starlette):
 class BaseStarletteApplication:
     app_class: AppClass = WebApp
 
-    def pre_app_init(self):
+    def pre_app_init(self) -> None:
         """
         Extra actions before app's initialization (can be overridden)
         """
         pass
 
-    def post_app_init(self, app: AppClass):
+    def post_app_init(self, app: AppClass) -> None:
         """
         Extra actions after app's initialization (can be overridden)
         """
-        # TODO: remove logging to Sentry
-        if settings.SENTRY_DSN:
-            logging_integration = LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)
-            sentry_sdk.init(settings.SENTRY_DSN, integrations=[logging_integration])
+        pass
 
-    @property
-    def debug(self):
+    def get_debug(self) -> bool:
         return settings.APP_DEBUG
 
-    @property
-    def middleware(self):
-        # TODO: remove sentry middleware
-        return [Middleware(SentryAsgiMiddleware)]
+    def get_middleware(self) -> List[Middleware]:
+        return []
 
-    @property
-    def routes(self) -> List[Union[WebSocketRoute, Route, Mount]]:
+    def get_routes(self) -> List[Union[WebSocketRoute, Route, Mount]]:
         # TODO: instead determine main routes.py file from lazy settings
         return core_routes
 
-    @property
-    def exception_handlers(self) -> Dict[Type[Exception], ExceptionHandlerType]:
+    def get_exception_handlers(self) -> Dict[Type[Exception], ExceptionHandlerType]:
         return {
             BaseApplicationError: BaseApplicationErrorHandler(),
             WebargsHTTPException: WebargsHTTPExceptionHandler(),
@@ -81,10 +70,10 @@ class BaseStarletteApplication:
         self.pre_app_init()
 
         app = self.app_class(
-            routes=self.routes,
-            exception_handlers=self.exception_handlers,
-            debug=self.debug,
-            middleware=self.middleware,
+            routes=self.get_routes(),
+            exception_handlers=self.get_exception_handlers(),
+            debug=self.get_debug(),
+            middleware=self.get_middleware(),
         )
 
         self._setup_logging(app)
