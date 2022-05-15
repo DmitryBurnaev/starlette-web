@@ -82,6 +82,7 @@ EMAIL_FROM = config("EMAIL_FROM", default="").strip("'\"")
 INVITE_LINK_EXPIRES_IN = 3 * 24 * 3600  # 3 day
 RESET_PASSWORD_LINK_EXPIRES_IN = 3 * 3600  # 3 hours
 SITE_URL = config("SITE_URL", default="") or "https://web.project.com"
+SENTRY_DSN = config("SENTRY_DSN", default=None)
 
 LOG_LEVEL = config("LOG_LEVEL", default="INFO")
 LOGGING = {
