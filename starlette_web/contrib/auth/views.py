@@ -15,7 +15,7 @@ from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
 from starlette_web.common.utils import send_email
 from starlette_web.contrib.auth.models import User, UserSession, UserInvite
-from starlette_web.contrib.auth.hasher import PBKDF2PasswordHasher, get_salt
+from starlette_web.contrib.auth.hashers import PBKDF2PasswordHasher, get_random_string
 from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
 from starlette_web.contrib.auth.permissions import IsSuperuserPermission
 from starlette_web.contrib.auth.utils import (
@@ -111,7 +111,7 @@ class SignInAPIView(JWTSessionMixin, BaseHTTPEndpoint):
             )
 
         hasher = PBKDF2PasswordHasher()
-        verified, error_msg = hasher.verify(password, encoded=user.password)
+        verified = hasher.verify(password, encoded=user.password)
         if not verified:
             logger.error("Password didn't verify: email: %s | err: %s", email, error_msg)
             raise AuthenticationFailedError(
@@ -328,7 +328,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
             "user_id": user.id,
             "email": user.email,
             "jti": f"token-{uuid.uuid4()}",  # JWT ID
-            "slt": get_salt(),
+            "slt": get_random_string(length=12),
         }
         token, _ = encode_jwt(
             payload,
