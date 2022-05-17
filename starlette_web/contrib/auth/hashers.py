@@ -37,9 +37,6 @@ class BasePasswordHasher(metaclass=Singleton):
         encoded_2 = self.encode(password, salt)
         return constant_time_compare(encoded, encoded_2)
 
-    def _base_encode(self, password: str, salt: str) -> bytes:
-        raise NotImplementedError
-
 
 class PBKDF2PasswordHasher(BasePasswordHasher):
     """
