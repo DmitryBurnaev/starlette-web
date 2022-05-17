@@ -8,7 +8,7 @@ from typing import Union
 RANDOM_STRING_CHARS = string.ascii_letters + string.digits
 
 
-def _force_bytes(value: Union[str, bytes], encoding='utf-8', errors='strict'):
+def _force_bytes(value: Union[str, bytes], encoding="utf-8", errors="strict"):
     if isinstance(value, bytes):
         if encoding == "utf-8":
             return value

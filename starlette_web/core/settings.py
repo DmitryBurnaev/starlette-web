@@ -71,7 +71,7 @@ CACHES = {
 }
 
 PASSWORD_HASHERS = [
-    'starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher',
+    "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))

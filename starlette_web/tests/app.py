@@ -11,7 +11,7 @@ from starlette_web.core import settings
 
 class TestStarletteApplication(BaseStarletteApplication):
     def post_app_init(self, app: AppClass):
-        sentry_dsn = getattr(settings, 'config', {}).get('SENTRY_DSN', None)
+        sentry_dsn = getattr(settings, "config", {}).get("SENTRY_DSN", None)
 
         if sentry_dsn:
             logging_integration = LoggingIntegration(
