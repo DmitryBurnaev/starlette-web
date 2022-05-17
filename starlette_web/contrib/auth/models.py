@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette_web.common.database import ModelMixin, ModelBase
 from starlette_web.common.authorization.base_user import BaseUserMixin
-from starlette_web.contrib.auth.hashers import PBKDF2PasswordHasher
+from starlette_web.contrib.auth.hashers import make_password, verify_password
 
 
 class User(ModelBase, BaseUserMixin, ModelMixin):
@@ -26,12 +26,10 @@ class User(ModelBase, BaseUserMixin, ModelMixin):
 
     @classmethod
     def make_password(cls, raw_password: str) -> str:
-        hasher = PBKDF2PasswordHasher()
-        return hasher.encode(raw_password)
+        return make_password(raw_password)
 
     def verify_password(self, raw_password: str) -> bool:
-        hasher = PBKDF2PasswordHasher()
-        return hasher.verify(raw_password, encoded=str(self.password))
+        return verify_password(raw_password, str(self.password))
 
     @property
     def is_authenticated(self) -> bool:

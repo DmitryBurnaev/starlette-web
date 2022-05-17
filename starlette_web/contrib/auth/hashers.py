@@ -1,17 +1,19 @@
 import base64
 import hashlib
 import math
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 from starlette_web.common.utils.importing import import_string
 from starlette_web.common.utils.singleton import Singleton
 from starlette_web.common.utils.crypto import (
-    get_random_string, constant_time_compare, RANDOM_STRING_CHARS,
+    get_random_string,
+    constant_time_compare,
+    RANDOM_STRING_CHARS,
 )
 from starlette_web.core import settings
 
 
-class BasePasswordHasher:
+class BasePasswordHasher(metaclass=Singleton):
     algorithm = None
     salt_entropy = 128
 
@@ -76,18 +78,26 @@ class PasswordManager(metaclass=Singleton):
         for password_hasher in settings.PASSWORD_HASHERS:
             self._add_password_hasher(password_hasher)
 
-    def _add_password_hasher(self, hasher_module: str) -> None:
-        self._password_hashers[hasher_module] = import_string(hasher_module)
+    def _add_password_hasher(self, hasher: Union[str, BasePasswordHasher]) -> None:
+        if type(hasher) == str:
+            self._password_hashers[hasher] = import_string(hasher)()
+        else:
+            self._password_hashers[hasher.__class__.__name__] = hasher
 
     def verify_password(self, password: str, encoded: str) -> bool:
-        return any([
-            self._password_hashers[hasher].verify(password, encoded)
-            for hasher in self._password_hashers.keys()
-        ])
+        return any(
+            [
+                self._password_hashers[hasher].verify(password, encoded)
+                for hasher in self._password_hashers.keys()
+            ]
+        )
 
     def make_password(self, password: str, salt: Optional[str] = None) -> str:
         hasher = settings.PASSWORD_HASHERS[0]
         return self._password_hashers[hasher].encode(password, salt)
+
+    def get_hashers(self) -> Dict[str, BasePasswordHasher]:
+        return self._password_hashers
 
 
 _password_manager = PasswordManager()
