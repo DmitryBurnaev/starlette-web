@@ -3,6 +3,7 @@ import hashlib
 import math
 from typing import Optional, Dict, Union
 
+from starlette_web.common.exceptions import ImproperlyConfigured
 from starlette_web.common.utils.importing import import_string
 from starlette_web.common.utils.singleton import Singleton
 from starlette_web.common.utils.crypto import (
@@ -90,7 +91,13 @@ class PasswordManager(metaclass=Singleton):
         )
 
     def make_password(self, password: str, salt: Optional[str] = None) -> str:
-        hasher = settings.PASSWORD_HASHERS[0]
+        try:
+            hasher = settings.PASSWORD_HASHERS[0]
+        except IndexError:
+            raise ImproperlyConfigured(
+                'At least 1 password hasher must be defined at settings.PASSWORD_HASHERS'
+            )
+
         return self._password_hashers[hasher].encode(password, salt)
 
     def get_hashers(self) -> Dict[str, BasePasswordHasher]:
