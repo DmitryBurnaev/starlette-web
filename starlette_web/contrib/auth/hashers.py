@@ -83,10 +83,10 @@ class PasswordManager(metaclass=Singleton):
 
     def verify_password(self, password: str, encoded: str) -> bool:
         return any(
-            [
+            (
                 self._password_hashers[hasher].verify(password, encoded)
                 for hasher in self._password_hashers.keys()
-            ]
+            )
         )
 
     def make_password(self, password: str, salt: Optional[str] = None) -> str:

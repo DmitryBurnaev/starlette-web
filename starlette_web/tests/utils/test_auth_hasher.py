@@ -10,7 +10,7 @@ from starlette_web.contrib.auth.hashers import (
 )
 
 
-class MD5PasswordHasher(BasePasswordHasher):
+class MD5TestPasswordHasher(BasePasswordHasher):
     """
     The Salted MD5 password hashing algorithm (not recommended)
     """
@@ -66,7 +66,7 @@ def test_generic_hasher_utils():
 
 
 def test_additional_hasher():
-    _password_manager._add_password_hasher(MD5PasswordHasher())
+    _password_manager._add_password_hasher(MD5TestPasswordHasher())
     raw_password = uuid.uuid4().hex
     salt = uuid.uuid4().hex
 
@@ -79,3 +79,10 @@ def test_additional_hasher():
 
     assert PBKDF2PasswordHasher().verify(raw_password, encoded_password)
     assert verify_password(raw_password, encoded_password)
+
+    raw_password = uuid.uuid4().hex
+    salt = uuid.uuid4().hex
+    md5_password = MD5TestPasswordHasher().encode(raw_password, salt)
+    encoded_password = make_password(raw_password, salt)
+    assert md5_password != encoded_password
+    assert verify_password(raw_password, md5_password)
