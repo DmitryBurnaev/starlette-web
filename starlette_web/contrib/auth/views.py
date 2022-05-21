@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from starlette_web.common.http.statuses import ResponseStatus
-from starlette_web.core import settings
+from starlette_web.common.email import send_email
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
-from starlette_web.common.utils import send_email, get_random_string
+from starlette_web.common.utils import get_random_string
 from starlette_web.contrib.auth.models import User, UserSession, UserInvite
 from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
 from starlette_web.contrib.auth.permissions import IsSuperuserPermission
@@ -35,6 +35,7 @@ from starlette_web.contrib.auth.schemas import (
     ResetPasswordRequestSchema,
     ResetPasswordResponseSchema,
 )
+from starlette_web.core import settings
 
 logger = logging.getLogger(__name__)
 

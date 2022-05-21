@@ -74,6 +74,8 @@ PASSWORD_HASHERS = [
     "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 
+EMAIL_SENDER = "starlette_web.contrib.sendgrid.email.SendgridAPIEmailSender"
+
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
 
 JWT_EXPIRES_IN = config("JWT_EXPIRES_IN", default=(5 * 60), cast=int)  # 5 min
