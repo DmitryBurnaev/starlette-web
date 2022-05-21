@@ -10,9 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from starlette_web.common.http.statuses import ResponseStatus
-from starlette_web.common.email import send_email
+from starlette_web.common.email import send_email, EmailSenderError
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
-from starlette_web.common.http.exceptions import AuthenticationFailedError, InvalidParameterError
+from starlette_web.common.http.exceptions import (
+    AuthenticationFailedError,
+    InvalidParameterError,
+    SendRequestError,
+)
 from starlette_web.common.utils import get_random_string
 from starlette_web.contrib.auth.models import User, UserSession, UserInvite
 from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
@@ -269,11 +273,15 @@ class InviteUserAPIView(BaseHTTPEndpoint):
             f"<p>Please follow the link </p>"
             f"<p><a href={link}>{link}</a></p>"
         )
-        await send_email(
-            recipient_email=user_invite.email,
-            subject=f"Welcome to {settings.SITE_URL}",
-            html_content=body.strip(),
-        )
+
+        try:
+            await send_email(
+                recipient_email=user_invite.email,
+                subject=f"Welcome to {settings.SITE_URL}",
+                html_content=body.strip(),
+            )
+        except EmailSenderError as exc:
+            raise SendRequestError(**exc.to_dict())
 
     async def _validate(self, request, *_) -> dict:
         cleaned_data = (await super()._validate(request)) or dict()
@@ -314,11 +322,14 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
             f"<p>Please follow the link </p>"
             f"<p><a href={link}>{link}</a></p>"
         )
-        await send_email(
-            recipient_email=user.email,
-            subject=f"Welcome back to {settings.SITE_URL}",
-            html_content=body.strip(),
-        )
+        try:
+            await send_email(
+                recipient_email=user.email,
+                subject=f"Welcome back to {settings.SITE_URL}",
+                html_content=body.strip(),
+            )
+        except EmailSenderError as exc:
+            raise SendRequestError(**exc.to_dict())
 
     @staticmethod
     def _generate_token(user: User) -> str:
