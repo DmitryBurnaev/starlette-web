@@ -2,7 +2,6 @@
 
 from starlette_web.common.utils.crypto import get_random_string, constant_time_compare
 from starlette_web.common.utils.importing import import_string
-from starlette_web.common.utils.email import send_email
 from starlette_web.common.utils.json import StarletteJSONEncoder
 from starlette_web.common.utils.serializers import (
     BaseSerializer,

@@ -95,7 +95,7 @@ class PasswordManager(metaclass=Singleton):
             hasher = settings.PASSWORD_HASHERS[0]
         except IndexError:
             raise ImproperlyConfigured(
-                'At least 1 password hasher must be defined at settings.PASSWORD_HASHERS'
+                "At least 1 password hasher must be defined at settings.PASSWORD_HASHERS"
             )
 
         return self._password_hashers[hasher].encode(password, salt)
