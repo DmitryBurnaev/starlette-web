@@ -1,6 +1,25 @@
 from typing import Optional, List
 
 
+class EmailSenderError(Exception):
+    def __init__(
+        self,
+        message: Optional[str] = None,
+        details: Optional[str] = None,
+        request_url: Optional[str] = None,
+    ):
+        self.request_url = request_url or ""
+        self.message = message or ""
+        self.details = details or ""
+
+    def to_dict(self):
+        return {
+            "message": self.message,
+            "details": self.details,
+            "request_url": self.request_url,
+        }
+
+
 class BaseEmailSender:
     async def _open(self):
         return self

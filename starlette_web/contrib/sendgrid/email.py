@@ -3,8 +3,7 @@ from typing import Optional, List
 
 import httpx
 
-from starlette_web.common.email import BaseEmailSender
-from starlette_web.common.http.exceptions import SendRequestError
+from starlette_web.common.email import BaseEmailSender, EmailSenderError
 from starlette_web.common.http.statuses import status_is_success
 from starlette_web.core import settings
 
@@ -40,7 +39,7 @@ class SendgridAPIEmailSender(BaseEmailSender):
             status_code = response.status_code
             if not status_is_success(status_code):
                 response_text = response.json()
-                raise SendRequestError(
+                raise EmailSenderError(
                     message=f"Couldn't send email to {to_email}",
                     details=f"Got status code: {status_code}; response text: {response_text}",
                     request_url=self.request_url,
