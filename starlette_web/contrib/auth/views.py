@@ -276,7 +276,7 @@ class InviteUserAPIView(BaseHTTPEndpoint):
 
         try:
             await send_email(
-                recipient_email=user_invite.email,
+                recipients_list=[user_invite.email],
                 subject=f"Welcome to {settings.SITE_URL}",
                 html_content=body.strip(),
             )
@@ -324,7 +324,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
         )
         try:
             await send_email(
-                recipient_email=user.email,
+                recipients_list=[user.email],
                 subject=f"Welcome back to {settings.SITE_URL}",
                 html_content=body.strip(),
             )

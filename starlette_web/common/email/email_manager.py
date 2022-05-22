@@ -37,25 +37,12 @@ class EmailManager:
         self,
         subject: str,
         html_content: str,
-        to_email: str,
-        from_email: Optional[str] = None,
-    ):
-        async with self._get_email_sender() as sender:
-            await sender.send_email(subject, html_content, to_email, from_email=from_email)
-
-    async def send_mass_email(
-        self,
-        subject: str,
-        html_content: str,
         recipients_list: List[str],
         from_email: Optional[str] = None,
     ):
         async with self._get_email_sender() as sender:
-            await sender.send_mass_email(
-                subject, html_content, recipients_list, from_email=from_email
-            )
+            await sender.send_email(subject, html_content, recipients_list, from_email=from_email)
 
 
 _email_manager = EmailManager()
 send_email = _email_manager.send_email
-send_mass_email = _email_manager.send_mass_email

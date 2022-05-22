@@ -351,7 +351,7 @@ class TestUserInviteApiView(BaseTestAPIView):
             f"<p><a href={link}>{link}</a></p>"
         )
         mocked_auth_send.assert_awaited_once_with(
-            recipient_email=self.email,
+            recipients_list=[self.email],
             subject=f"Welcome to {settings.SITE_URL}",
             html_content=expected_body,
         )
@@ -431,7 +431,7 @@ class TestResetPasswordAPIView(BaseTestAPIView):
             f"<p><a href={link}>{link}</a></p>"
         )
         mocked_auth_send.assert_awaited_once_with(
-            recipient_email=target_user.email,
+            recipients_list=[target_user.email],
             subject=f"Welcome back to {settings.SITE_URL}",
             html_content=expected_body,
         )
