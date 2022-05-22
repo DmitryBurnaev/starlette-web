@@ -36,15 +36,6 @@ class SendgridAPIEmailSender(BaseEmailSender):
             ],
         }
 
-    async def send_email(
-        self,
-        subject: str,
-        html_content: str,
-        to_email: str,
-        from_email: Optional[str] = None,
-    ):
-        await self.send_mass_email(subject, html_content, [to_email], from_email=from_email)
-
     async def send_mass_email(
         self,
         subject: str,
