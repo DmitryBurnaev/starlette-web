@@ -88,12 +88,7 @@ class InvalidResponseError(BaseApplicationError):
 class SendRequestError(BaseApplicationError):
     status_code = 503
     message = "Got unexpected error for sending request."
-    request_url = ""
     response_status = ResponseStatus.SERVICE_COMMUNICATION_ERROR
-
-    def __init__(self, message: str, details: str, request_url: str):
-        super().__init__(details, message)
-        self.request_url = request_url
 
 
 class MaxAttemptsReached(BaseApplicationError):

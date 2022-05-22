@@ -6,17 +6,14 @@ class EmailSenderError(Exception):
         self,
         message: Optional[str] = None,
         details: Optional[str] = None,
-        request_url: Optional[str] = None,
     ):
-        self.request_url = request_url or ""
         self.message = message or ""
         self.details = details or ""
 
     def to_dict(self):
         return {
-            "message": self.message,
             "details": self.details,
-            "request_url": self.request_url,
+            "message": self.message,
         }
 
 
@@ -28,7 +25,11 @@ class BaseEmailSender:
         pass
 
     async def __aenter__(self):
-        await self._open()
+        try:
+            await self._open()
+        except Exception:
+            await self._close()
+            raise
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -44,7 +45,7 @@ class BaseEmailSender:
         to_email: str,
         from_email: Optional[str] = None,
     ):
-        raise NotImplementedError
+        await self.send_mass_email(subject, html_content, [to_email], from_email=from_email)
 
     async def send_mass_email(
         self,
