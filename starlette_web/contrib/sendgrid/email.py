@@ -15,6 +15,7 @@ class SendgridAPIEmailSender(BaseEmailSender):
     def __init__(self):
         self.request_url = f"https://api.sendgrid.com/{settings.SENDGRID_API_VERSION}/mail/send"
         self.request_header = {"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"}
+        self.client: Optional[httpx.AsyncClient] = None
 
     @staticmethod
     def _get_request_data(subject: str, html_content: str, recipients_list: List[str]):
@@ -36,7 +37,15 @@ class SendgridAPIEmailSender(BaseEmailSender):
             ],
         }
 
-    async def send_mass_email(
+    async def _open(self):
+        self.client = await httpx.AsyncClient().__aenter__()
+
+    async def _close(self):
+        if self.client:
+            await self.client.aclose()
+        self.client = None
+
+    async def send_email(
         self,
         subject: str,
         html_content: str,
@@ -46,11 +55,10 @@ class SendgridAPIEmailSender(BaseEmailSender):
         request_data = self._get_request_data(subject, html_content, recipients_list)
         logger.info("Send request to %s. Data: %s", self.request_url, request_data)
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self.request_url, json=request_data, headers=self.request_header
-            )
-            status_code = response.status_code
+        response = await self.client.post(
+            self.request_url, json=request_data, headers=self.request_header
+        )
+        status_code = response.status_code
 
         if not status_is_success(status_code):
             response_text = response.json()

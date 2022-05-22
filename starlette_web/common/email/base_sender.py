@@ -1,3 +1,4 @@
+import traceback
 from typing import Optional, List
 
 
@@ -27,27 +28,24 @@ class BaseEmailSender:
     async def __aenter__(self):
         try:
             await self._open()
-        except Exception:
+        except Exception as exc:
             await self._close()
-            raise
+
+            message = f"{type(exc)}: {exc}"
+            details = "\n".join(traceback.format_tb(exc.__traceback__))
+            raise EmailSenderError(message=message, details=details)
+
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self._close()
 
-        # Re-raise exception, if any
-        return False
+        if exc_type:
+            message = f"{exc_type}: {exc_val}"
+            details = "\n".join(traceback.format_tb(exc_tb))
+            raise EmailSenderError(message=message, details=details)
 
     async def send_email(
-        self,
-        subject: str,
-        html_content: str,
-        to_email: str,
-        from_email: Optional[str] = None,
-    ):
-        await self.send_mass_email(subject, html_content, [to_email], from_email=from_email)
-
-    async def send_mass_email(
         self,
         subject: str,
         html_content: str,
