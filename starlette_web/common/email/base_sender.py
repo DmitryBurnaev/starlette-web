@@ -40,7 +40,11 @@ class BaseEmailSender:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self._close()
 
-        if exc_type:
+        if exc_type == EmailSenderError:
+            # Re-raise exception
+            return False
+
+        elif exc_type:
             message = f"{exc_type}: {exc_val}"
             details = "\n".join(traceback.format_tb(exc_tb))
             raise EmailSenderError(message=message, details=details)
