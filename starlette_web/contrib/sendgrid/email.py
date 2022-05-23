@@ -18,7 +18,9 @@ class SendgridAPIEmailSender(BaseEmailSender):
         self.client: Optional[httpx.AsyncClient] = None
 
     @staticmethod
-    def _get_request_data(subject: str, html_content: str, recipients_list: List[str], from_email: str):
+    def _get_request_data(
+        subject: str, html_content: str, recipients_list: List[str], from_email: str
+    ):
         return {
             "personalizations": [
                 {
