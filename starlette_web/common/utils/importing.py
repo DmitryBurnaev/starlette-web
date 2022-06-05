@@ -1,8 +1,8 @@
 from importlib import import_module
-from typing import Type
+from typing import Any
 
 
-def import_string(dotted_path) -> Type[object]:
+def import_string(dotted_path) -> Any:
     try:
         module_path, class_name = dotted_path.rsplit(".", 1)
     except ValueError as err:

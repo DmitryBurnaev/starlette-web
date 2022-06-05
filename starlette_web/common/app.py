@@ -16,9 +16,9 @@ from starlette_web.common.http.exception_handlers import (
 )
 from starlette_web.common.http.renderers import BaseRenderer
 from starlette_web.common.http.requests import PRequest
-from starlette_web.core import settings
-from starlette_web.core.routes import routes as core_routes
 from starlette_web.common.http.exceptions import BaseApplicationError
+from starlette_web.common.utils import import_string
+from starlette_web.core import settings
 
 
 AppClass = TypeVar("AppClass", bound=Starlette)
@@ -57,8 +57,7 @@ class BaseStarletteApplication:
         return []
 
     def get_routes(self) -> List[Union[WebSocketRoute, Route, Mount]]:
-        # TODO: instead determine main routes.py file from lazy settings
-        return core_routes
+        return import_string(settings.ROUTES)
 
     def get_exception_handlers(self) -> Dict[Type[Exception], ExceptionHandlerType]:
         return {
