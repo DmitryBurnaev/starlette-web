@@ -58,7 +58,7 @@ DATABASE_DSN = config(
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 
 APPLICATION_CLASS = "starlette_web.tests.app.TestStarletteApplication"
-ROUTES = 'starlette_web.core.routes.routes'
+ROUTES = "starlette_web.core.routes.routes"
 
 CACHES = {
     "default": {
