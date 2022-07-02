@@ -35,11 +35,12 @@ class ModelMixin:
         if order_by:
             _order_by = [o for o in order_by]
         else:
-            for field in cls.Meta.order_by:
-                if field.startswith("-"):
-                    _order_by.append(getattr(cls, field.replace("-", "")).desc())
-                else:
-                    _order_by.append(getattr(cls, field))
+            _order_by = [o for o in cls.Meta.order_by]
+
+        _order_by = [
+            getattr(cls, field.lstrip("-")).desc() if field.startswith("-") else getattr(cls, field)
+            for field in _order_by
+        ]
 
         query = select(cls).filter(cls._filter_criteria(filter_kwargs)).order_by(*_order_by)
 
