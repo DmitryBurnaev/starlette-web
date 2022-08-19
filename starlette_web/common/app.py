@@ -18,7 +18,7 @@ from starlette_web.common.http.renderers import BaseRenderer
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import import_string
-from starlette_web.core import settings
+from starlette_web.common.conf import settings
 
 
 AppClass = TypeVar("AppClass", bound=Starlette)
@@ -88,3 +88,8 @@ class BaseStarletteApplication:
         if hasattr(settings, "CACHES"):
             for conn_name in settings.CACHES:
                 _ = caches[conn_name]
+
+
+def get_app() -> AppClass:
+    StarletteApplication = import_string(settings.APPLICATION_CLASS)
+    return StarletteApplication().get_app()

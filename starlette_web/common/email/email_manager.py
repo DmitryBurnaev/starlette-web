@@ -1,9 +1,9 @@
 from typing import Optional, List
 
+from starlette_web.common.conf import settings
 from starlette_web.common.email.base_sender import BaseEmailSender
-from starlette_web.common.exceptions import ImproperlyConfigured
+from starlette_web.common.http.exceptions import ImproperlyConfigured
 from starlette_web.common.utils.importing import import_string
-from starlette_web.core import settings
 
 
 class EmailManager:

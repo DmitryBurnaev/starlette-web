@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from starlette_web.core import settings
+from starlette_web.common.conf import settings
 
 
 def make_session_maker() -> sessionmaker:

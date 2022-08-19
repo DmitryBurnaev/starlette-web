@@ -3,7 +3,8 @@ import hashlib
 import math
 from typing import Optional, Dict, Union
 
-from starlette_web.common.exceptions import ImproperlyConfigured
+from starlette_web.common.conf import settings
+from starlette_web.common.http.exceptions import ImproperlyConfigured
 from starlette_web.common.utils.importing import import_string
 from starlette_web.common.utils.singleton import Singleton
 from starlette_web.common.utils.crypto import (
@@ -11,7 +12,6 @@ from starlette_web.common.utils.crypto import (
     constant_time_compare,
     RANDOM_STRING_CHARS,
 )
-from starlette_web.core import settings
 
 
 class BasePasswordHasher(metaclass=Singleton):

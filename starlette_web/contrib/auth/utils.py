@@ -4,7 +4,7 @@ from typing import Tuple
 
 import jwt
 
-from starlette_web.core import settings
+from starlette_web.common.conf import settings
 
 
 TOKEN_TYPE_ACCESS = "access"

@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault('STARLETTE_SETTINGS_MODULE', 'starlette_web.core.settings')
+
 import asyncio
 import uuid
 from datetime import datetime, timedelta
@@ -11,8 +14,8 @@ from sqlalchemy.util import concurrency
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from starlette_web.core import settings
 from starlette_web.common import database
+from starlette_web.common.conf import settings
 from starlette_web.contrib.auth.models import UserInvite
 from starlette_web.tests.helpers import (
     WebTestClient,
@@ -35,7 +38,7 @@ def test_settings():
 
 @pytest.fixture(autouse=True, scope="session")
 def client() -> WebTestClient:
-    from starlette_web.core.app import get_app
+    from starlette_web.common.app import get_app
 
     with WebTestClient(get_app()) as client:
         with make_db_session(asyncio.get_event_loop()) as db_session:

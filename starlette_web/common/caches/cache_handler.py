@@ -2,9 +2,9 @@
 
 from typing import Dict, Type
 
+from starlette_web.common.conf import settings
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.utils import import_string
-from starlette_web.core import settings
 
 
 def _create_cache(alias: str) -> BaseCache:
