@@ -10,42 +10,42 @@ _setattr = object.__setattr__
 
 
 class Settings:
-    ENVIRONMENT_VARIABLE = 'STARLETTE_SETTINGS_MODULE'
+    ENVIRONMENT_VARIABLE = "STARLETTE_SETTINGS_MODULE"
     _global_settings: Dict[str, Any]
     _user_settings: Dict[str, Any]
     _setup_done: bool
 
     def __init__(self):
-        _setattr(self, '_global_settings', dict())
-        _setattr(self, '_user_settings', dict())
-        _setattr(self, '_setup_done', False)
+        _setattr(self, "_global_settings", dict())
+        _setattr(self, "_user_settings", dict())
+        _setattr(self, "_setup_done", False)
 
     def _setup(self) -> None:
-        settings_module = os.environ.get(_getattr(self, 'ENVIRONMENT_VARIABLE'))
+        settings_module = os.environ.get(_getattr(self, "ENVIRONMENT_VARIABLE"))
         if not settings_module:
             raise ImproperlyConfigured(
-                details=f"Environment variable STARLETTE_SETTINGS_MODULE is not configured."
+                details="Environment variable STARLETTE_SETTINGS_MODULE is not configured."
             )
 
         module = import_module(settings_module)
         for setting in dir(module):
             if setting.isupper():
                 setting_value = getattr(module, setting)
-                _getattr(self, '_user_settings')[setting] = setting_value
+                _getattr(self, "_user_settings")[setting] = setting_value
 
-        _setattr(self, '_setup_done', True)
+        _setattr(self, "_setup_done", True)
 
     def __getattr__(self, key: str) -> Any:
-        if not _getattr(self, '_setup_done'):
-            _getattr(self, '_setup')()
+        if not _getattr(self, "_setup_done"):
+            _getattr(self, "_setup")()
 
-        if key in _getattr(self, '_user_settings'):
-            return _getattr(self, '_user_settings')[key]
+        if key in _getattr(self, "_user_settings"):
+            return _getattr(self, "_user_settings")[key]
 
         raise ImproperlyConfigured(details=f"Setting {key.upper()} is not configured.")
 
     def __setattr__(self, key: str, value: Any) -> None:
-        _getattr(self, '_user_settings')[key.upper()] = value
+        _getattr(self, "_user_settings")[key.upper()] = value
 
 
 settings = Settings()

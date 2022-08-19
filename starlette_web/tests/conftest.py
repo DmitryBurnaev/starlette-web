@@ -1,5 +1,7 @@
+# flake8: noqa E402
 import os
-os.environ.setdefault('STARLETTE_SETTINGS_MODULE', 'starlette_web.core.settings')
+
+os.environ.setdefault("STARLETTE_SETTINGS_MODULE", "starlette_web.core.settings")
 
 import asyncio
 import uuid
