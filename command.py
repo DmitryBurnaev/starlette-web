@@ -6,7 +6,7 @@ from starlette_web.common.management.base import fetch_command_by_name, CommandE
 
 
 if __name__ == "__main__":
-    os.environ.setdefault('STARLETTE_SETTINGS_MODULE', 'starlette_web.core.settings')
+    os.environ.setdefault("STARLETTE_SETTINGS_MODULE", "starlette_web.core.settings")
 
     if len(sys.argv) < 2:
         raise CommandError(
