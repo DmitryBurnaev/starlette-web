@@ -6,7 +6,7 @@ from starlette import status
 from starlette.responses import BackgroundTask
 from webargs_starlette import WebargsHTTPException
 
-from starlette_web.core import settings
+from starlette_web.common.conf import settings
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
 from starlette_web.common.http.statuses import ResponseStatus, status_is_server_error

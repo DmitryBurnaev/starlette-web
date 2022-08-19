@@ -20,6 +20,10 @@ class BaseApplicationError(Exception):
         self.response_status = response_status or self.response_status
 
 
+class ImproperlyConfigured(BaseApplicationError):
+    message = "Application is configured improperly."
+
+
 class UnexpectedError(BaseApplicationError):
     message = "Something unexpected happened."
 

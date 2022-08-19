@@ -9,6 +9,7 @@ from typing import Tuple, Optional, Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from starlette_web.common.conf import settings
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.email import send_email, EmailSenderError
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
@@ -39,7 +40,6 @@ from starlette_web.contrib.auth.schemas import (
     ResetPasswordRequestSchema,
     ResetPasswordResponseSchema,
 )
-from starlette_web.core import settings
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,8 @@ import pkgutil
 from argparse import ArgumentParser
 from typing import Optional, List, Type, Awaitable, Dict
 
-from starlette_web.core import settings
-from starlette_web.core.app import get_app
+from starlette_web.common.app import get_app
+from starlette_web.common.conf import settings
 from starlette_web.common.utils import import_string
 
 

@@ -3,9 +3,9 @@ from typing import Optional, List
 
 import httpx
 
+from starlette_web.common.conf import settings
 from starlette_web.common.email import BaseEmailSender, EmailSenderError
 from starlette_web.common.http.statuses import status_is_success
-from starlette_web.core import settings
 
 
 logger = logging.getLogger(__name__)
