@@ -7,6 +7,7 @@ from starlette_web.common.http.exceptions import ImproperlyConfigured
 
 _getattr = object.__getattribute__
 _setattr = object.__setattr__
+empty = object()
 
 
 class Settings:
@@ -39,10 +40,11 @@ class Settings:
         if not _getattr(self, "_setup_done"):
             _getattr(self, "_setup")()
 
-        if key in _getattr(self, "_user_settings"):
-            return _getattr(self, "_user_settings")[key]
+        value = _getattr(self, "_user_settings").get(key, empty)
+        if value is empty:
+            raise ImproperlyConfigured(details=f"Setting {key.upper()} is not configured.")
 
-        raise ImproperlyConfigured(details=f"Setting {key.upper()} is not configured.")
+        return value
 
     def __setattr__(self, key: str, value: Any) -> None:
         _getattr(self, "_user_settings")[key.upper()] = value
