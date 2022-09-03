@@ -14,6 +14,7 @@ class ErrorDetailsSchema(Schema):
     details = fields.Raw(required=False, allow_none=True)
 
 
+# TODO: maybe move from common.apispec to common.elsewhere (?)
 class ErrorResponseSchema(Schema):
     payload = fields.Nested(ErrorDetailsSchema, required=True)
     status = fields.String(required=False, allow_none=False)
