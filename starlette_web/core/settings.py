@@ -109,3 +109,5 @@ LOGGING = {
         "app": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
     },
 }
+
+ERROR_RESPONSE_SCHEMA = "starlette_web.common.apispec.schemas.ErrorResponseSchema"

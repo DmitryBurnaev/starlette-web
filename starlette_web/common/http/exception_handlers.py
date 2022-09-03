@@ -6,6 +6,7 @@ from starlette import status
 from starlette.responses import BackgroundTask
 from webargs_starlette import WebargsHTTPException
 
+from starlette_web.common.apispec.schemas import get_error_schema_class
 from starlette_web.common.conf import settings
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
@@ -40,14 +41,17 @@ class BaseExceptionHandler:
 
     def _get_response_data(self, request: PRequest, exc: Exception) -> Any:
         error_message = self._get_error_message(request, exc)
-        error_details = self._get_error_details(request, exc)
         response_status = self._get_response_status(request, exc)
 
         payload = {"error": error_message}
         if settings.APP_DEBUG or response_status == ResponseStatus.INVALID_PARAMETERS:
-            payload["details"] = error_details
+            payload["details"] = self._get_error_details(request, exc)
 
-        return {"status": response_status, "payload": payload}
+        error_schema = get_error_schema_class()()
+        print(error_schema)
+        res = {"status": str(response_status), "payload": payload}
+        print(res, error_schema.dump(res))
+        return error_schema.dump(res)
 
     def _on_error_action(self, request: PRequest, exc: Exception):
         status_code = self._get_status_code(request, exc)

@@ -19,6 +19,8 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
     """Core of authenticate system, based on JWT auth approach"""
 
     keyword = "Bearer"
+    openapi_spec = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
+    openapi_name = "JWTAuth"
 
     async def authenticate(self) -> User:
         request = self.request
