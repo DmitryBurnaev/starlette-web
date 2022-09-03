@@ -48,9 +48,7 @@ class BaseExceptionHandler:
             payload["details"] = self._get_error_details(request, exc)
 
         error_schema = get_error_schema_class()()
-        print(error_schema)
         res = {"status": str(response_status), "payload": payload}
-        print(res, error_schema.dump(res))
         return error_schema.dump(res)
 
     def _on_error_action(self, request: PRequest, exc: Exception):
