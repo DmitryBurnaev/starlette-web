@@ -1,7 +1,7 @@
-import enum
+from starlette_web.common.utils import TextChoices
 
 
-class ResponseStatus(str, enum.Enum):
+class ResponseStatus(TextChoices):
     OK = "OK"
     INTERNAL_ERROR = "INTERNAL_ERROR"
     AUTH_FAILED = "AUTH_FAILED"
