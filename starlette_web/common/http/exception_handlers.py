@@ -6,12 +6,12 @@ from starlette import status
 from starlette.responses import BackgroundTask
 from webargs_starlette import WebargsHTTPException
 
-from starlette_web.common.apispec.schemas import get_error_schema_class
 from starlette_web.common.conf import settings
+from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
+from starlette_web.common.http.schemas import get_error_schema_class
 from starlette_web.common.http.statuses import ResponseStatus, status_is_server_error
-from starlette_web.common.http.exceptions import BaseApplicationError
 
 
 class BaseExceptionHandler:
