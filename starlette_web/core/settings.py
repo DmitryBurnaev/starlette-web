@@ -7,10 +7,8 @@ from sqlalchemy.engine.url import URL
 from starlette.config import Config
 from starlette.datastructures import Secret
 
-# TODO: detect real settings path
-SETTINGS_PATH = Path(os.path.dirname(os.path.abspath(__file__)))
-BASE_DIR = Path(os.path.dirname(SETTINGS_PATH))
-PROJECT_ROOT_DIR = Path(os.path.dirname(BASE_DIR))
+# TODO: change default project path when running startproject
+PROJECT_ROOT_DIR = Path(__file__).parent.parent.parent
 
 config = Config(PROJECT_ROOT_DIR / ".env")
 
@@ -22,6 +20,7 @@ TEST_MODE = "test" in sys.argv[0]
 INSTALLED_APPS = [
     "starlette_web.common",
     "starlette_web.tests",
+    "starlette_web.contrib.apispec",
     "starlette_web.contrib.auth",
 ]
 
@@ -110,4 +109,25 @@ LOGGING = {
     },
 }
 
-ERROR_RESPONSE_SCHEMA = "starlette_web.common.apispec.schemas.ErrorResponseSchema"
+ERROR_RESPONSE_SCHEMA = "starlette_web.common.http.schemas.ErrorResponseSchema"
+
+TEMPLATES = {
+    "ROOT_DIR": PROJECT_ROOT_DIR / "templates",
+    "AUTOESCAPE": False,
+    "AUTORELOAD": False,
+}
+
+STATIC = {
+    "ROOT_DIR": PROJECT_ROOT_DIR / "static",
+    "URL": "/static/",
+}
+
+# TODO: Think about managing permissions
+APISPEC = {
+    "CONFIG": dict(
+        title="Project documentation",
+        version="0.0.1",
+        openapi_version="3.0.2",
+        info=dict(description="My custom project."),
+    ),
+}
