@@ -10,3 +10,4 @@ from starlette_web.common.utils.serializers import (
     PickleSerializer,
 )
 from starlette_web.common.utils.singleton import Singleton
+from starlette_web.common.utils.urls import urljoin

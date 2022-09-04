@@ -21,8 +21,8 @@ class StarletteWebMarshmallowOpenAPIConverter(OpenAPIConverter):
         res = super().field2choices(field, **kwargs)
         return json.loads(StarletteJSONEncoder().encode(res))
 
-    def fields2jsonschema(self, fields, *, ordered=False, partial=None):
-        res = super().fields2jsonschema(fields, ordered=ordered, partial=partial)
+    def fields2jsonschema(self, fields, *, partial=None):
+        res = super().fields2jsonschema(fields, partial=partial)
 
         # TODO: this field must be redefined to support changes to schema via renderer_class, i.e.
         """

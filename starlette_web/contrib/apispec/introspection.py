@@ -97,7 +97,8 @@ class APISpecSchemaGenerator(BaseSchemaGenerator):
 
     def get_schema(self, routes: List[BaseRoute]) -> dict:
         ErrorResponseSchema = get_error_schema_class()()
-        self.spec.components.schema(self.ERROR_SCHEMA_NAME, schema=ErrorResponseSchema)
+        if self.ERROR_SCHEMA_NAME not in self.spec.components.schemas:
+            self.spec.components.schema(self.ERROR_SCHEMA_NAME, schema=ErrorResponseSchema)
 
         endpoints = self.get_endpoints(routes)
         self._fetch_paths_and_endpoints(routes)

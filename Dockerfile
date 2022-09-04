@@ -23,4 +23,8 @@ COPY .flake8 .
 
 RUN chown -R web:web /web-project
 
+ENV STARLETTE_SETTINGS_MODULE=starlette_web.core.settings
+COPY command.py .
+RUN python command.py collectstatic
+
 ENTRYPOINT ["/bin/sh", "/web-project/run_tests.sh"]

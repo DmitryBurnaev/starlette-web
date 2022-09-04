@@ -1,6 +1,6 @@
 from apispec.ext.marshmallow import MarshmallowPlugin
 
-from starlette_web.common.apispec.marshmallow.converters import (
+from starlette_web.contrib.apispec.marshmallow.converters import (
     StarletteWebMarshmallowOpenAPIConverter,
 )
 
