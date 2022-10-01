@@ -100,6 +100,27 @@ class SignInAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     auth_backend = None
 
     async def post(self, request):
+        """
+        description: Sign in
+        requestBody:
+          required: true
+          description: Sign in
+          content:
+            application/json:
+              schema: SignInSchema
+        responses:
+          200:
+            description: JsonWebToken
+            content:
+              application/json:
+                schema: JWTResponseSchema
+          401:
+            description: Authentication failed
+            content:
+              application/json:
+                schema: Error
+        tags: ["Authorization"]
+        """
         cleaned_data = await self._validate(request)
         user = await self.authenticate(cleaned_data["email"], cleaned_data["password"])
         token_collection = await self._create_session(user)
@@ -130,6 +151,22 @@ class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     auth_backend = None
 
     async def post(self, request):
+        """
+        description: Sign up
+        requestBody:
+          required: true
+          description: Sign up
+          content:
+            application/json:
+              schema: SignUpSchema
+        responses:
+          200:
+            description: JsonWebToken
+            content:
+              application/json:
+                schema: JWTResponseSchema
+        tags: ["Authorization"]
+        """
         cleaned_data = await self._validate(request)
         user_invite: UserInvite = cleaned_data["user_invite"]
         user = await User.async_create(
@@ -180,6 +217,13 @@ class SignOutAPIView(BaseHTTPEndpoint):
     auth_backend = JWTAuthenticationBackend
 
     async def delete(self, request):
+        """
+        description: Sign out
+        responses:
+          200:
+            description: Signed out
+        tags: ["Authorization"]
+        """
         user = request.user
         logger.info("Log out for user %s", user)
 
@@ -206,6 +250,27 @@ class RefreshTokenAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     auth_backend = None
 
     async def post(self, request):
+        """
+        description: Update refresh token
+        requestBody:
+          required: true
+          description: Refresh token
+          content:
+            application/json:
+              schema: RefreshTokenSchema
+        responses:
+          200:
+            description: JsonWebToken
+            content:
+              application/json:
+                schema: JWTResponseSchema
+          401:
+            description: Authentication failed
+            content:
+              application/json:
+                schema: Error
+        tags: ["Authorization"]
+        """
         user, refresh_token, session_id = await self._validate(request)
         if session_id is None:
             raise AuthenticationFailedError("No session ID in token found")
@@ -240,6 +305,22 @@ class InviteUserAPIView(BaseHTTPEndpoint):
     auth_backend = JWTAuthenticationBackend
 
     async def post(self, request):
+        """
+        description: Invite user
+        requestBody:
+          required: true
+          description: Invited user's credentials
+          content:
+            application/json:
+              schema: UserInviteRequestSchema
+        responses:
+          200:
+            description: Invited user
+            content:
+              application/json:
+                schema: UserInviteResponseSchema
+        tags: ["Authorization"]
+        """
         cleaned_data = await self._validate(request)
         email = cleaned_data["email"]
         token = UserInvite.generate_token()
@@ -301,6 +382,22 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
     permission_classes = [IsSuperuserPermission]
 
     async def post(self, request):
+        """
+        description: Reset password
+        requestBody:
+          required: true
+          description: User credentials
+          content:
+            application/json:
+              schema: ResetPasswordRequestSchema
+        responses:
+          200:
+            description: Link to email
+            content:
+              application/json:
+                schema: ResetPasswordResponseSchema
+        tags: ["Authorization"]
+        """
         user = await self._validate(request)
         token = self._generate_token(user)
         await self._send_email(user, token)
@@ -354,6 +451,24 @@ class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     auth_backend = None
 
     async def post(self, request):
+        """
+        description: Change password
+        requestBody:
+          required: true
+          description: New password confirmation
+          content:
+            application/json:
+              schema: ChangePasswordSchema
+        responses:
+          200:
+            description: New tokens
+            content:
+              application/json:
+                schema: JWTResponseSchema
+          401:
+            description: Authentication failed
+        tags: ["Authorization"]
+        """
         """Check is email unique and create new User"""
         cleaned_data = await self._validate(request)
         user, _, _ = await JWTAuthenticationBackend(request, self.scope).authenticate_user(
@@ -374,4 +489,14 @@ class ProfileApiView(BaseHTTPEndpoint):
     auth_backend = JWTAuthenticationBackend
 
     async def get(self, request):
+        """
+        description: Profile info
+        responses:
+          200:
+            description: Profile
+            content:
+              application/json:
+                schema: UserResponseSchema
+        tags: ["Authorization"]
+        """
         return self._response(request.user)

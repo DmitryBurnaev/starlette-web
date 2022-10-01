@@ -27,6 +27,18 @@ class HealthCheckAPIView(BaseHTTPEndpoint):
     schema_response = HealthCheckSchema
 
     async def get(self, *_):
+        """
+        description: Health check of services
+        responses:
+          200:
+            description: Services with status
+            content:
+              application/json:
+                schema: HealthCheckSchema
+          503:
+            description: Service unavailable
+        tags: ["Health check"]
+        """
         response_data = {"services": {}, "errors": []}
         result_status = status.HTTP_200_OK
         response_status = ResponseStatus.OK
@@ -59,6 +71,13 @@ class SentryCheckAPIView(BaseHTTPEndpoint):
     auth_backend = None
 
     async def get(self, request):  # noqa
+        """
+        description: Health check of Sentry logger
+        responses:
+          500:
+            description: Application error
+        tags: ["Health check"]
+        """
         logger.error("Error check sentry")
         try:
             1 / 0

@@ -95,6 +95,16 @@ class APISpecSchemaGenerator(BaseSchemaGenerator):
                 },
             }
 
+    def _populate_validation(self, endpoint: EndpointInfo, parsed_docstring: dict):
+        if "requestBody" in parsed_docstring:
+            parsed_docstring["responses"] = {
+                **parsed_docstring.get("responses", {}),
+                "400": {
+                    "description": gettext("Bad Request."),
+                    "content": {"application/json": {"schema": self.ERROR_SCHEMA_NAME}},
+                },
+            }
+
     def get_schema(self, routes: List[BaseRoute]) -> dict:
         ErrorResponseSchema = get_error_schema_class()()
         if self.ERROR_SCHEMA_NAME not in self.spec.components.schemas:
@@ -107,6 +117,7 @@ class APISpecSchemaGenerator(BaseSchemaGenerator):
             parsed = self.parse_docstring(endpoint.func)
             self._populate_security_schema(endpoint, parsed)
             self._populate_auth_errors(endpoint, parsed)
+            self._populate_validation(endpoint, parsed)
 
             self.spec.path(
                 path=endpoint.path,
