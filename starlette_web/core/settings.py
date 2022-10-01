@@ -1,4 +1,3 @@
-import os
 import sys
 import tempfile
 from pathlib import Path
@@ -109,8 +108,6 @@ LOGGING = {
     },
 }
 
-ERROR_RESPONSE_SCHEMA = "starlette_web.common.http.schemas.ErrorResponseSchema"
-
 TEMPLATES = {
     "ROOT_DIR": PROJECT_ROOT_DIR / "templates",
     "AUTOESCAPE": False,
@@ -130,4 +127,6 @@ APISPEC = {
         openapi_version="3.0.2",
         info=dict(description="My custom project."),
     ),
+    "ERROR_RESPONSE_SCHEMA": "starlette_web.common.http.schemas.ErrorResponseSchema",
+    "CONVERT_TO_CAMEL_CASE": False,
 }

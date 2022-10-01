@@ -26,7 +26,7 @@ class Command(BaseCommand):
             await self.move_apps_templates(module_path)
 
     async def move_apps_static(self, apps_path: Path):
-        static_dir = (apps_path / 'static')
+        static_dir = apps_path / "static"
         if static_dir.is_dir():
             for child in static_dir.iterdir():
                 if child.is_file():
@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     shutil.copytree(child, destination_dir)
 
     async def move_apps_templates(self, apps_path: Path):
-        templates_dir = (apps_path / 'templates')
+        templates_dir = apps_path / "templates"
         if templates_dir.is_dir():
             for child in templates_dir.iterdir():
                 if child.is_file():

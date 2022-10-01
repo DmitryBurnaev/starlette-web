@@ -4,7 +4,9 @@ from apispec.ext.marshmallow import OpenAPIConverter
 from apispec.ext.marshmallow.field_converter import DEFAULT_FIELD_MAPPING
 import marshmallow
 
+from starlette_web.common.conf import settings
 from starlette_web.common.utils.json import StarletteJSONEncoder
+from starlette_web.contrib.camel_case.utils import camelize, camelize_key
 
 
 # TODO: maybe allow user to override class in settings (?)
@@ -24,12 +26,11 @@ class StarletteWebMarshmallowOpenAPIConverter(OpenAPIConverter):
     def fields2jsonschema(self, fields, *, partial=None):
         res = super().fields2jsonschema(fields, partial=partial)
 
-        # TODO: this field must be redefined to support changes to schema via renderer_class, i.e.
-        """
-        if 'required' in res and type(res['required']) is list:
-            res['required'] = [camelize_key(d) for d in res['required']]
-        if res.get('properties'):
-            res['properties'] = camelize(res['properties'])
-        return camelize(res)
-        """
+        if settings.APISPEC["CONVERT_TO_CAMEL_CASE"]:
+            if "required" in res and type(res["required"]) is list:
+                res["required"] = [camelize_key(d) for d in res["required"]]
+            if res.get("properties"):
+                res["properties"] = camelize(res["properties"])
+            return camelize(res)
+
         return res
