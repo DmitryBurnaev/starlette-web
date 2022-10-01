@@ -24,5 +24,5 @@ def get_error_schema_class() -> Type[Schema]:
     if __ERROR_RESPONSE_SCHEMA is not None:
         return __ERROR_RESPONSE_SCHEMA
 
-    __ERROR_RESPONSE_SCHEMA = import_string(settings.ERROR_RESPONSE_SCHEMA)
+    __ERROR_RESPONSE_SCHEMA = import_string(settings.APISPEC["ERROR_RESPONSE_SCHEMA"])
     return __ERROR_RESPONSE_SCHEMA

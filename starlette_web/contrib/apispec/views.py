@@ -36,12 +36,12 @@ class RedocView(BaseHTTPEndpoint):
 
     async def get(self, request: PRequest):
         return TemplateResponse(
-            'apispec/redoc.html',
+            "apispec/redoc.html",
             context={
                 # TODO: dynamically obtain url for endpoint or allow configuring
-                'REDOC_SPEC_URL': '/openapi/openapi/schema/',
-                'REDOC_JS_URL': urljoin(settings.STATIC["URL"], 'apispec', 'redoc.js'),
-                'REDOC_TITLE': 'OPENAPI documentation',
-                'request': request,
+                "REDOC_SPEC_URL": "/openapi/schema/",
+                "REDOC_JS_URL": urljoin(settings.STATIC["URL"], "apispec", "redoc.js"),
+                "REDOC_TITLE": "OPENAPI documentation",
+                "request": request,
             },
         )

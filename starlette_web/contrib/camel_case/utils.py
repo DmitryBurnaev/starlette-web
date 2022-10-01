@@ -16,6 +16,10 @@ def _underscore_to_camel(match):
         return group[1].upper()
 
 
+def camelize_key(key):
+    return re.sub(camelize_re, _underscore_to_camel, key)
+
+
 def camelize(data: JSONType, ignore_fields: Container = ()) -> JSONType:
     """
     Recursively swaps snake_case to camelCase in keys of nested dictionaries, leaving values as is.
@@ -31,6 +35,7 @@ def camelize(data: JSONType, ignore_fields: Container = ()) -> JSONType:
                 new_key = re.sub(camelize_re, _underscore_to_camel, key)
             else:
                 new_key = key
+
             if key not in ignore_fields and new_key not in ignore_fields:
                 new_dict[new_key] = camelize(value, ignore_fields=ignore_fields)
             else:
