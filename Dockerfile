@@ -23,7 +23,7 @@ COPY .flake8 .
 
 RUN chown -R web:web /web-project
 
-RUN mkdir static
+RUN mkdir -p static
 
 ENV STARLETTE_SETTINGS_MODULE=starlette_web.core.settings
 COPY command.py .
