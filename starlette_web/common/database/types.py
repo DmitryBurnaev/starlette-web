@@ -34,7 +34,7 @@ class ChoiceType(types.TypeDecorator):
         super().__init__(*args, **kwargs)
         self.enum_class = enum_class
         if impl:
-            self.impl = impl
+            self.impl = impl() if isinstance(impl, type) else impl
 
     def __repr__(self):
         """
