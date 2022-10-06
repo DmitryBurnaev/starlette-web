@@ -1,10 +1,22 @@
 import json
 import pickle
-
 from typing import Any
 
+from starlette_web.common.http.exceptions import BaseApplicationError
 
-# TODO: generic SerializeError, DeserializeError
+
+class SerializerError(BaseApplicationError):
+    pass
+
+
+class SerializeError(SerializerError):
+    pass
+
+
+class DeserializeError(SerializerError):
+    pass
+
+
 class BaseSerializer:
     def serialize(self, content: Any) -> Any:
         raise NotImplementedError
@@ -21,19 +33,31 @@ class JSONSerializer(BaseSerializer):
     decoder_class = json.JSONDecoder
 
     def serialize(self, content: Any) -> Any:
-        return self.encoder_class().encode(content)
+        try:
+            return self.encoder_class().encode(content)
+        except ValueError as exc:
+            raise SerializeError from exc
 
     def deserialize(self, content: Any) -> Any:
-        return self.decoder_class().decode(content or "null")
+        try:
+            return self.decoder_class().decode(content or "null")
+        except ValueError as exc:
+            raise DeserializeError from exc
 
 
 class PickleSerializer(BaseSerializer):
     # TODO: maybe add option to use dill ?
     def serialize(self, content: Any) -> Any:
-        return pickle.dumps(content)
+        try:
+            return pickle.dumps(content)
+        except pickle.PicklingError as exc:
+            raise SerializeError from exc
 
     def deserialize(self, content: Any) -> Any:
         if content is None:
             return None
 
-        return pickle.loads(content)
+        try:
+            return pickle.loads(content)
+        except pickle.UnpicklingError as exc:
+            raise DeserializeError from exc

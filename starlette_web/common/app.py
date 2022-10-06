@@ -9,6 +9,7 @@ from starlette.routing import Route, Mount, WebSocketRoute
 from webargs_starlette import WebargsHTTPException
 
 from starlette_web.common.caches import caches
+from starlette_web.common.conf import settings
 from starlette_web.common.database import make_session_maker
 from starlette_web.common.http.exception_handlers import (
     BaseApplicationErrorHandler,
@@ -18,9 +19,9 @@ from starlette_web.common.http.renderers import BaseRenderer
 from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import import_string
-from starlette_web.common.conf import settings
 
 
+__APPLICATION = None
 AppClass = TypeVar("AppClass", bound=Starlette)
 ExceptionHandlerType = Callable[[PRequest, Exception], BaseRenderer]
 
@@ -66,6 +67,7 @@ class BaseStarletteApplication:
         }
 
     def get_app(self) -> AppClass:
+        object.__getattribute__(settings, "_setup")()
         self.pre_app_init()
 
         app = self.app_class(
@@ -77,6 +79,7 @@ class BaseStarletteApplication:
 
         self._setup_logging(app)
         self._setup_caches(app)
+        self._setup_constance(app)
 
         self.post_app_init(app)
         return app
@@ -89,7 +92,23 @@ class BaseStarletteApplication:
             for conn_name in settings.CACHES:
                 _ = caches[conn_name]
 
+    def _setup_constance(self, app: AppClass):
+        from starlette_web.contrib.constance import config
+
+        config._setup()
+
+        try:
+            if settings.CONSTANCE_BACKEND:
+                backend = config._backend
+                if getattr(backend, "app", None) is None:
+                    backend.app = app
+        except (AttributeError, BaseApplicationError):
+            pass
+
 
 def get_app() -> AppClass:
-    StarletteApplication = import_string(settings.APPLICATION_CLASS)
-    return StarletteApplication().get_app()
+    global __APPLICATION
+    if __APPLICATION is None:
+        StarletteApplication = import_string(settings.APPLICATION_CLASS)
+        __APPLICATION = StarletteApplication().get_app()
+    return __APPLICATION
