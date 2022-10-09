@@ -11,6 +11,8 @@ from starlette_web.contrib.constance.backends.base import BaseConstanceBackend
 from starlette_web.common.conf import settings
 
 
+# TODO: some kind of validation system, much like django.checks
+# TODO: _validate method
 class LazyConstance:
     _backend: BaseConstanceBackend
     _is_setup: bool
@@ -22,7 +24,9 @@ class LazyConstance:
         self._setup()
 
         if key not in settings.CONSTANCE_CONFIG:
-            raise NotSupportedError
+            raise NotSupportedError(
+                details=f"Key {key} is not defined in settings.CONSTANCE_CONFIG."
+            )
 
         value = await self._backend.get(key)
         return self._postprocess_value(key, value)
@@ -31,7 +35,9 @@ class LazyConstance:
         self._setup()
 
         if key not in settings.CONSTANCE_CONFIG:
-            raise NotSupportedError
+            raise NotSupportedError(
+                details=f"Key {key} is not defined in settings.CONSTANCE_CONFIG."
+            )
 
         expected_type = settings.CONSTANCE_CONFIG[key][2]
         if type(value) != expected_type:
@@ -57,7 +63,10 @@ class LazyConstance:
                 raise NotSupportedError
 
         return_list = await self._backend.mget(keys)
-        return {key: self._postprocess_value(key, value) for key, value in return_list.items()}
+        return {
+            key: self._postprocess_value(key, value)
+            for key, value in return_list.items()
+        }
 
     def _postprocess_value(self, key, value):
         if key not in settings.CONSTANCE_CONFIG:
