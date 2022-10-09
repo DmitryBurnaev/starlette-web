@@ -19,6 +19,7 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 from starlette_web.common import database
 from starlette_web.common.conf import settings
 from starlette_web.contrib.auth.models import UserInvite
+from starlette_web.contrib.constance.backends.database.models import Constance
 from starlette_web.tests.helpers import (
     WebTestClient,
     get_user_data,
@@ -36,6 +37,25 @@ def test_settings():
     settings.APP_DEBUG = True
     settings.MAX_UPLOAD_ATTEMPT = 1
     settings.RETRY_UPLOAD_TIMEOUT = 0
+
+
+@pytest.fixture(autouse=True, scope="session")
+def config():
+    from starlette_web.contrib.constance import config as base_config
+    from starlette_web.common.app import get_app
+
+    settings.CONSTANCE_CONFIG = {
+        "TEST_CONSTANT_1": (1, "Test constant 1", int),
+        "TEST_CONSTANT_2": (2, "Test constant 2", int),
+        "TEST_CONSTANT_UUID": (uuid.uuid4(), "Test constant uuid", uuid.UUID),
+        "TEST_CONSTANT_DATETIME": (datetime.now(), "Test constant datetime", datetime),
+    }
+    settings.CONSTANCE_BACKEND = "starlette_web.contrib.constance.backends.database.DatabaseBackend"
+
+    app = get_app()
+    base_config._setup()
+    base_config._backend.app = app
+    yield base_config
 
 
 @pytest.fixture(autouse=True, scope="session")
