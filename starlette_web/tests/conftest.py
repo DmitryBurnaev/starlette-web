@@ -42,19 +42,16 @@ def test_settings():
 @pytest.fixture(autouse=True, scope="session")
 def config():
     from starlette_web.contrib.constance import config as base_config
-    from starlette_web.common.app import get_app
 
     settings.CONSTANCE_CONFIG = {
         "TEST_CONSTANT_1": (1, "Test constant 1", int),
         "TEST_CONSTANT_2": (2, "Test constant 2", int),
-        "TEST_CONSTANT_UUID": (uuid.uuid4(), "Test constant uuid", uuid.UUID),
-        "TEST_CONSTANT_DATETIME": (datetime.now(), "Test constant datetime", datetime),
+        "TEST_CONSTANT_UUID": (uuid.UUID('094eb5ff-01de-4985-afeb-22ebb9e76abf'), "Test constant uuid", uuid.UUID),
+        "TEST_CONSTANT_DATETIME": (datetime(2000, 1, 1), "Test constant datetime", datetime),
     }
     settings.CONSTANCE_BACKEND = "starlette_web.contrib.constance.backends.database.DatabaseBackend"
 
-    app = get_app()
     base_config._setup()
-    base_config._backend.app = app
     yield base_config
 
 
