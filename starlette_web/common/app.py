@@ -21,7 +21,6 @@ from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import import_string
 
 
-__APPLICATION = None
 AppClass = TypeVar("AppClass", bound=Starlette)
 ExceptionHandlerType = Callable[[PRequest, Exception], BaseRenderer]
 
@@ -79,7 +78,6 @@ class BaseStarletteApplication:
 
         self._setup_logging(app)
         self._setup_caches(app)
-        self._setup_constance(app)
 
         self.post_app_init(app)
         return app
@@ -92,23 +90,7 @@ class BaseStarletteApplication:
             for conn_name in settings.CACHES:
                 _ = caches[conn_name]
 
-    def _setup_constance(self, app: AppClass):
-        from starlette_web.contrib.constance import config
-
-        config._setup()
-
-        try:
-            if settings.CONSTANCE_BACKEND:
-                backend = config._backend
-                if getattr(backend, "app", None) is None:
-                    backend.app = app
-        except (AttributeError, BaseApplicationError):
-            pass
-
 
 def get_app() -> AppClass:
-    global __APPLICATION
-    if __APPLICATION is None:
-        StarletteApplication = import_string(settings.APPLICATION_CLASS)
-        __APPLICATION = StarletteApplication().get_app()
-    return __APPLICATION
+    StarletteApplication = import_string(settings.APPLICATION_CLASS)
+    return StarletteApplication().get_app()
