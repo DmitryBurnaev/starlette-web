@@ -1,8 +1,8 @@
 from typing import Union, Optional
 
-from requests import Response
+from httpx import Response
 
-from starlette_web.common.database import ModelMixin
+from starlette_web.common.database.model_base import ModelBase
 from starlette_web.common.http.statuses import ResponseStatus
 
 
@@ -60,7 +60,7 @@ class BaseTestAPIView(BaseTestCase):
             assert error_value in response_data["details"][error_field]
 
     @staticmethod
-    def assert_not_found(response: Response, instance: ModelMixin):
+    def assert_not_found(response: Response, instance: ModelBase):
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["status"] == ResponseStatus.NOT_FOUND
