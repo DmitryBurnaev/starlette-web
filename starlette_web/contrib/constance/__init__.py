@@ -63,10 +63,7 @@ class LazyConstance:
                 raise NotSupportedError
 
         return_list = await self._backend.mget(keys)
-        return {
-            key: self._postprocess_value(key, value)
-            for key, value in return_list.items()
-        }
+        return {key: self._postprocess_value(key, value) for key, value in return_list.items()}
 
     def _postprocess_value(self, key, value):
         if key not in settings.CONSTANCE_CONFIG:
