@@ -1,7 +1,11 @@
+import json
 from typing import Union, Optional
 
 from httpx import Response
+from starlette.testclient import TestClient
 
+from starlette_web.contrib.auth.views import JWTSessionMixin
+from starlette_web.contrib.auth.models import UserSession
 from starlette_web.common.database.model_base import ModelBase
 from starlette_web.common.http.statuses import ResponseStatus
 
@@ -96,3 +100,22 @@ class BaseTestAPIView(BaseTestCase):
             "error": "Authentication credentials are invalid.",
             "details": details,
         }
+
+
+class BaseTestWSAPI(BaseTestCase):
+    url: str = NotImplemented
+
+    @staticmethod
+    def _get_headers(user_session: UserSession) -> dict:
+        token_col = JWTSessionMixin._get_tokens(user_session.user, user_session.public_id)  # noqa
+        return {"Authorization": f"Bearer {token_col.access_token}"}
+
+    def _ws_request(
+        self, client: TestClient, user_session: UserSession, data: dict | None = None
+    ) -> dict | list:
+        data = {"headers": self._get_headers(user_session)} | (data or {})
+        with client.websocket_connect(self.url) as websocket:
+            websocket.send_json(data)
+            response_data = json.loads(websocket.receive_text())
+
+        return response_data
