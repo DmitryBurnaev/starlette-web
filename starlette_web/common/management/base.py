@@ -6,11 +6,12 @@ from typing import Optional, List, Type, Awaitable, Dict
 
 from starlette_web.common.app import get_app
 from starlette_web.common.conf import settings
+from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import import_string
 
 
-class CommandError(Exception):
-    pass
+class CommandError(BaseApplicationError):
+    message = "Error while running a user-defined command."
 
 
 class CommandParser(ArgumentParser):
