@@ -3,6 +3,7 @@ from typing import Sequence, Any, List, Dict, Type, Optional, AsyncContextManage
 import aioredis
 
 from starlette_web.common.caches.base import BaseCache, CacheError
+from starlette_web.common.http.exceptions import UnexpectedError
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 from starlette_web.contrib.redis.redislock import RedisLock
 
@@ -13,6 +14,8 @@ def reraise_exception(func):
             return await func(*args, **kwargs)
         except aioredis.exceptions.RedisError as exc:
             raise CacheError from exc
+        except Exception as exc:
+            raise UnexpectedError from exc
 
     return wrapped
 

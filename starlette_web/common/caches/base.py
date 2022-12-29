@@ -1,15 +1,16 @@
 from typing import Type, Any, Optional, Dict, Sequence, AsyncContextManager, List
 
+from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import Singleton
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 
 
-class CacheError(Exception):
-    pass
+class CacheError(BaseApplicationError):
+    message = "Cache error."
 
 
 class CacheLockError(CacheError):
-    pass
+    message = "Failed to lock or unlock a cache."
 
 
 class BaseCache(metaclass=Singleton):
