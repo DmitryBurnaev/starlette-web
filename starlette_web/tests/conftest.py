@@ -31,6 +31,13 @@ from starlette_web.tests.helpers import (
 from starlette_web.tests.mocks import MockProcess
 
 
+import sys
+import asyncio
+
+if (*sys.version_info,) >= (3, 8) and sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 @pytest.fixture(autouse=True, scope="session")
 def test_settings():
     settings.APP_DEBUG = True
