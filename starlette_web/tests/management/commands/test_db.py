@@ -12,7 +12,7 @@ class Command(BaseCommand):
         email = str(uuid.uuid4()).replace("-", "") + "@test.com"
         password = User.make_password(test_user_password)
 
-        with self.app.session_maker() as session:
+        async with self.app.session_maker() as session:
             user = await User.async_create(session, email=email, password=password)
 
             await User.async_delete(session, {"id": user.id})
