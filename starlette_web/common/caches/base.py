@@ -52,5 +52,5 @@ class BaseCache(metaclass=Singleton):
     async def async_clear(self) -> None:
         raise NotImplementedError
 
-    def lock(self, lock_name: str, blocking_interval: int) -> AsyncContextManager:
+    def lock(self, name: str, blocking_timeout: int) -> AsyncContextManager:
         raise NotImplementedError
