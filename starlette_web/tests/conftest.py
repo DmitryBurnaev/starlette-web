@@ -34,7 +34,7 @@ from starlette_web.tests.mocks import MockProcess
 import sys
 import asyncio
 
-if (*sys.version_info,) >= (3, 8) and sys.platform.startswith('win'):
+if (*sys.version_info,) >= (3, 8) and sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
