@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
 from webargs_starlette import WebargsHTTPException, StarletteParser
 
+from starlette_web.common.app import WebApp
 from starlette_web.common.authorization.backends import (
     BaseAuthenticationBackend,
     NoAuthenticationBackend,
@@ -53,31 +54,41 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         """
 
         self.request = PRequest(self.scope, receive=self.receive)
-        self.app = self.scope.get("app")
+        self.app: WebApp = self.scope.get("app")
 
         handler_name = "get" if self.request.method == "HEAD" else self.request.method.lower()
         handler = getattr(self, handler_name, self.method_not_allowed)
 
         try:
-            async with self.app.session_maker() as session:
-                self.request.db_session = session
-                self.db_session = session
-
-                await self._authenticate()
-                await self._check_permissions()
-
-                response = await handler(self.request)  # noqa
-                await self.db_session.commit()
-
-        except (BaseApplicationError, WebargsHTTPException, HTTPException) as err:
-            await self.db_session.rollback()
-            raise err
-
+            session_maker = self.app.session_maker()
+            session = await session_maker.__aenter__()
         except Exception as err:
-            await self.db_session.rollback()
             msg_template = "Unexpected error handled: %r"
             logger.exception(msg_template, err)
             raise UnexpectedError(msg_template % (err,))
+
+        try:
+            self.request.db_session = session
+            self.db_session = session
+
+            await self._authenticate()
+            await self._check_permissions()
+
+            response = await handler(self.request)  # noqa
+            await session.commit()
+
+        except (BaseApplicationError, WebargsHTTPException, HTTPException) as err:
+            await session.rollback()
+            raise err
+
+        except Exception as err:
+            await session.rollback()
+            msg_template = "Unexpected error handled: %r"
+            logger.exception(msg_template, err)
+            raise UnexpectedError(msg_template % (err,))
+
+        finally:
+            await session_maker.__aexit__(None, None, None)
 
         await response(self.scope, self.receive, self.send)
 
