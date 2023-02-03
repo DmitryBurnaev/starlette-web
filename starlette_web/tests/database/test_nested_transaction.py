@@ -27,12 +27,14 @@ def test_nested_transaction(dbs: AsyncSession):
 
         user = await_(User.async_get(db_session=dbs, email=email, password=password))
         assert user is not None
+        # Note: With .begin_nested(), calling .commit()/.rollback() at end is obligatory
         await_(block2.commit())
         await_(block2_wrapper.__aexit__(None, None, None))
         block_2_exited = True
 
         user = await_(User.async_get(db_session=dbs, email=email, password=password))
         assert user is not None
+        # Note: With .begin_nested(), calling .commit()/.rollback() at end is obligatory
         await_(block1.rollback())
         await_(block1_wrapper.__aexit__(None, None, None))
         block_1_exited = True
