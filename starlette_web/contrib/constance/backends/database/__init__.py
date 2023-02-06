@@ -12,7 +12,8 @@ class DatabaseBackend(BaseConstanceBackend):
 
     def __init__(self):
         super().__init__()
-        self.session_maker = make_session_maker()
+        # Disable connection pooling to avoid creating persistent open connections
+        self.session_maker = make_session_maker(use_pool=False)
 
     async def mget(self, keys: List[str]) -> Dict[str, Any]:
         async with self.session_maker() as session:
