@@ -54,6 +54,7 @@ DATABASE_DSN = config(
     ),
 )
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
+DB_ASYNC_SESSION_CLASS = "sqlalchemy.ext.asyncio.AsyncSession"
 
 APPLICATION_CLASS = "starlette_web.tests.app.TestStarletteApplication"
 ROUTES = "starlette_web.core.routes.routes"
