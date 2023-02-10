@@ -107,16 +107,24 @@ class RedisCache(BaseCache):
     async def async_clear(self) -> None:
         await self.redis.flushdb()
 
-    def lock(self, name: str, blocking_timeout: int) -> AsyncContextManager:
+    def lock(
+        self,
+        name: str,
+        timeout: Optional[float] = 20.0,
+        blocking_timeout: Optional[float] = None,
+        **kwargs,
+    ) -> AsyncContextManager:
         return self.redis.lock(
             name,
             timeout=blocking_timeout,
             blocking_timeout=blocking_timeout,
             lock_class=RedisLock,
+            **kwargs,
         )
 
-    def _force_str(self, value: Union[bytes, str]):
+    @staticmethod
+    def _force_str(value: Union[bytes, str]) -> str:
         try:
             return value.decode()
         except (UnicodeDecodeError, AttributeError):
-            return value
+            return str(value)
