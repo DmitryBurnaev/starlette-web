@@ -27,6 +27,7 @@ DB_NAME = config("DB_NAME", default="web_project")
 if TEST_MODE:
     DB_NAME = config("DB_NAME_TEST", default="web_project_test")
 
+# TODO: refactor database-specific settings with respect to sqlalchemy.create_engine / asyncpg
 DATABASE = {
     "driver": "postgresql+asyncpg",
     "host": config("DB_HOST", default=None),
@@ -66,6 +67,7 @@ CACHES = {
             "HOST": config("REDIS_HOST", default="localhost"),
             "PORT": config("REDIS_PORT", default=6379),
             "DB": config("REDIS_DB", default=0),
+            "LOCK_CLASS": "starlette_web.contrib.redis.redislock.RedisLock",
         },
     }
 }
