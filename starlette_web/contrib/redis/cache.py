@@ -6,7 +6,6 @@ from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import UnexpectedError
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 from starlette_web.common.utils.importing import import_string
-from starlette_web.contrib.redis.redislock import RedisLock
 
 
 def reraise_exception(func):
