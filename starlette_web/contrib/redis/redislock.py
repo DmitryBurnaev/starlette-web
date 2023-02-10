@@ -16,8 +16,15 @@ class RedisLock(AioredisLock):
     async def __aexit__(self, *args):
         try:
             # Do not raise exception, if lock has been released
+            # (might have been released due to timeout)
             expected_token = self.local.token
             if expected_token is not None:
-                await asyncio.shield(super().__aexit__(*args))
+                self.local.token = None
+                coroutine = self.lua_release(
+                    keys=[self.name],
+                    args=[expected_token],
+                    client=self.redis,
+                )
+                await asyncio.shield(coroutine)
         except RedisError as exc:
             raise CacheLockError from exc

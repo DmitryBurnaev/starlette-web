@@ -5,6 +5,7 @@ import aioredis
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import UnexpectedError
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
+from starlette_web.common.utils.importing import import_string
 from starlette_web.contrib.redis.redislock import RedisLock
 
 
@@ -31,6 +32,9 @@ class RedisCache(BaseCache):
             port=options.get("PORT"),
             db=options.get("DB"),
             max_connections=options.get("max_connections", 32),
+        )
+        self.lock_class = import_string(
+            options.get("LOCK_CLASS", "starlette_web.contrib.redis.redislock.RedisLock")
         )
 
     @reraise_exception
@@ -67,7 +71,7 @@ class RedisCache(BaseCache):
         return bool(await self.redis.exists(key))
 
     @reraise_exception
-    async def async_set_many(self, data: Dict[str, Any], timeout: Optional[int] = 120) -> None:
+    async def async_set_many(self, data: Dict[str, Any], timeout: Optional[float] = 120) -> None:
         """
         Set multiple key-values with timeout.
         Note, that redis does not support setting timeout in MSET,
@@ -94,8 +98,8 @@ class RedisCache(BaseCache):
                         "SET",
                         key,
                         self.serializer.serialize(value),
-                        "EX",
-                        timeout,
+                        "PX",
+                        int(timeout * 1000),
                     )
                 await pipeline.execute(raise_on_error=True)
 
@@ -116,9 +120,9 @@ class RedisCache(BaseCache):
     ) -> AsyncContextManager:
         return self.redis.lock(
             name,
-            timeout=blocking_timeout,
+            timeout=timeout,
             blocking_timeout=blocking_timeout,
-            lock_class=RedisLock,
+            lock_class=self.lock_class,
             **kwargs,
         )
 

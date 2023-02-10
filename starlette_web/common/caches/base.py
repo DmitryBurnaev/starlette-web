@@ -41,7 +41,7 @@ class BaseCache(metaclass=Singleton):
             result[key] = await self.async_get(key)
         return result
 
-    async def async_set_many(self, data: Dict[str, Any], timeout: Optional[int] = 120) -> None:
+    async def async_set_many(self, data: Dict[str, Any], timeout: Optional[float] = 120) -> None:
         for key, value in data.items():
             await self.async_set(key, value, timeout=timeout)
 
