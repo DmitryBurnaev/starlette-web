@@ -1,7 +1,10 @@
+import asyncio
 import time
 
+import pytest
 from starlette_web.common.caches import caches
 from starlette_web.tests.helpers import await_
+from starlette_web.common.caches.base import CacheLockError
 
 
 default_cache = caches["default"]
@@ -68,3 +71,44 @@ def test_redis_cache_many():
 
     keys = await_(default_cache.async_keys("2a8006ac-e296-486e-8044-b27517*"))
     assert len(keys) == 1
+
+
+def test_redis_lock():
+    cache_lock_handler = default_cache.lock('test_lock', timeout=5)
+
+    try:
+        _ = await_(cache_lock_handler.__aenter__())
+        time.sleep(1)
+    finally:
+        await_(cache_lock_handler.__aexit__(None, None, None))
+
+
+def test_redis_lock_race_condition():
+    cache_lock_handler_1 = default_cache.lock('test_lock', timeout=3, blocking_timeout=2)
+    cache_lock_handler_2 = default_cache.lock('test_lock', timeout=3, blocking_timeout=2)
+
+    with pytest.raises(CacheLockError):
+        try:
+            _ = await_(cache_lock_handler_1.__aenter__())
+            _ = await_(cache_lock_handler_2.__aenter__())
+            time.sleep(1)
+        finally:
+            await_(cache_lock_handler_1.__aexit__(None, None, None))
+            await_(cache_lock_handler_2.__aexit__(None, None, None))
+
+
+def test_redis_lock_correct_task_blocking():
+    async def task_with_lock():
+        async with default_cache.lock('test_lock', blocking_timeout=12, timeout=1.0, sleep=0.01):
+            await asyncio.sleep(2)
+
+    number_of_tests = 4
+
+    coroutines = [task_with_lock() for _ in range(number_of_tests)]
+    start_time = time.time()
+    await_(asyncio.gather(*coroutines))
+    end_time = time.time()
+
+    # Time should be around (sleep_time + (number_of_tests - 1) * timeout) = 5
+    assert end_time - start_time >= number_of_tests + 0.5
+    assert end_time - start_time < number_of_tests + 2.0

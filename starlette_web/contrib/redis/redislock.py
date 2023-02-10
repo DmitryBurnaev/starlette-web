@@ -1,3 +1,5 @@
+import asyncio
+
 from aioredis.exceptions import RedisError
 from aioredis.lock import Lock as AioredisLock
 
@@ -16,6 +18,6 @@ class RedisLock(AioredisLock):
             # Do not raise exception, if lock has been released
             expected_token = self.local.token
             if expected_token is not None:
-                super().__aexit__(*args)
+                await asyncio.shield(super().__aexit__(*args))
         except RedisError as exc:
             raise CacheLockError from exc
