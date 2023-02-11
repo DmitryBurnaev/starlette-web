@@ -31,7 +31,7 @@ CACHES = {
 from starlette_web.common.caches import caches
 
 value = await caches['default'].async_get('key')
-await caches['default'].async_set()
+await caches['default'].async_set('key', value, timeout=10)
 ```
 
 Default cache is available as `starlette_web.common.caches.cache`.
