@@ -13,8 +13,8 @@ def get_async_session_class() -> Type[AsyncSession]:
 
 
 def make_session_maker(**kwargs) -> sessionmaker:
-    use_pool = kwargs.get('use_pool', True)
-    connect_args = kwargs.get('connect_args', {'timeout': 20})
+    use_pool = kwargs.get("use_pool", True)
+    connect_args = kwargs.get("connect_args", {"timeout": 20})
 
     if use_pool:
         pool_size = settings.DATABASE["pool_min_size"]
@@ -26,6 +26,7 @@ def make_session_maker(**kwargs) -> sessionmaker:
             poolclass=None,
             pool_size=pool_size,
             max_overflow=max_overflow,
+            pool_recycle=settings.DB_POOL_RECYCLE,
         )
     else:
         create_async_engine_kw = dict(

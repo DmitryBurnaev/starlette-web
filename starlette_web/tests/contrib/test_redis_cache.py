@@ -74,7 +74,7 @@ def test_redis_cache_many():
 
 
 def test_redis_lock():
-    cache_lock_handler = default_cache.lock('test_lock', timeout=5)
+    cache_lock_handler = default_cache.lock("test_lock", timeout=5)
 
     try:
         _ = await_(cache_lock_handler.__aenter__())
@@ -84,8 +84,8 @@ def test_redis_lock():
 
 
 def test_redis_lock_race_condition():
-    cache_lock_handler_1 = default_cache.lock('test_lock', timeout=3, blocking_timeout=2)
-    cache_lock_handler_2 = default_cache.lock('test_lock', timeout=3, blocking_timeout=2)
+    cache_lock_handler_1 = default_cache.lock("test_lock", timeout=3, blocking_timeout=2)
+    cache_lock_handler_2 = default_cache.lock("test_lock", timeout=3, blocking_timeout=2)
 
     with pytest.raises(CacheLockError):
         try:
@@ -99,7 +99,7 @@ def test_redis_lock_race_condition():
 
 def test_redis_lock_correct_task_blocking():
     async def task_with_lock():
-        async with default_cache.lock('test_lock', blocking_timeout=12, timeout=1.0, sleep=0.01):
+        async with default_cache.lock("test_lock", blocking_timeout=12, timeout=1.0, sleep=0.01):
             await asyncio.sleep(2)
 
     number_of_tests = 4
