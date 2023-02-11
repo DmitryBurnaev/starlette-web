@@ -5,7 +5,7 @@ import aioredis
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import UnexpectedError
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
-from starlette_web.common.utils.importing import import_string
+from starlette_web.contrib.redis.redislock import RedisLock
 
 
 def reraise_exception(func):
@@ -21,20 +21,13 @@ def reraise_exception(func):
 
 
 class RedisCache(BaseCache):
+    redis: aioredis.Redis
     serializer_class: Type[BaseSerializer] = PickleSerializer
-    redis = aioredis.Redis
+    lock_class = RedisLock
 
     def __init__(self, options: Dict[str, Any]):
         super().__init__(options)
-        self.redis = aioredis.Redis(
-            host=options.get("HOST"),
-            port=options.get("PORT"),
-            db=options.get("DB"),
-            max_connections=options.get("max_connections", 32),
-        )
-        self.lock_class = import_string(
-            options.get("LOCK_CLASS", "starlette_web.contrib.redis.redislock.RedisLock")
-        )
+        self.redis = aioredis.Redis(**options)
 
     @reraise_exception
     async def async_get(self, key: str) -> Any:

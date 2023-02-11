@@ -1,3 +1,4 @@
+import inspect
 import logging
 import logging.config
 from typing import List, Union, Dict, Callable, Type, TypeVar
@@ -31,8 +32,15 @@ class WebApp(Starlette):
     session_maker: sessionmaker
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.session_maker = make_session_maker()
+        use_pool = kwargs.pop("use_pool", True)
+
+        allowed_params = inspect.getfullargspec(Starlette.__init__).args
+        starlette_init_kwargs = {
+            key: value for key, value in kwargs.items() if key in allowed_params
+        }
+        super().__init__(*args, **starlette_init_kwargs)
+
+        self.session_maker = make_session_maker(use_pool=use_pool)
 
 
 class BaseStarletteApplication:
@@ -65,7 +73,7 @@ class BaseStarletteApplication:
             WebargsHTTPException: WebargsHTTPExceptionHandler(),
         }
 
-    def get_app(self) -> AppClass:
+    def get_app(self, **kwargs) -> AppClass:
         object.__getattribute__(settings, "_setup")()
         self.pre_app_init()
 
@@ -74,6 +82,7 @@ class BaseStarletteApplication:
             exception_handlers=self.get_exception_handlers(),
             debug=self.get_debug(),
             middleware=self.get_middleware(),
+            **kwargs,
         )
 
         self._setup_logging(app)
@@ -91,6 +100,6 @@ class BaseStarletteApplication:
                 _ = caches[conn_name]
 
 
-def get_app() -> AppClass:
+def get_app(**kwargs) -> AppClass:
     StarletteApplication = import_string(settings.APPLICATION_CLASS)
-    return StarletteApplication().get_app()
+    return StarletteApplication().get_app(**kwargs)

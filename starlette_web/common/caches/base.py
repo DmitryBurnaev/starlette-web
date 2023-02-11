@@ -17,7 +17,7 @@ class BaseCache(metaclass=Singleton):
     serializer_class: Type[BaseSerializer] = PickleSerializer
     serializer: BaseSerializer
 
-    def __init__(self, params: Dict[str, Any]):
+    def __init__(self, options: Dict[str, Any]):
         self.serializer = self.serializer_class()
 
     async def async_get(self, key: str) -> Any:

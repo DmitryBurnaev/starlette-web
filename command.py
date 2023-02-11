@@ -13,7 +13,8 @@ if __name__ == "__main__":
             'Missing command name. Correct syntax is: "python command.py command_name ..."'
         )
 
-    command = fetch_command_by_name(sys.argv[1])
+    from starlette_web.common.conf import settings
 
-    app = get_app()
+    command = fetch_command_by_name(sys.argv[1])
+    app = get_app(use_pool=settings.DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS)
     command(app).run_from_command_line(sys.argv)
