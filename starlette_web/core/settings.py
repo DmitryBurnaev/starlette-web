@@ -42,6 +42,7 @@ DATABASE = {
     "retry_limit": config("DB_RETRY_LIMIT", cast=int, default=1),
     "retry_interval": config("DB_RETRY_INTERVAL", cast=int, default=1),
 }
+
 DATABASE_DSN = config(
     "DB_DSN",
     cast=str,
@@ -54,8 +55,11 @@ DATABASE_DSN = config(
         database=DATABASE["database"],
     ),
 )
+
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 DB_ASYNC_SESSION_CLASS = "sqlalchemy.ext.asyncio.AsyncSession"
+DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS = False
+DB_POOL_RECYCLE = config("DB_POOL_RECYCLE", cast=int, default=3600)
 
 APPLICATION_CLASS = "starlette_web.tests.app.TestStarletteApplication"
 ROUTES = "starlette_web.core.routes.routes"
@@ -64,10 +68,9 @@ CACHES = {
     "default": {
         "BACKEND": "starlette_web.contrib.redis.RedisCache",
         "OPTIONS": {
-            "HOST": config("REDIS_HOST", default="localhost"),
-            "PORT": config("REDIS_PORT", default=6379),
-            "DB": config("REDIS_DB", default=0),
-            "LOCK_CLASS": "starlette_web.contrib.redis.redislock.RedisLock",
+            "host": config("REDIS_HOST", default="localhost"),
+            "port": config("REDIS_PORT", default=6379),
+            "db": config("REDIS_DB", default=0),
         },
     }
 }
