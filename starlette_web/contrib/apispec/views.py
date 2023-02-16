@@ -38,8 +38,7 @@ class RedocView(BaseHTTPEndpoint):
         return TemplateResponse(
             "apispec/redoc.html",
             context={
-                # TODO: dynamically obtain url for endpoint or allow configuring
-                "REDOC_SPEC_URL": "/openapi/schema/",
+                "REDOC_SPEC_URL": self.app.url_path_for("apispec_openapi_schema"),
                 "REDOC_JS_URL": urljoin(settings.STATIC["URL"], "apispec", "redoc.js"),
                 "REDOC_TITLE": "OPENAPI documentation",
                 "request": request,
