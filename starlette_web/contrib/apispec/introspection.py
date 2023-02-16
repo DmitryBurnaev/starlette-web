@@ -7,9 +7,9 @@ from apispec.exceptions import DuplicateComponentNameError
 from starlette.routing import BaseRoute, Mount, Route
 from starlette.schemas import BaseSchemaGenerator, EndpointInfo
 
+from starlette_web.common.authorization.backends import BaseAuthenticationBackend
 from starlette_web.common.http.schemas import get_error_schema_class
 from starlette_web.common.i18n import gettext
-from starlette_web.contrib.auth.backend import BaseAuthenticationBackend
 
 
 # TODO: custom EndpointInfo with link to endpoint class
