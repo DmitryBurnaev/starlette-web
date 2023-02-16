@@ -129,6 +129,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
                 schema.is_valid(cleaned_data)
 
         except ValidationError as e:
+            # TODO: check that details is str / flatten
             raise InvalidParameterError(details=e.data)
 
         return cleaned_data
