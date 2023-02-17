@@ -20,7 +20,7 @@ class BaseApplicationError(Exception):
         self.response_status = response_status or self.response_status
 
     def __str__(self):
-        return (str(self.message) + '\n' + str(self.details)).strip()
+        return f"{self.message}\n{self.details}".strip()
 
 
 class ImproperlyConfigured(BaseApplicationError):
