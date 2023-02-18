@@ -38,14 +38,14 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
     app = None
     request: PRequest
-    db_model: ClassVar[DBModel]
     db_session: AsyncSession
+    db_model: ClassVar[DBModel]
     schema_request: ClassVar[Type[Schema]]
     schema_response: ClassVar[Type[Schema]]
-    auth_backend: Type[BaseAuthenticationBackend] = NoAuthenticationBackend
-    permission_classes: List[Union[Type[BasePermission], OperandHolder]] = []
-    request_parser: Type[StarletteParser] = StarletteParser
-    response_renderer: Type[BaseRenderer] = JSONRenderer
+    auth_backend: ClassVar[Type[BaseAuthenticationBackend]] = NoAuthenticationBackend
+    permission_classes: ClassVar[List[Union[Type[BasePermission], OperandHolder]]] = []
+    request_parser: ClassVar[Type[StarletteParser]] = StarletteParser
+    response_renderer: ClassVar[Type[BaseRenderer]] = JSONRenderer
 
     async def dispatch(self) -> None:
         """
@@ -89,6 +89,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
         finally:
             await session_maker.__aexit__(None, None, None)
+            self.request.db_session = None
 
         await response(self.scope, self.receive, self.send)
 
