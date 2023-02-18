@@ -19,6 +19,7 @@ from starlette_web.common.authorization.base_user import BaseUserMixin
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
 from starlette_web.common.http.exceptions import PermissionDeniedError
 from starlette_web.common.ws.requests import WSRequest
+from starlette_web.common.utils.crypto import get_random_string
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +78,10 @@ class BaseWSEndpoint(WebSocketEndpoint):
         logger.info("WS connection was closed")
 
     async def _background_handler_wrap(self, websocket: WebSocket, data: Dict):
+        task_id = get_random_string(50)
+
         try:
+            await self._register_background_task(task_id, websocket, data)
             await self._background_handler(websocket, data)
         except anyio.get_cancelled_exc_class():
             # Task cancellation should not be logged as an error.
@@ -86,6 +90,16 @@ class BaseWSEndpoint(WebSocketEndpoint):
             error_message = "Couldn't finish _background_handler for class %s"
             error_message_message_args = (self.__class__.__name__,)
             logger.exception(error_message, *error_message_message_args)
+        finally:
+            await self._unregister_background_task(task_id, websocket)
+
+    async def _register_background_task(self, task_id: str, websocket: WebSocket, data: Dict):
+        # This method is to be redefined in child classes
+        pass
+
+    async def _unregister_background_task(self, task_id: str, websocket: WebSocket):
+        # This method is to be redefined in child classes
+        pass
 
     async def _background_handler(self, websocket: WebSocket, data: Dict):
         raise WebSocketDisconnect(
