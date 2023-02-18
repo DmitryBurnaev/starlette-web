@@ -60,13 +60,6 @@ class BaseWSEndpoint(WebSocketEndpoint):
             await websocket.close(code=3000, reason=reason)
 
     async def on_receive(self, websocket: WebSocket, data: Any) -> None:
-        """
-        On receive 1st message from WS client,
-        we have to get header's like data with JWT token provided
-        (like {"headers": {"authorization": "Bearer <JWT_TOKEN>"}, "data": {<some-data>}})
-        It allows to authorize current user for each WS connection.
-        """
-
         cleaned_data = self._validate(data)
         self.task_group.start_soon(self._background_handler_wrap, websocket, cleaned_data)
 
