@@ -1,8 +1,10 @@
-import asyncio
+import anyio
 import os
 import pkgutil
+from anyio._core._eventloop import T_Retval
 from argparse import ArgumentParser
-from typing import Optional, List, Type, Awaitable, Dict
+from functools import partial
+from typing import Optional, List, Type, Dict, Coroutine, Any, Callable
 
 from starlette_web.common.app import get_app
 from starlette_web.common.conf import settings
@@ -55,7 +57,11 @@ class BaseCommand:
     async def handle(self, **options):
         raise NotImplementedError
 
-    def prepare_command_coroutine(self, argv, called_from_command_line) -> Awaitable:
+    def prepare_command_function(
+        self,
+        argv,
+        called_from_command_line,
+    ) -> Callable[..., Coroutine[Any, Any, T_Retval]]:
         self.parser = self.create_parser(
             argv,
             called_from_command_line=called_from_command_line,
@@ -63,15 +69,14 @@ class BaseCommand:
         self.add_arguments(self.parser)
         namespace = self.parser.parse_args(args=argv[2:])
         kwargs = namespace.__dict__
-        coroutine = self.handle(**kwargs)
-        return coroutine
+        return partial(self.handle, **kwargs)
 
     def run_from_command_line(self, argv: List[str]):
-        coroutine = self.prepare_command_coroutine(argv, True)
-        asyncio.get_event_loop().run_until_complete(coroutine)
+        func = self.prepare_command_function(argv, True)
+        anyio.run(func)
 
     async def run_from_code(self, argv: List[str]):
-        coroutine = self.prepare_command_coroutine(argv, False)
+        coroutine = self.prepare_command_function(argv, False)()
         await coroutine
 
 
