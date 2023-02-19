@@ -23,7 +23,7 @@ class BaseCache(metaclass=Singleton):
     async def async_get(self, key: str) -> Any:
         raise NotImplementedError
 
-    async def async_set(self, key: str, value: Any, timeout: Optional[int] = 120) -> None:
+    async def async_set(self, key: str, value: Any, timeout: Optional[float] = 120) -> None:
         raise NotImplementedError
 
     async def async_delete(self, key: str) -> None:
