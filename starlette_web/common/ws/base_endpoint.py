@@ -11,7 +11,8 @@ from starlette.types import Scope, Receive, Send
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from starlette_web.common.authorization.backends import (
-    BaseAuthenticationBackend, NoAuthenticationBackend,
+    BaseAuthenticationBackend,
+    NoAuthenticationBackend,
 )
 from starlette_web.common.authorization.base_user import BaseUserMixin
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
@@ -74,31 +75,41 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def _background_handler_wrap(self, websocket: WebSocket, data: Dict):
         task_id = get_random_string(50)
+        task_result = None
 
         try:
             await self._register_background_task(task_id, websocket, data)
-            await self._background_handler(websocket, data)
+            task_result = await self._background_handler(websocket, data)
         except anyio.get_cancelled_exc_class():
-            # Task cancellation should not be logged as an error.
-            pass
+            logger.debug(f"Background task {task_id} has been cancelled.")
         except Exception as exc:  # pylint: disable=broad-except
-            error_message = "Couldn't finish _background_handler for class %s"
-            error_message_message_args = (self.__class__.__name__,)
-            logger.exception(error_message, *error_message_message_args)
-
-            raise WebSocketDisconnect(code=1005, reason=str(exc)) from exc
+            await self._handle_background_task_exception(task_id, websocket, exc)
         finally:
-            await self._unregister_background_task(task_id, websocket)
+            await self._unregister_background_task(task_id, websocket, task_result)
+
+    async def _handle_background_task_exception(
+        self, task_id: str, websocket: WebSocket, exc: Exception
+    ):
+        error_message = "Couldn't finish _background_handler for class %s"
+        error_message_message_args = (self.__class__.__name__,)
+        logger.exception(error_message, *error_message_message_args)
+
+        # By default, an exception is propagated to the parent TaskGroup,
+        # causing an inner CancelScope to cancel all child tasks.
+        # If this is not an expected behavior, you may silence this error.
+        raise WebSocketDisconnect(code=1005, reason=str(exc)) from exc
 
     async def _register_background_task(self, task_id: str, websocket: WebSocket, data: Dict):
         # This method is to be redefined in child classes
         pass
 
-    async def _unregister_background_task(self, task_id: str, websocket: WebSocket):
+    async def _unregister_background_task(
+        self, task_id: str, websocket: WebSocket, task_result: Any
+    ):
         # This method is to be redefined in child classes
         pass
 
-    async def _background_handler(self, websocket: WebSocket, data: Dict):
+    async def _background_handler(self, websocket: WebSocket, data: Dict) -> Any:
         raise WebSocketDisconnect(
             code=1005,
             reason="Background handler for Websocket is not implemented",
@@ -124,7 +135,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def _authenticate(self) -> BaseUserMixin:
         backend = self.auth_backend(self.request, self.scope)
-        user, _ = await backend.authenticate()
+        user = await backend.authenticate()
         self.scope["user"] = user
         return user
 
@@ -134,8 +145,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
                 has_permission = await permission_class().has_permission(self.request, self.scope)
                 if not has_permission:
                     return False, PermissionDeniedError.message
-
-                return True, ""
-
             except Exception as exc:
                 return False, str(exc)
+
+        return True, ""
