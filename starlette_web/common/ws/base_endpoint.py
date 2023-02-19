@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-from json import JSONDecodeError
 from typing import ClassVar, Type, Any, Optional, List, Union, Dict, Tuple
 import sys
 
@@ -31,8 +30,8 @@ class BaseWSEndpoint(WebSocketEndpoint):
     request_schema: ClassVar[Type[Schema]]
     user: BaseUserMixin
     request: WSRequest
-    background_task: asyncio.Task
     task_group: Optional[TaskGroup]
+    EXIT_MAX_DELAY: float = 60
 
     def __init__(self, scope: Scope, receive: Receive, send: Send) -> None:
         super().__init__(scope, receive, send)
@@ -51,13 +50,14 @@ class BaseWSEndpoint(WebSocketEndpoint):
             permitted, reason = await self._check_permissions()
 
         # Explicitly clear db_session,
-        # so that user does not use through lengthy websocket life-state
+        # so that user does not use it through lengthy websocket life-state
         self.request.db_session = None
 
         if permitted:
             await websocket.accept()
         else:
-            await websocket.close(code=3000, reason=reason)
+            with anyio.fail_after(delay=self.EXIT_MAX_DELAY):
+                await websocket.close(code=3000, reason=reason)
 
     async def on_receive(self, websocket: WebSocket, data: Any) -> None:
         cleaned_data = self._validate(data)
@@ -66,9 +66,10 @@ class BaseWSEndpoint(WebSocketEndpoint):
     async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
         if self.task_group:
             self.task_group.cancel_scope.cancel()
+            logger.debug("TaskGroup has been cancelled.")
             await self.task_group.__aexit__(*sys.exc_info())
 
-        logger.info("WS connection was closed")
+        logger.debug("WS connection has been closed.")
 
     async def _background_handler_wrap(self, websocket: WebSocket, data: Dict):
         task_id = get_random_string(50)
@@ -79,10 +80,12 @@ class BaseWSEndpoint(WebSocketEndpoint):
         except anyio.get_cancelled_exc_class():
             # Task cancellation should not be logged as an error.
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             error_message = "Couldn't finish _background_handler for class %s"
             error_message_message_args = (self.__class__.__name__,)
             logger.exception(error_message, *error_message_message_args)
+
+            raise WebSocketDisconnect(code=1005, reason=str(exc)) from exc
         finally:
             await self._unregister_background_task(task_id, websocket)
 
@@ -103,7 +106,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
     def _validate(self, data: str) -> dict:
         try:
             request_data = json.loads(data)
-        except JSONDecodeError as exc:
+        except json.JSONDecodeError as exc:
             raise WebSocketDisconnect(
                 code=1003,
                 reason=f"Couldn't parse WS request data: {exc}",
@@ -132,8 +135,6 @@ class BaseWSEndpoint(WebSocketEndpoint):
                     return False, PermissionDeniedError.message
 
                 return True, ""
-            # Exception may be raised inside permission_class, to pass additional details
-            except PermissionDeniedError as exc:
-                return False, str(exc)
+
             except Exception as exc:
                 return False, str(exc)
