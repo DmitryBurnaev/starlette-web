@@ -7,6 +7,7 @@ class AtomicTransaction:
     """
     Asynchronous wrapper around sqlalchemy.Session.begin_nested, that also commits/rollbacks at end
     """
+
     EXIT_MAX_DELAY: float = 60
 
     def __init__(self, db_session: AsyncSession, db_commit=True, **kwargs):
