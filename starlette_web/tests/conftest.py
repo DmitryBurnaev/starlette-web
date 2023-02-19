@@ -75,6 +75,17 @@ def client() -> WebTestClient:
             yield client
 
 
+# A separate variable for WebTestClient, that will fail with exception during test
+@pytest.fixture(autouse=True, scope="session")
+def client_ws_fail() -> WebTestClient:
+    from starlette_web.common.app import get_app
+
+    with WebTestClient(get_app()) as client:
+        with make_db_session(asyncio.get_event_loop()) as db_session:
+            client.db_session = db_session
+            yield client
+
+
 @pytest.fixture
 def dbs(loop) -> AsyncSession:
     with make_db_session(loop) as db_session:
