@@ -35,7 +35,7 @@ class RedisCache(BaseCache):
         return self.serializer.deserialize(value)
 
     @reraise_exception
-    async def async_set(self, key: str, value, timeout: Optional[int] = 120):
+    async def async_set(self, key: str, value, timeout: Optional[float] = 120):
         await self.redis.set(key, self.serializer.serialize(value), ex=timeout)
 
     @reraise_exception

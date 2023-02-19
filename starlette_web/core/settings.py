@@ -72,7 +72,13 @@ CACHES = {
             "port": config("REDIS_PORT", default=6379),
             "db": config("REDIS_DB", default=0),
         },
-    }
+    },
+    "locmem": {
+        "BACKEND": "starlette_web.common.caches.local_memory.LocalMemoryCache",
+        "OPTIONS": {
+            "name": "locmem",
+        },
+    },
 }
 
 PASSWORD_HASHERS = [
