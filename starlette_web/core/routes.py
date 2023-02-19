@@ -1,10 +1,14 @@
-from starlette.routing import Mount, Route
+from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 
 from starlette_web.common.conf import settings
 from starlette_web.contrib.apispec.routes import routes as apispec_routes
 from starlette_web.contrib.auth.routes import routes as auth_routes
-from starlette_web.tests.views import HealthCheckAPIView, SentryCheckAPIView
+from starlette_web.tests.views import (
+    HealthCheckAPIView,
+    SentryCheckAPIView,
+    BaseWebsocketTestEndpoint,
+)
 
 
 # TODO: split auth and api
@@ -14,4 +18,5 @@ routes = [
     Mount("/static", app=StaticFiles(directory=settings.STATIC["ROOT_DIR"]), name="static"),
     Route("/health_check/", HealthCheckAPIView),
     Route("/sentry_check/", SentryCheckAPIView),
+    WebSocketRoute("/ws/test_websocket_base", BaseWebsocketTestEndpoint),
 ]
