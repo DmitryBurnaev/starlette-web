@@ -8,6 +8,7 @@ from starlette_web.tests.views import (
     HealthCheckAPIView,
     SentryCheckAPIView,
     BaseWebsocketTestEndpoint,
+    CancellationWebsocketTestEndpoint,
 )
 
 
@@ -19,4 +20,5 @@ routes = [
     Route("/health_check/", HealthCheckAPIView),
     Route("/sentry_check/", SentryCheckAPIView),
     WebSocketRoute("/ws/test_websocket_base", BaseWebsocketTestEndpoint),
+    WebSocketRoute("/ws/test_websocket_cancel", CancellationWebsocketTestEndpoint),
 ]
