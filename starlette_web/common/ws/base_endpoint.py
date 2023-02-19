@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 from typing import ClassVar, Type, Any, Optional, List, Union, Dict, Tuple
@@ -65,9 +64,11 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
         if self.task_group:
-            self.task_group.cancel_scope.cancel()
-            logger.debug("TaskGroup has been cancelled.")
-            await self.task_group.__aexit__(*sys.exc_info())
+            if sys.exc_info() == (None, None, None):
+                self.task_group.cancel_scope.cancel()
+                logger.debug("TaskGroup has been explicitly cancelled.")
+            else:
+                logger.debug("TaskGroup will be implicitly cancelled due to exception.")
 
         logger.debug("WS connection has been closed.")
 
