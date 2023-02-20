@@ -121,7 +121,7 @@ class TestWebsocketEndpoint:
             def cancellable_ws_receive_json(timeout):
                 # ws.receive() does not provide a "timeout" parameter
                 # without a timeout, websocket will try to get message indefinitely
-                # It is also not possible to finish a thread with synchronous infinite loop
+                # it is also not possible to finish a thread with synchronous infinite loop
                 # whereas we may not call anyio.to_process due to websocket being unpicklable
                 return ws._send_queue.get(block=True, timeout=timeout)
 
@@ -143,6 +143,7 @@ class TestWebsocketEndpoint:
         await_(locmem_cache.async_clear())
 
         with client.websocket_connect("/ws/test_websocket_infinite_periodic") as websocket:
+            # Spawn 2 infinite periodic background tasks
             websocket.send_json({"request_type": "x"})
             websocket.send_json({"request_type": "y"})
 
@@ -151,6 +152,7 @@ class TestWebsocketEndpoint:
                 response = websocket.receive_json()
                 response_pool.append(response["response"])
 
+            # Check, that we actually receive messages from both background tasks
             xs = [resp for resp in response_pool if resp.startswith("x_")]
             ys = [resp for resp in response_pool if resp.startswith("y_")]
             assert len(xs) >= 3
@@ -158,6 +160,7 @@ class TestWebsocketEndpoint:
 
             websocket.close(1001)
 
+        # Assert that both tasks are properly closed after client disconnects
         time.sleep(1)
         cache_keys = await_(locmem_cache.async_keys("*"))
         assert len(cache_keys) == 2
