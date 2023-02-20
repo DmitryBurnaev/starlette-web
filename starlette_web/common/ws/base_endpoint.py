@@ -14,9 +14,12 @@ from starlette_web.common.authorization.backends import (
     BaseAuthenticationBackend,
     NoAuthenticationBackend,
 )
-from starlette_web.common.authorization.base_user import BaseUserMixin
+from starlette_web.common.authorization.base_user import BaseUserMixin, AnonymousUser
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
-from starlette_web.common.http.exceptions import PermissionDeniedError
+from starlette_web.common.http.exceptions import (
+    PermissionDeniedError,
+    AuthenticationFailedError,
+)
 from starlette_web.common.ws.requests import WSRequest
 from starlette_web.common.utils.crypto import get_random_string
 
@@ -44,10 +47,17 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def on_connect(self, websocket: WebSocket) -> None:
         self.request = WSRequest.from_websocket(websocket)
-        async with self.app.session_maker() as db_session:
-            self.request.db_session = db_session
-            self.user = await self._authenticate()
-            permitted, reason = await self._check_permissions()
+
+        try:
+            async with self.app.session_maker() as db_session:
+                self.request.db_session = db_session
+                self.user = await self._authenticate()
+                permitted, reason = await self._check_permissions()
+        except Exception as exc:  # pylint: disable=broad-except
+            # Any exception must be re-raised to WebSocketDisconnect
+            # Otherwise, websocket will hang out,
+            # since accept()/close() have not been called
+            raise WebSocketDisconnect(code=1006, reason=str(exc)) from exc
 
         # Explicitly clear db_session,
         # so that user does not use it through lengthy websocket life-state
@@ -56,8 +66,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
         if permitted:
             await websocket.accept()
         else:
-            with anyio.fail_after(delay=self.EXIT_MAX_DELAY):
-                await websocket.close(code=3000, reason=reason)
+            raise WebSocketDisconnect(code=3000, reason=reason)
 
     async def on_receive(self, websocket: WebSocket, data: Any) -> None:
         cleaned_data = self._validate(data)
@@ -80,19 +89,19 @@ class BaseWSEndpoint(WebSocketEndpoint):
         try:
             await self._register_background_task(task_id, websocket, data)
             task_result = await self._background_handler(websocket, data)
-        except anyio.get_cancelled_exc_class():
+        except anyio.get_cancelled_exc_class() as exc:
             logger.debug(f"Background task {task_id} has been cancelled.")
-            # TODO: examine
             # As per anyio documentation, CancelError must be always re-raised
-            # However, at the moment, re-raising a CancelError on asyncio on a single task
-            # causes a whole group to be cancelled. Here, an exception is suppressed,
-            # for the time being.
+            # Note, that it will also cancel all other tasks,
+            # due to design of cancellation in anyio 3.x
+            # See: https://github.com/agronholm/anyio/pull/496
+            raise exc
         except Exception as exc:  # pylint: disable=broad-except
             await self._handle_background_task_exception(task_id, websocket, exc)
         finally:
             # As per anyio documentation, any awaitables,
             # that run within scope of CancelError, must be shielded
-            with anyio.CancelScope(shield=True):
+            with anyio.fail_after(delay=self.EXIT_MAX_DELAY, shield=True):
                 await self._unregister_background_task(task_id, websocket, task_result)
 
     async def _handle_background_task_exception(
@@ -143,7 +152,10 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def _authenticate(self) -> BaseUserMixin:
         backend = self.auth_backend(self.request, self.scope)
-        user = await backend.authenticate()
+        try:
+            user = await backend.authenticate()
+        except AuthenticationFailedError:
+            user = AnonymousUser()
         self.scope["user"] = user
         return user
 
@@ -153,7 +165,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
                 has_permission = await permission_class().has_permission(self.request, self.scope)
                 if not has_permission:
                     return False, PermissionDeniedError.message
-            except Exception as exc:
+            except PermissionDeniedError as exc:
                 return False, str(exc)
 
         return True, ""

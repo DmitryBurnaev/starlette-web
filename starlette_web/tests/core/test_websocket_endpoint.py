@@ -1,7 +1,10 @@
 import time
 import pytest
 
+from starlette.websockets import WebSocketDisconnect
+
 from starlette_web.common.caches import caches
+from starlette_web.contrib.auth.utils import encode_jwt
 from starlette_web.tests.helpers import await_
 
 
@@ -85,3 +88,26 @@ class TestWebsocketEndpoint:
         assert cache_keys[0].endswith("_exception")
         result_value = await_(locmem_cache.async_get(cache_keys[0]))
         assert result_value == "fail"
+
+    def test_authentication_failure(self, client):
+        await_(locmem_cache.async_clear())
+
+        with pytest.raises(WebSocketDisconnect):
+            with client.websocket_connect("/ws/test_websocket_auth") as websocket:
+                websocket.send_json({"request_type": "test_1"})
+                time.sleep(3)
+
+    def test_authentication_success(self, client, dbs, user, user_session):
+        await_(locmem_cache.async_clear())
+
+        jwt, _ = encode_jwt({"user_id": user.id, "session_id": user_session.public_id})
+        headers = {"authorization": f"Bearer {jwt}".encode("latin-1")}
+
+        with client.websocket_connect("/ws/test_websocket_auth", headers=headers) as websocket:
+            websocket.send_json({"request_type": "test_1"})
+            time.sleep(3)
+
+            cache_keys = await_(locmem_cache.async_keys("*"))
+            assert len(cache_keys) == 1
+            results = await_(locmem_cache.async_get_many(cache_keys))
+            assert set([value for key, value in results.items()]) == {"test_1"}
