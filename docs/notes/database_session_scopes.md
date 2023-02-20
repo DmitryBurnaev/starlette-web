@@ -1,4 +1,4 @@
-## A note on session scope
+## A note on database session scope
 
 Whenever you create session to database, a connection is fetched from a (limited) connection pool.
 Connection itself acts as a transaction, where operations do not mutate db, unless committed.
@@ -30,5 +30,5 @@ fall immediately, if you use session outside the scope, but it may lead to obnox
 errors in production.
 
 If you are implementing your own class for AsyncSession, make sure to wrap `__aexit__`
-method with `asyncio.shield`, to prevent incorrect closing behavior when task is cancelled
+method with `anyio.CancelScope(shield=True)`, to prevent incorrect closing behavior when task is cancelled
 (i.e., on websocket 1001 error).
