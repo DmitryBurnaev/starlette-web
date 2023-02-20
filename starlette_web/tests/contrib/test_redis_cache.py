@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import time
 
 import pytest
@@ -100,13 +100,17 @@ def test_redis_lock_race_condition():
 def test_redis_lock_correct_task_blocking():
     async def task_with_lock():
         async with default_cache.lock("test_lock", blocking_timeout=12, timeout=1.0, sleep=0.01):
-            await asyncio.sleep(2)
+            await anyio.sleep(2)
 
     number_of_tests = 4
-
-    coroutines = [task_with_lock() for _ in range(number_of_tests)]
     start_time = time.time()
-    await_(asyncio.gather(*coroutines))
+
+    async def gather_coroutines():
+        async with anyio.create_task_group() as nursery:
+            for _ in range(number_of_tests):
+                nursery.start_soon(task_with_lock)
+
+    await_(gather_coroutines())
     end_time = time.time()
 
     # Time should be around (sleep_time + (number_of_tests - 1) * timeout) = 5
