@@ -2,7 +2,7 @@ from typing import Dict, Any
 
 import anyio
 from marshmallow import Schema, fields
-from starlette.websockets import WebSocket
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from starlette_web.common.caches import caches
 from starlette_web.common.ws.base_endpoint import BaseWSEndpoint
@@ -49,10 +49,41 @@ class CancellationWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
         self, task_id: str, websocket: WebSocket, exc: Exception
     ):
         await locmem_cache.async_set(task_id + "_exception", str(exc), timeout=20)
-        raise exc
+        raise WebSocketDisconnect(code=1005) from exc
 
 
 class AuthenticationWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
     auth_backend = JWTAuthenticationBackend
     permission_classes = [IsAuthenticatedPermission]
     EXIT_MAX_DELAY = 5
+
+
+class FinitePeriodicTaskWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
+    EXIT_MAX_DELAY = 5
+
+    async def _background_handler(self, websocket: WebSocket, data: Dict):
+        for i in range(4):
+            await websocket.send_json({"response": i})
+            await anyio.sleep(1)
+
+        return "finished"
+
+
+class InfinitePeriodicTaskWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
+    EXIT_MAX_DELAY = 5
+
+    async def _background_handler(self, websocket: WebSocket, data: Dict):
+        prefix = data["request_type"]
+
+        i = 0
+        while True:
+            await websocket.send_json({"response": prefix + "_" + str(i)})
+            await anyio.sleep(1)
+            i += 1
+
+    async def _unregister_background_task(
+        self, task_id: str, websocket: WebSocket, task_result: Any
+    ):
+        await locmem_cache.async_delete(task_id)
+        # Explicitly set "finished" task_result for tests
+        await locmem_cache.async_set(task_id + "_result", "finished", timeout=20)
