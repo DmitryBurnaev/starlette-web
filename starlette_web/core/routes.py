@@ -10,6 +10,8 @@ from starlette_web.tests.views import (
     BaseWebsocketTestEndpoint,
     CancellationWebsocketTestEndpoint,
     AuthenticationWebsocketTestEndpoint,
+    FinitePeriodicTaskWebsocketTestEndpoint,
+    InfinitePeriodicTaskWebsocketTestEndpoint,
 )
 
 
@@ -23,4 +25,8 @@ routes = [
     WebSocketRoute("/ws/test_websocket_base", BaseWebsocketTestEndpoint),
     WebSocketRoute("/ws/test_websocket_cancel", CancellationWebsocketTestEndpoint),
     WebSocketRoute("/ws/test_websocket_auth", AuthenticationWebsocketTestEndpoint),
+    WebSocketRoute("/ws/test_websocket_finite_periodic", FinitePeriodicTaskWebsocketTestEndpoint),
+    WebSocketRoute(
+        "/ws/test_websocket_infinite_periodic", InfinitePeriodicTaskWebsocketTestEndpoint
+    ),
 ]
