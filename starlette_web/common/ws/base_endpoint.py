@@ -88,7 +88,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
         try:
             await self._register_background_task(task_id, websocket, data)
-            task_result = await self._background_handler(websocket, data)
+            task_result = await self._background_handler(task_id, websocket, data)
         except anyio.get_cancelled_exc_class() as exc:
             logger.debug(f"Background task {task_id} has been cancelled.")
             # As per anyio documentation, CancelError must be always re-raised
@@ -126,7 +126,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
         # This method is to be redefined in child classes
         pass
 
-    async def _background_handler(self, websocket: WebSocket, data: Dict) -> Any:
+    async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict) -> Any:
         raise WebSocketDisconnect(
             code=1005,
             reason="Background handler for Websocket is not implemented",

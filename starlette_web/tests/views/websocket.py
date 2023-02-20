@@ -20,7 +20,7 @@ class WebsocketRequestSchema(Schema):
 class BaseWebsocketTestEndpoint(BaseWSEndpoint):
     request_schema = WebsocketRequestSchema
 
-    async def _background_handler(self, websocket: WebSocket, data: Dict):
+    async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict):
         await anyio.sleep(2)
         return data["request_type"]
 
@@ -36,14 +36,14 @@ class BaseWebsocketTestEndpoint(BaseWSEndpoint):
 
 
 class CancellationWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
-    async def _background_handler(self, websocket: WebSocket, data: Dict):
+    async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict):
         if data["request_type"] == "cancel":
             return
 
         if data["request_type"] == "fail":
             raise Exception("fail")
 
-        return await super()._background_handler(websocket, data)
+        return await super()._background_handler(task_id, websocket, data)
 
     async def _handle_background_task_exception(
         self, task_id: str, websocket: WebSocket, exc: Exception
@@ -61,7 +61,7 @@ class AuthenticationWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
 class FinitePeriodicTaskWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
     EXIT_MAX_DELAY = 5
 
-    async def _background_handler(self, websocket: WebSocket, data: Dict):
+    async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict):
         for i in range(4):
             await websocket.send_json({"response": i})
             await anyio.sleep(1)
@@ -72,7 +72,7 @@ class FinitePeriodicTaskWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
 class InfinitePeriodicTaskWebsocketTestEndpoint(BaseWebsocketTestEndpoint):
     EXIT_MAX_DELAY = 5
 
-    async def _background_handler(self, websocket: WebSocket, data: Dict):
+    async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict):
         prefix = data["request_type"]
 
         i = 0
