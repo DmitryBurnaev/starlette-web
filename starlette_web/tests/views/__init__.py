@@ -4,4 +4,5 @@ from starlette_web.tests.views.http import HealthCheckAPIView, SentryCheckAPIVie
 from starlette_web.tests.views.websocket import (
     BaseWebsocketTestEndpoint,
     CancellationWebsocketTestEndpoint,
+    AuthenticationWebsocketTestEndpoint,
 )

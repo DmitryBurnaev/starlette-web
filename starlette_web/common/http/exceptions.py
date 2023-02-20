@@ -45,13 +45,13 @@ class AuthenticationFailedError(BaseApplicationError):
     message = "Authentication credentials are invalid."
 
 
-class AuthenticationRequiredError(BaseApplicationError):
+class AuthenticationRequiredError(AuthenticationFailedError):
     status_code = 401
     response_status = ResponseStatus.MISSED_CREDENTIALS
     message = "Authentication is required."
 
 
-class SignatureExpiredError(BaseApplicationError):
+class SignatureExpiredError(AuthenticationFailedError):
     status_code = 401
     response_status = ResponseStatus.SIGNATURE_EXPIRED
     message = "Authentication credentials are invalid."
