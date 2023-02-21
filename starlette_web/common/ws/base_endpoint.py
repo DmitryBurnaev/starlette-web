@@ -14,7 +14,7 @@ from starlette_web.common.authorization.backends import (
     BaseAuthenticationBackend,
     NoAuthenticationBackend,
 )
-from starlette_web.common.authorization.base_user import BaseUserMixin, AnonymousUser
+from starlette_web.common.authorization.base_user import BaseUser, AnonymousUser
 from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
 from starlette_web.common.http.exceptions import (
     PermissionDeniedError,
@@ -31,7 +31,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
     auth_backend: ClassVar[Type[BaseAuthenticationBackend]] = NoAuthenticationBackend
     permission_classes: ClassVar[List[Union[Type[BasePermission], OperandHolder]]] = []
     request_schema: ClassVar[Type[Schema]]
-    user: BaseUserMixin
+    user: BaseUser
     request: WSRequest
     task_group: Optional[TaskGroup]
     EXIT_MAX_DELAY: float = 60
@@ -150,7 +150,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
                 reason=exc.data,
             ) from exc
 
-    async def _authenticate(self) -> BaseUserMixin:
+    async def _authenticate(self) -> BaseUser:
         backend = self.auth_backend(self.request, self.scope)
         try:
             user = await backend.authenticate()
