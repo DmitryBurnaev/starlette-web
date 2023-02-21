@@ -24,7 +24,7 @@ class HealthCheckAPIView(BaseHTTPEndpoint):
     """Allows controlling status of web application (live ASGI and pg connection)"""
 
     auth_backend = None
-    schema_response = HealthCheckSchema
+    response_schema = HealthCheckSchema
 
     async def get(self, *_):
         """

@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 class JWTSessionMixin:
     """Allows updating session and prepare usual / refresh JWT tokens"""
 
-    schema_response = JWTResponseSchema
+    response_schema = JWTResponseSchema
     db_session: AsyncSession = NotImplemented
 
     @staticmethod
@@ -96,7 +96,7 @@ class JWTSessionMixin:
 class SignInAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     """Allows to Log-In user and update/create his session"""
 
-    schema_request = SignInSchema
+    request_schema = SignInSchema
     auth_backend = None
 
     async def post(self, request):
@@ -147,7 +147,7 @@ class SignInAPIView(JWTSessionMixin, BaseHTTPEndpoint):
 class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     """Allows creating new user and create his own session"""
 
-    schema_request = SignUpSchema
+    request_schema = SignUpSchema
     auth_backend = None
 
     async def post(self, request):
@@ -246,7 +246,7 @@ class SignOutAPIView(BaseHTTPEndpoint):
 class RefreshTokenAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     """Allows updating tokens (should be called when main token is outdated)"""
 
-    schema_request = RefreshTokenSchema
+    request_schema = RefreshTokenSchema
     auth_backend = None
 
     async def post(self, request):
@@ -300,8 +300,8 @@ class RefreshTokenAPIView(JWTSessionMixin, BaseHTTPEndpoint):
 class InviteUserAPIView(BaseHTTPEndpoint):
     """Invite user (by email) to the service"""
 
-    schema_request = UserInviteRequestSchema
-    schema_response = UserInviteResponseSchema
+    request_schema = UserInviteRequestSchema
+    response_schema = UserInviteResponseSchema
     auth_backend = JWTAuthenticationBackend
 
     async def post(self, request):
@@ -376,8 +376,8 @@ class InviteUserAPIView(BaseHTTPEndpoint):
 class ResetPasswordAPIView(BaseHTTPEndpoint):
     """Send link to user's email for resetting his password"""
 
-    schema_request = ResetPasswordRequestSchema
-    schema_response = ResetPasswordResponseSchema
+    request_schema = ResetPasswordRequestSchema
+    response_schema = ResetPasswordResponseSchema
     auth_backend = JWTAuthenticationBackend
     permission_classes = [IsSuperuserPermission]
 
@@ -447,7 +447,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
 class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
     """Simple API for changing user's password"""
 
-    schema_request = ChangePasswordSchema
+    request_schema = ChangePasswordSchema
     auth_backend = None
 
     async def post(self, request):
@@ -485,7 +485,7 @@ class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
 class ProfileApiView(BaseHTTPEndpoint):
     """Simple retrieves profile information (for authenticated user)"""
 
-    schema_response = UserResponseSchema
+    response_schema = UserResponseSchema
     auth_backend = JWTAuthenticationBackend
 
     async def get(self, request):
