@@ -1,6 +1,5 @@
-import json
 import logging
-from typing import ClassVar, Type, Any, Optional, List, Union, Dict, Tuple
+from typing import ClassVar, Type, Any, Optional, List, Dict, Tuple
 import sys
 
 import anyio
@@ -10,12 +9,13 @@ from starlette.endpoints import WebSocketEndpoint
 from starlette.types import Scope, Receive, Send
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from starlette_web.common.app import WebApp
 from starlette_web.common.authorization.backends import (
     BaseAuthenticationBackend,
     NoAuthenticationBackend,
 )
 from starlette_web.common.authorization.base_user import BaseUser, AnonymousUser
-from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
+from starlette_web.common.authorization.permissions import PermissionType
 from starlette_web.common.http.exceptions import (
     PermissionDeniedError,
     AuthenticationFailedError,
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 class BaseWSEndpoint(WebSocketEndpoint):
     auth_backend: ClassVar[Type[BaseAuthenticationBackend]] = NoAuthenticationBackend
-    permission_classes: ClassVar[List[Union[Type[BasePermission], OperandHolder]]] = []
+    permission_classes: ClassVar[List[PermissionType]] = []
     request_schema: ClassVar[Type[Schema]]
     user: BaseUser
     request: WSRequest
@@ -40,9 +40,9 @@ class BaseWSEndpoint(WebSocketEndpoint):
     def __init__(self, scope: Scope, receive: Receive, send: Send) -> None:
         super().__init__(scope, receive, send)
         self.task_group = None
+        self.app: WebApp = self.scope.get("app")
 
     async def dispatch(self) -> None:
-        self.app = self.scope.get("app")  # noqa
         async with anyio.create_task_group() as self.task_group:
             await super().dispatch()
 

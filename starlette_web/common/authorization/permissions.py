@@ -1,5 +1,7 @@
 # Copied from https://github.com/encode/django-rest-framework/blob/master/rest_framework/permissions.py  # noqa E501
 
+from typing import Type, Union
+
 from starlette.types import Scope
 
 from starlette_web.common.http.requests import PRequest
@@ -96,3 +98,6 @@ class IsAuthenticatedPermission(BasePermission):
 
         user: BaseUser = scope["user"]
         return user.is_authenticated
+
+
+PermissionType = Union[Type[BasePermission], OperandHolder]
