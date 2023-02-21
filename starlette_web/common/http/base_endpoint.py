@@ -1,5 +1,5 @@
 import logging
-from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List
+from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List, Any, Dict
 
 from marshmallow import Schema, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,8 +40,8 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     request: PRequest
     db_session: AsyncSession
     db_model: ClassVar[DBModel]
-    schema_request: ClassVar[Type[Schema]]
-    schema_response: ClassVar[Type[Schema]]
+    request_schema: ClassVar[Type[Schema]]
+    response_schema: ClassVar[Type[Schema]]
     auth_backend: ClassVar[Type[BaseAuthenticationBackend]] = NoAuthenticationBackend
     permission_classes: ClassVar[List[Union[Type[BasePermission], OperandHolder]]] = []
     request_parser: ClassVar[Type[StarletteParser]] = StarletteParser
@@ -118,16 +118,16 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     ) -> Optional[Mapping]:
         """Simple validation, based on marshmallow's schemas"""
 
-        schema_request = schema or self.schema_request
+        schema_class = schema or self.request_schema
         schema_kwargs = {}
         if partial_:
-            schema_kwargs["partial"] = [field for field in schema_request().fields]
+            schema_kwargs["partial"] = [field for field in schema_class().fields]
 
-        schema, cleaned_data = schema_request(**schema_kwargs), {}
+        schema_obj, cleaned_data = schema_class(**schema_kwargs), {}
         try:
-            cleaned_data = await self.request_parser().parse(schema, request, location=location)
-            if hasattr(schema, "is_valid") and callable(schema.is_valid):
-                schema.is_valid(cleaned_data)
+            cleaned_data = await self.request_parser().parse(schema_obj, request, location=location)
+            if hasattr(schema_obj, "is_valid") and callable(schema_obj.is_valid):
+                schema_obj.is_valid(cleaned_data)
 
         except ValidationError as e:
             # TODO: check that details is str / flatten
@@ -147,18 +147,22 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         A shorthand for response_renderer plus serializing data and passing text status.
         To be used primarily with JSONRenderer and such.
         """
-        if (data is not None) and self.schema_response:
+        if (data is not None) and self.response_schema:
             schema_kwargs = {}
             if isinstance(data, Iterable) and not isinstance(data, dict):
                 schema_kwargs["many"] = True
 
-            payload = self.schema_response(**schema_kwargs).dump(data)
+            payload = self.response_schema(**schema_kwargs).dump(data)
         else:
             payload = data
 
         return self.response_renderer(
-            {"status": response_status, "payload": payload},
+            self._get_response_content(response_status, payload),
             status_code=status_code,
             headers=headers,
             background=background,
         )
+
+    @staticmethod
+    def _get_response_content(response_status: ResponseStatus, payload: Any) -> Dict:
+        return {"status": response_status, "payload": payload}
