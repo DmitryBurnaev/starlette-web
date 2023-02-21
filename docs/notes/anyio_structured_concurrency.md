@@ -1,6 +1,6 @@
 ## Structured concurrency
 
-Asyncio-way is built around calling asyncio.Task's and juggling callbacks.
+Asyncio-way is built around calling `asyncio.Task`'s and juggling callbacks.
 In asyncio-paradigm, all tasks are on the same "level", i.e. there are no explicit
 parent or child tasks, even though tasks may spawn other tasks. Context propagation
 and tracebacks are not available in this paradigm.
@@ -10,8 +10,8 @@ It disallows callbacks and requires that all spawned tasks are explicitly bound
 to a task group, which controls that all tasks are executed before exiting its scope
 or is able to cancel all its child tasks.
 
-Structured concurrency was introduced by Nathaniel Smith, author of `trio`, alternative
-asynchronous backend for Python. Trio is the only asynchronous backend, that fully 
+Structured concurrency in Python was introduced by Nathaniel Smith, author of `trio`, 
+alternative asynchronous backend for Python. Trio is the only asynchronous backend, that fully 
 propagates callstack, exceptions and such. A number of papers by N. Smith elaborate
 more on this topic:
 
@@ -33,7 +33,7 @@ AnyIO provides `anyio.to_thread.run_sync` wrappers for FileIO in Python.
 
 ## Cancellation and timeouts
 
-Trio/Anyio specifically point out on utils for cancellation of asynchronous tasks 
+Trio/Anyio specifically emphasize on utils for cancellation of asynchronous tasks 
 and handling timeouts. So much, actually, that both of these functionalities are 
 implemented with a same class `CancelScope`. Consider the following:
 
@@ -49,13 +49,14 @@ anyio provides primitive functions to spawn threads and processes, to run
 synchronous functions in async context. Some notes should be taken:
 
 - In general, a timeout for synchronous operation cannot be properly handled in
-  Python. In some cases, you may wrap them in async-wrappers to utilize timeouts, 
+  Python, since no outer scope (like event loop) typically exists in that case.
+  In some cases, you may wrap sync-operations in async-wrappers to utilize timeouts, 
   however proceed with caution.
-- **AVOID AT ALL COSTS** using `anyio.to_thread.run_sync` to wrap a potentially
+- **AVOID** using `anyio.to_thread.run_sync` to wrap a potentially
   infinite task with a timeout block, since it will leave an orphan pending thread 
   (even though, the control will be returned to main program). If running such code
-  from console, it will be impossible to close. The reason is because there is no
-  straightforward way to cancel a thread in Python.
+  in console, it will hang forever. The reason is due to there is no
+  straightforward way to kill a thread, run from async backend, in Python.
 - `anyio.to_process.run_sync`, on the other hand, is perfectly fine to use for 
   timeout wrapper, since it supports cancellation. 
   However, it only allows to pass pickleable arguments to process, so you need to
