@@ -14,7 +14,7 @@ from starlette_web.common.authorization.backends import (
     BaseAuthenticationBackend,
     NoAuthenticationBackend,
 )
-from starlette_web.common.authorization.permissions import BasePermission, OperandHolder
+from starlette_web.common.authorization.permissions import PermissionType
 from starlette_web.common.authorization.base_user import AnonymousUser
 from starlette_web.common.http.exceptions import (
     UnexpectedError,
@@ -43,7 +43,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     request_schema: ClassVar[Type[Schema]]
     response_schema: ClassVar[Type[Schema]]
     auth_backend: ClassVar[Type[BaseAuthenticationBackend]] = NoAuthenticationBackend
-    permission_classes: ClassVar[List[Union[Type[BasePermission], OperandHolder]]] = []
+    permission_classes: ClassVar[List[PermissionType]] = []
     request_parser: ClassVar[Type[StarletteParser]] = StarletteParser
     response_renderer: ClassVar[Type[BaseRenderer]] = JSONRenderer
 
