@@ -35,6 +35,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
     request: WSRequest
     task_group: Optional[TaskGroup]
     EXIT_MAX_DELAY: float = 60
+    encoding = "json"
 
     def __init__(self, scope: Scope, receive: Receive, send: Send) -> None:
         super().__init__(scope, receive, send)
@@ -132,15 +133,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
             reason="Background handler for Websocket is not implemented",
         )
 
-    def _validate(self, data: str) -> dict:
-        try:
-            request_data = json.loads(data)
-        except json.JSONDecodeError as exc:
-            raise WebSocketDisconnect(
-                code=1003,
-                reason=f"Couldn't parse WS request data: {exc}",
-            ) from exc
-
+    def _validate(self, request_data: dict) -> dict:
         try:
             return self.request_schema().load(request_data)
         except ValidationError as exc:
