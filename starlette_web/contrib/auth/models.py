@@ -5,11 +5,11 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette_web.common.database import ModelMixin, ModelBase
-from starlette_web.common.authorization.base_user import BaseUser
+from starlette_web.common.authorization.base_user import BaseUserMixin
 from starlette_web.contrib.auth.hashers import make_password, verify_password
 
 
-class User(ModelBase, BaseUser, ModelMixin):
+class User(ModelBase, BaseUserMixin, ModelMixin):
     __tablename__ = "auth_users"
 
     id = Column(Integer, primary_key=True)
