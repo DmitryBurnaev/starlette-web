@@ -22,11 +22,17 @@ class RedisLock(AioredisLock):
             expected_token = self.local.token
             if expected_token is not None:
                 self.local.token = None
-                with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+
+                async def close_task():
                     await self.lua_release(
                         keys=[self.name],
                         args=[expected_token],
                         client=self.redis,
                     )
+
+                async with anyio.create_task_group() as nursery:
+                    nursery.cancel_scope.deadline = anyio.current_time() + self.EXIT_MAX_DELAY
+                    nursery.cancel_scope.shield = True
+                    nursery.start_soon(close_task)
         except (RedisError, TimeoutError) as exc:
             raise CacheLockError from exc
