@@ -32,7 +32,7 @@ class WebTestClient(TestClient):
 def await_(coroutine):
     """Run coroutine in the current event loop"""
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop_policy().get_event_loop()
     return loop.run_until_complete(coroutine)
 
 
