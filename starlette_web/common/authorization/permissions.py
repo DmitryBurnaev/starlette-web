@@ -5,7 +5,7 @@ from typing import Type, Union
 from starlette.types import Scope
 
 from starlette_web.common.http.requests import PRequest
-from starlette_web.common.authorization.base_user import BaseUser
+from starlette_web.common.authorization.base_user import BaseUserMixin
 
 
 class OperationHolderMixin:
@@ -96,7 +96,7 @@ class IsAuthenticatedPermission(BasePermission):
         if "user" not in scope:
             return False
 
-        user: BaseUser = scope["user"]
+        user: BaseUserMixin = scope["user"]
         return user.is_authenticated
 
 
