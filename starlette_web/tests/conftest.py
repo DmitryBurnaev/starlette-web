@@ -35,7 +35,7 @@ import sys
 import asyncio
 
 if (*sys.version_info,) >= (3, 8) and sys.platform.startswith("win"):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -70,7 +70,7 @@ def client() -> WebTestClient:
     from starlette_web.common.app import get_app
 
     with WebTestClient(get_app()) as client:
-        with make_db_session(asyncio.get_event_loop()) as db_session:
+        with make_db_session(asyncio.get_event_loop_policy().get_event_loop()) as db_session:
             client.db_session = db_session
             yield client
 
@@ -151,7 +151,7 @@ def user_data() -> Tuple[str, str]:
 
 @pytest.fixture
 def loop():
-    return asyncio.get_event_loop()
+    return asyncio.get_event_loop_policy().get_event_loop()
 
 
 @pytest.fixture
