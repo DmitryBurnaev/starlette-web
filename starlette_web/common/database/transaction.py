@@ -23,7 +23,7 @@ class AtomicTransaction:
         return self.nested_block
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+        async def close_task():
             if self.nested_block_wrapper:
                 if exc_type is not None:
                     await self.nested_block.rollback()
@@ -31,5 +31,10 @@ class AtomicTransaction:
                     await self.nested_block.commit()
 
                 await self.nested_block_wrapper.__aexit__(exc_type, exc_val, exc_tb)
+
+        async with anyio.create_task_group() as nursery:
+            nursery.cancel_scope.deadline = anyio.current_time() + self.EXIT_MAX_DELAY
+            nursery.cancel_scope.shield = True
+            nursery.start_soon(close_task)
 
         return False
