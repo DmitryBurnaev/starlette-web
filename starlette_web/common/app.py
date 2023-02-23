@@ -6,6 +6,7 @@ from typing import List, Union, Dict, Callable, Type, TypeVar
 from sqlalchemy.orm import sessionmaker
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
+from starlette.requests import Request
 from starlette.routing import Route, Mount, WebSocketRoute
 from webargs_starlette import WebargsHTTPException
 
@@ -17,13 +18,12 @@ from starlette_web.common.http.exception_handlers import (
     WebargsHTTPExceptionHandler,
 )
 from starlette_web.common.http.renderers import BaseRenderer
-from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.exceptions import BaseApplicationError
 from starlette_web.common.utils import import_string
 
 
 AppClass = TypeVar("AppClass", bound=Starlette)
-ExceptionHandlerType = Callable[[PRequest, Exception], BaseRenderer]
+ExceptionHandlerType = Callable[[Request, Exception], BaseRenderer]
 
 
 class WebApp(Starlette):

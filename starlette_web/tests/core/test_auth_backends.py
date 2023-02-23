@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from starlette_web.common.http.exceptions import (
     AuthenticationRequiredError,
@@ -14,7 +15,6 @@ from starlette_web.contrib.auth.utils import (
     TOKEN_TYPE_RESET_PASSWORD,
     TOKEN_TYPE_REFRESH,
 )
-from starlette_web.common.http.requests import PRequest
 from starlette_web.tests.helpers import await_
 
 
@@ -23,8 +23,8 @@ class TestBackendAuth:
     def _prepare_request(db_session: AsyncSession, user: User, user_session: UserSession):
         jwt, _ = encode_jwt({"user_id": user.id, "session_id": user_session.public_id})
         scope = {"type": "http", "headers": [(b"authorization", f"Bearer {jwt}".encode("latin-1"))]}
-        request = PRequest(scope)
-        request.db_session = db_session
+        request = Request(scope)
+        request.state.db_session = db_session
         return request, scope
 
     def test_check_auth__ok(self, client, user, user_session, dbs):
@@ -58,9 +58,9 @@ class TestBackendAuth:
         ],
     )
     def test_invalid_token__fail(self, client, user, auth_header, auth_exception, err_details, dbs):
-        request = PRequest(scope={"type": "http", "headers": [auth_header]})
+        request = Request(scope={"type": "http", "headers": [auth_header]})
         scope = {"type": "http"}
-        request.db_session = dbs
+        request.state.db_session = dbs
         with pytest.raises(auth_exception) as err:
             await_(JWTAuthenticationBackend(request, scope).authenticate())
 

@@ -7,6 +7,7 @@ from starlette import status
 from starlette.background import BackgroundTasks
 from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
+from starlette.requests import Request
 from webargs_starlette import WebargsHTTPException, StarletteParser
 
 from starlette_web.common.app import WebApp
@@ -23,7 +24,6 @@ from starlette_web.common.http.exceptions import (
     PermissionDeniedError,
 )
 from starlette_web.common.http.renderers import BaseRenderer, JSONRenderer
-from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.statuses import ResponseStatus
 from starlette_web.common.database import DBModel
 
@@ -37,7 +37,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
     """
 
     app = None
-    request: PRequest
+    request: Request
     db_session: AsyncSession
     db_model: ClassVar[DBModel]
     request_schema: ClassVar[Type[Schema]]
@@ -53,7 +53,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
         So, we can use this one for customs authenticate and catch all exceptions
         """
 
-        self.request = PRequest(self.scope, receive=self.receive)
+        self.request = Request(self.scope, receive=self.receive)
         self.app: WebApp = self.scope.get("app")
 
         handler_name = "get" if self.request.method == "HEAD" else self.request.method.lower()
@@ -68,7 +68,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             raise UnexpectedError(msg_template % (err,))
 
         try:
-            self.request.db_session = session
+            self.request.state.db_session = session
             self.db_session = session
 
             await self._authenticate()
@@ -89,7 +89,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
 
         finally:
             await session_maker.__aexit__(None, None, None)
-            self.request.db_session = None
+            self.request.state.db_session = None
 
         await response(self.scope, self.receive, self.send)
 

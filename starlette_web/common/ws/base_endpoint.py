@@ -20,7 +20,6 @@ from starlette_web.common.http.exceptions import (
     PermissionDeniedError,
     AuthenticationFailedError,
 )
-from starlette_web.common.ws.requests import WSRequest
 from starlette_web.common.utils.crypto import get_random_string
 
 
@@ -32,7 +31,6 @@ class BaseWSEndpoint(WebSocketEndpoint):
     permission_classes: ClassVar[List[PermissionType]] = []
     request_schema: ClassVar[Type[Schema]]
     user: BaseUserMixin
-    request: WSRequest
     task_group: Optional[TaskGroup]
     EXIT_MAX_DELAY: float = 60
     encoding = "json"
@@ -47,13 +45,11 @@ class BaseWSEndpoint(WebSocketEndpoint):
             await super().dispatch()
 
     async def on_connect(self, websocket: WebSocket) -> None:
-        self.request = WSRequest.from_websocket(websocket)
-
         try:
             async with self.app.session_maker() as db_session:
-                self.request.db_session = db_session
-                self.user = await self._authenticate()
-                permitted, reason = await self._check_permissions()
+                websocket.state.db_session = db_session
+                self.user = await self._authenticate(websocket)
+                permitted, reason = await self._check_permissions(websocket)
         except Exception as exc:  # pylint: disable=broad-except
             # Any exception must be re-raised to WebSocketDisconnect
             # Otherwise, websocket will hang out,
@@ -62,7 +58,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
         # Explicitly clear db_session,
         # so that user does not use it through lengthy websocket life-state
-        self.request.db_session = None
+        del websocket.state.db_session
 
         if permitted:
             await websocket.accept()
@@ -143,8 +139,8 @@ class BaseWSEndpoint(WebSocketEndpoint):
                 reason=exc.data,
             ) from exc
 
-    async def _authenticate(self) -> BaseUserMixin:
-        backend = self.auth_backend(self.request, self.scope)
+    async def _authenticate(self, websocket: WebSocket) -> BaseUserMixin:
+        backend = self.auth_backend(websocket, self.scope)
         try:
             user = await backend.authenticate()
         except AuthenticationFailedError:
@@ -152,10 +148,10 @@ class BaseWSEndpoint(WebSocketEndpoint):
         self.scope["user"] = user
         return user
 
-    async def _check_permissions(self) -> Tuple[bool, str]:
+    async def _check_permissions(self, websocket: WebSocket) -> Tuple[bool, str]:
         for permission_class in self.permission_classes:
             try:
-                has_permission = await permission_class().has_permission(self.request, self.scope)
+                has_permission = await permission_class().has_permission(websocket, self.scope)
                 if not has_permission:
                     return False, PermissionDeniedError.message
             except PermissionDeniedError as exc:

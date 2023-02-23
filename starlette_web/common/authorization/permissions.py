@@ -2,9 +2,9 @@
 
 from typing import Type, Union
 
+from starlette.requests import Request
 from starlette.types import Scope
 
-from starlette_web.common.http.requests import PRequest
 from starlette_web.common.authorization.base_user import BaseUserMixin
 
 
@@ -52,7 +52,7 @@ class AND:
         self.op1 = op1
         self.op2 = op2
 
-    async def has_permission(self, request: PRequest, scope: Scope):
+    async def has_permission(self, request: Request, scope: Scope):
         return (await self.op1.has_permission(request, scope)) and (
             await self.op2.has_permission(request, scope)
         )
@@ -63,7 +63,7 @@ class OR:
         self.op1 = op1
         self.op2 = op2
 
-    async def has_permission(self, request: PRequest, scope: Scope):
+    async def has_permission(self, request: Request, scope: Scope):
         return (await self.op1.has_permission(request, scope)) or (
             await self.op2.has_permission(request, scope)
         )
@@ -73,7 +73,7 @@ class NOT:
     def __init__(self, op1):
         self.op1 = op1
 
-    async def has_permission(self, request: PRequest, scope: Scope):
+    async def has_permission(self, request: Request, scope: Scope):
         return not (await self.op1.has_permission(request, scope))
 
 
@@ -82,17 +82,17 @@ class BasePermissionMetaclass(OperationHolderMixin, type):
 
 
 class BasePermission(metaclass=BasePermissionMetaclass):
-    async def has_permission(self, request: PRequest, scope: Scope) -> bool:
+    async def has_permission(self, request: Request, scope: Scope) -> bool:
         raise NotImplementedError
 
 
 class AllowAnyPermission(BasePermission):
-    async def has_permission(self, request: PRequest, scope: Scope) -> bool:
+    async def has_permission(self, request: Request, scope: Scope) -> bool:
         return True
 
 
 class IsAuthenticatedPermission(BasePermission):
-    async def has_permission(self, request: PRequest, scope: Scope) -> bool:
+    async def has_permission(self, request: Request, scope: Scope) -> bool:
         if "user" not in scope:
             return False
 

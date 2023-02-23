@@ -36,11 +36,11 @@ def encode_jwt(
     payload["exp"] = expired_at
     payload["exp_iso"] = expired_at.isoformat()
     payload["token_type"] = token_type
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    token = jwt.encode(payload, str(settings.SECRET_KEY), algorithm=settings.JWT_ALGORITHM)
     return token, expired_at
 
 
 def decode_jwt(encoded_jwt: str) -> dict:
     """Allows to decode received JWT token to payload"""
 
-    return jwt.decode(encoded_jwt, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    return jwt.decode(encoded_jwt, str(settings.SECRET_KEY), algorithms=[settings.JWT_ALGORITHM])
