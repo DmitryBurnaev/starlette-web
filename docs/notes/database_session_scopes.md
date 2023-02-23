@@ -16,7 +16,7 @@ it might be a good idea to split it into 2 `async with sessionmaker()` blocks.
 
 As for http connections, a session is always opened for `dispatch`-method of BaseHTTPEndpoint.
 Since http-endpoint life-cycle is typically short, it is a valid behavior.
-However, you must not pass `request.db_session` to background task, since it spawns
+However, you must not pass `request.state.db_session` to background task, since it spawns
 on separate thread and may run for long time. Instead, pass object of `app` and create
 new session inside background task.
 

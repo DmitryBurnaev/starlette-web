@@ -1,9 +1,9 @@
 from apispec import APISpec
+from starlette.requests import Request
 
 from starlette_web.common.conf import settings
 from starlette_web.common.http.base_endpoint import BaseHTTPEndpoint
 from starlette_web.common.http.renderers import JSONRenderer
-from starlette_web.common.http.requests import PRequest
 from starlette_web.common.http.responses import TemplateResponse
 from starlette_web.common.utils import urljoin
 from starlette_web.contrib.apispec.introspection import APISpecSchemaGenerator
@@ -24,7 +24,7 @@ class OpenApiView(BaseHTTPEndpoint):
     auth_backend = None
     permission_classes = []
 
-    async def get(self, request: PRequest):
+    async def get(self, request: Request):
         routes = request.app.routes
         return JSONRenderer(schemas.get_schema(routes))
 
@@ -34,7 +34,7 @@ class RedocView(BaseHTTPEndpoint):
     auth_backend = None
     permission_classes = []
 
-    async def get(self, request: PRequest):
+    async def get(self, request: Request):
         return TemplateResponse(
             "apispec/redoc.html",
             context={

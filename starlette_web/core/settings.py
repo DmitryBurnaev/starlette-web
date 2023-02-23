@@ -12,7 +12,7 @@ PROJECT_ROOT_DIR = Path(__file__).parent.parent.parent
 config = Config(PROJECT_ROOT_DIR / ".env")
 
 APP_DEBUG = config("APP_DEBUG", cast=bool, default=False)
-SECRET_KEY = config("SECRET_KEY", default="project-secret")
+SECRET_KEY = config("SECRET_KEY", cast=Secret, default="project-secret")
 
 TEST_MODE = "test" in sys.argv[0]
 

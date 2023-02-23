@@ -4,6 +4,7 @@ import os
 os.environ.setdefault("STARLETTE_SETTINGS_MODULE", "starlette_web.core.settings")
 
 import asyncio
+import sys
 import uuid
 from datetime import datetime, timedelta
 from typing import Tuple
@@ -30,9 +31,6 @@ from starlette_web.tests.helpers import (
 )
 from starlette_web.tests.mocks import MockProcess
 
-
-import sys
-import asyncio
 
 if (*sys.version_info,) >= (3, 8) and sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
