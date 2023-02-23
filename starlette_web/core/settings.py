@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "starlette_web.tests",
     "starlette_web.contrib.apispec",
     "starlette_web.contrib.auth",
+    "starlette_web.contrib.admin",
 ]
 
 DB_NAME = config("DB_NAME", default="web_project")
