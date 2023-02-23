@@ -1,6 +1,7 @@
 import inspect
 import logging
 import logging.config
+from importlib import import_module
 from typing import List, Union, Dict, Callable, Type, TypeVar
 
 from sqlalchemy.orm import sessionmaker
@@ -50,7 +51,12 @@ class BaseStarletteApplication:
         """
         Extra actions before app's initialization (can be overridden)
         """
-        pass
+        # TODO: move this in apps.py setup method of starlette_web.contrib.admin
+        for installed_app in settings.INSTALLED_APPS:
+            try:
+                _ = import_module(installed_app + ".admin")
+            except (SystemError, ImportError):
+                pass
 
     def post_app_init(self, app: AppClass) -> None:
         """
