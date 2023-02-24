@@ -1,7 +1,7 @@
 import anyio
 
-from aioredis.exceptions import RedisError
-from aioredis.lock import Lock as AioredisLock
+from redis import asyncio as aioredis
+from redis.asyncio.lock import Lock as AioredisLock
 
 from starlette_web.common.caches.base import CacheLockError
 
@@ -12,7 +12,7 @@ class RedisLock(AioredisLock):
     async def __aenter__(self):
         try:
             return await super().__aenter__()
-        except RedisError as exc:
+        except aioredis.RedisError as exc:
             raise CacheLockError from exc
 
     async def __aexit__(self, *args):
@@ -34,5 +34,5 @@ class RedisLock(AioredisLock):
                     nursery.cancel_scope.deadline = anyio.current_time() + self.EXIT_MAX_DELAY
                     nursery.cancel_scope.shield = True
                     nursery.start_soon(close_task)
-        except (RedisError, TimeoutError) as exc:
+        except (aioredis.RedisError, TimeoutError) as exc:
             raise CacheLockError from exc
