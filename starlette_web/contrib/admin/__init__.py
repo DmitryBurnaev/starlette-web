@@ -1,10 +1,7 @@
 # flake8: noqa
 
-# Mostly copies starlette_admin.contrib.sqla, but without dependency to sqlalchemy_file
-# Adds support for own features of starlette_web
-
-from starlette_web.contrib.admin.admin import Admin as __Admin, AdminMount
-from starlette_web.contrib.admin.view import ModelView
+from starlette_admin.contrib.sqla.view import ModelView as AdminView
+from starlette_web.contrib.admin.admin import Admin as _Admin, AdminMount
 
 
-admin = __Admin()
+admin = _Admin()

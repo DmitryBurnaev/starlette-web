@@ -19,7 +19,11 @@ from starlette_web.common.utils import urljoin
 
 
 class AdminMount(Mount):
-    # starlette_admin is not a contrib-app of starlette_web,
+    def __init__(self, path, **kwargs):
+        super().__init__(path, **kwargs)
+        self._base_app.state.ROUTE_NAME = self.name
+
+    # starlette_admin is not a built-in module of starlette_web,
     # so it requires specific workaround for static files
     def url_path_for(self, name: str, **path_params: Any) -> URLPath:
         if (name == self.name + ":statics") and ("path" in path_params):
@@ -76,7 +80,6 @@ class Admin(BaseAdmin):
                 StarletteAdminException: self._render_error,
             },
         )
-        admin_app.state.ROUTE_NAME = self.route_name
         return admin_app
 
     async def _render_error(
