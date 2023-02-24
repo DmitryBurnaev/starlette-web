@@ -1,5 +1,6 @@
 from typing import Optional, Sequence, Any
 
+from sqlalchemy.exc import IntegrityError
 from starlette.applications import Starlette
 from starlette.datastructures import URLPath
 from starlette.exceptions import HTTPException
@@ -11,7 +12,6 @@ from starlette_admin.auth import AuthProvider
 from starlette_admin.base import BaseAdmin
 from starlette_admin.views import CustomView
 from starlette_admin.exceptions import StarletteAdminException
-from starlette_csrf.middleware import CSRFMiddleware
 
 from starlette_web.common.conf import settings
 from starlette_web.contrib.admin.middleware import DBSessionMiddleware
@@ -56,9 +56,8 @@ class Admin(BaseAdmin):
             debug=settings.APP_DEBUG,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
-        # TODO: actually support CSRF by providing it in headers in POST views
+        # TODO: support CSRF protection
         self.middlewares = [
-            Middleware(CSRFMiddleware, secret=str(settings.SECRET_KEY)),
             Middleware(DBSessionMiddleware),
         ] + self.middlewares
 
@@ -78,6 +77,7 @@ class Admin(BaseAdmin):
             exception_handlers={
                 HTTPException: self._render_error,
                 StarletteAdminException: self._render_error,
+                IntegrityError: self._render_error,
             },
         )
         return admin_app
@@ -87,14 +87,16 @@ class Admin(BaseAdmin):
         request: Request,
         exc: Exception = HTTPException(status_code=500),  # noqa: B008
     ) -> Response:
-        assert isinstance(exc, (HTTPException, StarletteAdminException))
+
         try:
-            status_code = exc.status_code
+            _ = exc.status_code
+            _ = exc.detail
         except AttributeError:
-            status_code = 500
+            exc.status_code = 500
+            exc.detail = str(exc)
 
         return self.templates.TemplateResponse(
             "error.html",
             {"request": request, "exc": exc},
-            status_code=status_code,
+            status_code=exc.status_code,
         )
