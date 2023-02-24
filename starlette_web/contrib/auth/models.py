@@ -24,6 +24,9 @@ class User(ModelBase, BaseUserMixin, ModelMixin):
     def __repr__(self):
         return f"<User #{self.id} {self.email}>"
 
+    def __str__(self):
+        return self.email
+
     @classmethod
     def make_password(cls, raw_password: str) -> str:
         return make_password(raw_password)
@@ -76,6 +79,7 @@ class UserSession(ModelBase, ModelMixin):
     user_id = Column(Integer, ForeignKey("auth_users.id"))
     refresh_token = Column(String(length=512))
     is_active = Column(Boolean, default=True, nullable=False)
+    is_persistent = Column(Boolean, default=True, nullable=False)
     expired_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     refreshed_at = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Any
+from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
 from starlette.applications import Starlette
@@ -7,15 +7,19 @@ from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Mount
-from starlette_admin.auth import AuthProvider
+from starlette.routing import Mount, Route
 from starlette_admin.base import BaseAdmin
 from starlette_admin.views import CustomView
 from starlette_admin.exceptions import StarletteAdminException
 
 from starlette_web.common.conf import settings
-from starlette_web.contrib.admin.middleware import DBSessionMiddleware
 from starlette_web.common.utils import urljoin
+from starlette_web.contrib.admin.auth_provider import AdminAuthProvider
+from starlette_web.contrib.admin.middleware import (
+    DBSessionMiddleware,
+    AdminSessionMiddleware,
+    AuthMiddleware,
+)
 
 
 class AdminMount(Mount):
@@ -39,8 +43,6 @@ class Admin(BaseAdmin):
         logo_url: Optional[str] = None,
         login_logo_url: Optional[str] = None,
         index_view: Optional[CustomView] = None,
-        auth_provider: Optional[AuthProvider] = None,
-        middlewares: Optional[Sequence[Middleware]] = None,
     ) -> None:
         super().__init__(
             title=title,
@@ -51,15 +53,20 @@ class Admin(BaseAdmin):
             templates_dir=settings.TEMPLATES["ROOT_DIR"],
             statics_dir=None,
             index_view=index_view,
-            auth_provider=auth_provider,
-            middlewares=middlewares,
+            auth_provider=AdminAuthProvider(),
+            middlewares=[],
             debug=settings.APP_DEBUG,
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         # TODO: support CSRF protection
-        self.middlewares = [
-            Middleware(DBSessionMiddleware),
-        ] + self.middlewares
+        self.middlewares = (
+            [
+                Middleware(DBSessionMiddleware),
+                Middleware(AdminSessionMiddleware),
+            ]
+            + self.middlewares
+            + settings.ADMIN_MIDDLEWARE
+        )
 
         # Remove static files from starlette_admin routing,
         # it is handled differently
@@ -82,6 +89,27 @@ class Admin(BaseAdmin):
         )
         return admin_app
 
+    def init_auth(self) -> None:
+        if self.auth_provider is not None:
+            self.middlewares = [] if self.middlewares is None else list(self.middlewares)
+            self.middlewares.append(Middleware(AuthMiddleware, provider=self.auth_provider))
+            self.routes.extend(
+                [
+                    Route(
+                        self.auth_provider.login_path,
+                        self._render_login,
+                        methods=["GET", "POST"],
+                        name="login",
+                    ),
+                    Route(
+                        self.auth_provider.logout_path,
+                        self._render_logout,
+                        methods=["GET"],
+                        name="logout",
+                    ),
+                ]
+            )
+
     async def _render_error(
         self,
         request: Request,
@@ -95,6 +123,7 @@ class Admin(BaseAdmin):
             exc.status_code = 500
             exc.detail = str(exc)
 
+        # TODO: examine, why template is not shown, when error occurs
         return self.templates.TemplateResponse(
             "error.html",
             {"request": request, "exc": exc},
