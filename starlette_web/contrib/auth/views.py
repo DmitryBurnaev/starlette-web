@@ -44,6 +44,7 @@ from starlette_web.contrib.auth.schemas import (
 logger = logging.getLogger(__name__)
 
 
+# TODO: rewrite as separate manager, not bound to views
 class JWTSessionMixin:
     """Allows updating session and prepare usual / refresh JWT tokens"""
 

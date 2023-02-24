@@ -10,6 +10,10 @@ from starlette_web.common.management.base import BaseCommand, CommandError
 # TODO: handle errors
 # TODO: probably need refactoring ?
 class Command(BaseCommand):
+    help = (
+        "Move static files and templates from INSTALLED_APPS "
+        "directories to static root and templates root, respectively"
+    )
     SKIP_APPS = ["starlette_web.common", "starlette_web.contrib.admin"]
 
     async def handle(self, **options):

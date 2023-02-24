@@ -22,7 +22,7 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
     openapi_spec = {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
     openapi_name = "JWTAuth"
 
-    async def authenticate(self) -> User:
+    async def authenticate(self, **kwargs) -> User:
         request = self.request
 
         auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
@@ -37,7 +37,7 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         if auth[0] != self.keyword:
             raise AuthenticationFailedError("Invalid token header. Keyword mismatch.")
 
-        user, _, session_id = await self.authenticate_user(jwt_token=auth[1])
+        user, _, session_id = await self.authenticate_user(jwt_token=auth[1], **kwargs)
 
         self.scope["user_session_id"] = session_id
         self.scope["user"] = user
@@ -68,6 +68,7 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
         self,
         jwt_token: str,
         token_type: str = TOKEN_TYPE_ACCESS,
+        **kwargs,
     ) -> Tuple[User, dict, str]:
         """Allows to find active user by jwt_token"""
         jwt_payload = self._parse_jwt_payload(jwt_token, token_type)
@@ -95,3 +96,18 @@ class JWTAuthenticationBackend(BaseAuthenticationBackend):
             )
 
         return user, jwt_payload, session_id
+
+
+class SessionJWTAuthenticationBackend(JWTAuthenticationBackend):
+    cookie_name = "session"
+
+    async def authenticate(self, **kwargs) -> User:
+        cookie_value = self.request.cookies.get(self.cookie_name)
+        if not cookie_value:
+            raise AuthenticationRequiredError("Cookie not found or is empty.")
+
+        user, _, session_id = await self.authenticate_user(jwt_token=cookie_value, **kwargs)
+
+        self.scope["user_session_id"] = session_id
+        self.scope["user"] = user
+        return user
