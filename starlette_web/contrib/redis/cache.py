@@ -1,6 +1,6 @@
 from typing import Sequence, Any, List, Dict, Type, Optional, AsyncContextManager, Union
 
-import aioredis
+from redis import asyncio as aioredis
 
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import UnexpectedError
@@ -12,7 +12,7 @@ def reraise_exception(func):
     async def wrapped(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
-        except aioredis.exceptions.RedisError as exc:
+        except aioredis.RedisError as exc:
             raise CacheError from exc
         except Exception as exc:
             raise UnexpectedError from exc
