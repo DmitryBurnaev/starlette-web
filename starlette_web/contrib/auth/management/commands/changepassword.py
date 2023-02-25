@@ -4,7 +4,7 @@ from starlette_web.contrib.auth.management.auth_command_mixin import AuthCommand
 
 
 class Command(AuthCommandMixin, BaseCommand):
-    help = "Create a user with admin privileges"
+    help = "Change a password of existing User (contrib.auth)"
 
     async def handle(self, **options):
         async with self.app.session_maker() as session:
