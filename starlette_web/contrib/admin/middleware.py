@@ -1,17 +1,15 @@
 import datetime
 import jwt
 from typing import Optional
-from urllib.parse import urlencode
 from functools import partial
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.datastructures import MutableHeaders
 from starlette.requests import HTTPConnection, Request
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
-from starlette.responses import Response, RedirectResponse
-from starlette.status import HTTP_303_SEE_OTHER
-from starlette_admin.auth import AuthProvider
+from starlette.responses import Response
 
+from starlette_web.common.conf import settings
 from starlette_web.common.database.session_maker import make_session_maker
 from starlette_web.contrib.auth.backend import SessionJWTAuthenticationBackend
 from starlette_web.contrib.auth.models import UserSession
@@ -34,40 +32,14 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
             return response
 
 
-class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(
-        self,
-        app: ASGIApp,
-        provider: AuthProvider,
-    ) -> None:
-        super().__init__(app)
-        self.provider = provider
-        self.allow_paths = [self.provider.login_path]
-
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        if (request.scope["path"] not in self.allow_paths) and not (
-            await self.provider.is_authenticated(request)
-        ):
-            return RedirectResponse(
-                "{url}?{query_params}".format(
-                    url=request.url_for(request.app.state.ROUTE_NAME + ":login"),
-                    query_params=urlencode({"next": str(request.url)}),
-                ),
-                status_code=HTTP_303_SEE_OTHER,
-            )
-        else:
-            return await call_next(request)
-
-
 class AdminSessionMiddleware:
     def __init__(
         self,
         app: ASGIApp,
-        max_age: Optional[int] = 14 * 24 * 60 * 60,  # 14 days, in seconds
     ) -> None:
         self.app = app
         self.session_cookie = SessionJWTAuthenticationBackend.cookie_name
-        self.max_age = max_age
+        self.max_age = settings.JWT_REFRESH_EXPIRES_IN
         self.path = "/"
         self.session_maker = make_session_maker(use_pool=False)
 

@@ -31,6 +31,7 @@ class Command(BaseCommand):
             # TODO: use logging ?
             print(f"User {user} created successfully.")
 
+    # TODO: Support masking for passwords ?
     def get_input_data(self, message, default=None):
         raw_value = input(message)
         if default and raw_value == "":

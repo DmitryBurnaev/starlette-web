@@ -11,6 +11,9 @@ from starlette_web.common.database.types import ChoiceType
 EnumClass = TypeVar("EnumClass", bound=enum.Enum)
 
 
+# TODO: probably not supported in starlette_admin,
+#  one has to manually set field converter to sqlalchemy implementation
+#  in starlette_admin.contrib.sqla.helpers.converters
 class EnumTypeColumn(Column):
     """Just wrapper for ChoiceType db column
 
