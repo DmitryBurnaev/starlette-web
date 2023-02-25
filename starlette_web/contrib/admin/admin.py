@@ -7,7 +7,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Mount, Route
+from starlette.routing import Mount
 from starlette_admin.base import BaseAdmin
 from starlette_admin.views import CustomView
 from starlette_admin.exceptions import StarletteAdminException
@@ -18,7 +18,6 @@ from starlette_web.contrib.admin.auth_provider import AdminAuthProvider
 from starlette_web.contrib.admin.middleware import (
     DBSessionMiddleware,
     AdminSessionMiddleware,
-    AuthMiddleware,
 )
 
 
@@ -59,14 +58,10 @@ class Admin(BaseAdmin):
         )
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
         # TODO: support CSRF protection
-        self.middlewares = (
-            [
-                Middleware(DBSessionMiddleware),
-                Middleware(AdminSessionMiddleware),
-            ]
-            + self.middlewares
-            + settings.ADMIN_MIDDLEWARE
-        )
+        self.middlewares = [
+            Middleware(DBSessionMiddleware),
+            Middleware(AdminSessionMiddleware),
+        ] + self.middlewares
 
         # Remove static files from starlette_admin routing,
         # it is handled differently
@@ -88,27 +83,6 @@ class Admin(BaseAdmin):
             },
         )
         return admin_app
-
-    def init_auth(self) -> None:
-        if self.auth_provider is not None:
-            self.middlewares = [] if self.middlewares is None else list(self.middlewares)
-            self.middlewares.append(Middleware(AuthMiddleware, provider=self.auth_provider))
-            self.routes.extend(
-                [
-                    Route(
-                        self.auth_provider.login_path,
-                        self._render_login,
-                        methods=["GET", "POST"],
-                        name="login",
-                    ),
-                    Route(
-                        self.auth_provider.logout_path,
-                        self._render_logout,
-                        methods=["GET"],
-                        name="logout",
-                    ),
-                ]
-            )
 
     async def _render_error(
         self,
