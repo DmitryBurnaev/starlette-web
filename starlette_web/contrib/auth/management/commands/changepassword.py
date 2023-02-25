@@ -11,23 +11,21 @@ class Command(AuthCommandMixin, BaseCommand):
             email = self.get_input_data("Input email (username): ")
             self.validate_field("email", email)
             user = await User.async_get(db_session=session, email=email)
-            if user is not None:
-                raise CommandError(details=f"User with email = {email} already exists.")
+            if user is None:
+                raise CommandError(details=f"User with email = {email} not found.")
 
-            password_1 = self.get_input_data("Input password: ")
+            password_1 = self.get_input_data("Input new password: ")
             self.validate_field("password", password_1)
-            password_2 = self.get_input_data("Retype password: ")
+            password_2 = self.get_input_data("Retype new password: ")
             if password_1 != password_2:
                 raise CommandError(details="Password mismatch.")
 
-            user = await User.async_create(
+            await User.async_update(
                 db_session=session,
                 db_commit=True,
-                email=email,
-                password=User.make_password(password_1),
-                is_superuser=True,
-                is_active=True,
+                filter_kwargs=dict(email=email),
+                update_data=dict(password=User.make_password(password_1)),
             )
 
             # TODO: use logging ?
-            print(f"User {user} created successfully.")
+            print(f"Password for user {user} updated successfully.")

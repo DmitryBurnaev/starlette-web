@@ -1,6 +1,5 @@
 import datetime
 import jwt
-from typing import Optional
 from functools import partial
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -23,13 +22,18 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         async with self.session_maker() as session:
-            request.state.session = session
-            request.state.db_session = session
-            response = await call_next(request)
-            del request.state.session
-            del request.state.db_session
-            await session.commit()
-            return response
+            try:
+                request.state.session = session
+                request.state.db_session = session
+                response = await call_next(request)
+                await session.commit()
+                return response
+            except:  # noqa: E722
+                await session.rollback()
+                raise
+            finally:
+                del request.state.session
+                del request.state.db_session
 
 
 class AdminSessionMiddleware:
