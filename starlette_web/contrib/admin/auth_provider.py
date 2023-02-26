@@ -38,7 +38,7 @@ class AdminAuthProvider(AuthProvider):
         token_maker.db_session = request.state.session
         token_collection = await token_maker._create_session(user)
 
-        _ = await UserSession.async_update(
+        await UserSession.async_update(
             db_session=request.state.session,
             filter_kwargs=dict(refresh_token=token_collection.refresh_token),
             update_data=dict(is_persistent=remember_me),
@@ -53,7 +53,7 @@ class AdminAuthProvider(AuthProvider):
 
     async def is_authenticated(self, request) -> bool:
         try:
-            _ = await SessionJWTAuthenticationBackend(
+            await SessionJWTAuthenticationBackend(
                 request,
                 request.scope,
             ).authenticate(

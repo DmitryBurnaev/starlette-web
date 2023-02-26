@@ -1,6 +1,7 @@
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette_admin.actions import action
 from starlette_admin.exceptions import FormValidationError, ActionFailed
@@ -21,7 +22,7 @@ class UserView(AdminView):
         submit_btn_class="btn-danger",
     )
     async def delete_cascade_action(self, request: Request, pks: List[Any]) -> str:
-        affected_rows = await self.delete_cascade(request, pks)
+        affected_rows = await self.delete_users_cascade(request, pks)
         return "{} items were successfully deleted".format(affected_rows)
 
     @action(
@@ -49,6 +50,25 @@ class UserView(AdminView):
         if errors:
             raise FormValidationError(errors)
         return await super().validate(request, data)
+
+    async def delete_users_cascade(self, request: Request, pks: List[Any]) -> Optional[int]:
+        session: AsyncSession = request.state.session
+        objs = await self.find_by_pks(request, pks)
+
+        async with session.begin_nested():
+            for obj in objs:
+                await UserSession.async_delete(
+                    db_session=session,
+                    filter_kwargs={"user_id": obj.id},
+                )
+                await UserInvite.async_delete(
+                    db_session=session,
+                    filter_kwargs={"user_id": obj.id},
+                )
+                await session.delete(obj)
+
+        await session.commit()
+        return len(objs)
 
 
 class UserSessionView(AdminView):
