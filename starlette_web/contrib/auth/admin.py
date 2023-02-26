@@ -1,8 +1,9 @@
 from typing import Any, List, Dict
 
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.requests import Request
 from starlette_admin.actions import action
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import FormValidationError, ActionFailed
 
 from starlette_web.contrib.admin import AdminView, admin
 from starlette_web.contrib.auth.models import User, UserSession, UserInvite
@@ -21,6 +22,20 @@ class UserView(AdminView):
     )
     async def delete_cascade_action(self, request: Request, pks: List[Any]) -> str:
         affected_rows = await self.delete_cascade(request, pks)
+        return "{} items were successfully deleted".format(affected_rows)
+
+    @action(
+        name="delete",
+        text="Delete",
+        confirmation="Are you sure you want to delete this items?",
+        submit_btn_text="Yes, delete them all",
+        submit_btn_class="btn-danger",
+    )
+    async def delete_action(self, request: Request, pks: List[Any]) -> str:
+        try:
+            affected_rows = await self.delete(request, pks)
+        except SQLAlchemyError as exc:
+            raise ActionFailed(str(exc))
         return "{} items were successfully deleted".format(affected_rows)
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
