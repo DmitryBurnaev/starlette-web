@@ -34,29 +34,19 @@ class UserView(AdminView):
 
 
 class UserSessionView(AdminView):
-    async def can_create(self, request: Request) -> bool:
+    def can_create(self, request: Request) -> bool:
         return False
 
-    async def can_delete(self, request: Request) -> bool:
+    def can_delete(self, request: Request) -> bool:
         return False
-
-    async def is_action_allowed(self, request: Request, name: str) -> bool:
-        if name == "delete":
-            return await self.can_delete(request)
-        return True
 
 
 class UserInviteView(AdminView):
-    async def can_create(self, request: Request) -> bool:
+    def can_create(self, request: Request) -> bool:
         return False
 
-    async def can_delete(self, request: Request) -> bool:
+    def can_delete(self, request: Request) -> bool:
         return False
-
-    async def is_action_allowed(self, request: Request, name: str) -> bool:
-        if name == "delete":
-            return await self.can_delete(request)
-        return True
 
 
 admin.add_view(UserView(User, icon="fa fa-users"))
