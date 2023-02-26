@@ -26,11 +26,7 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
                 request.state.session = session
                 request.state.db_session = session
                 response = await call_next(request)
-                await session.commit()
                 return response
-            except:  # noqa: E722
-                await session.rollback()
-                raise
             finally:
                 del request.state.session
                 del request.state.db_session
