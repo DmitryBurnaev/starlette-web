@@ -53,10 +53,7 @@ class AdminAuthProvider(AuthProvider):
 
     async def is_authenticated(self, request) -> bool:
         try:
-            await SessionJWTAuthenticationBackend(
-                request,
-                request.scope,
-            ).authenticate(
+            await SessionJWTAuthenticationBackend(request, request.scope,).authenticate(
                 token_type=TOKEN_TYPE_REFRESH,
             )
             return await IsSuperuserPermission().has_permission(request, request.scope)

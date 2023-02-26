@@ -78,7 +78,7 @@ class AdminSessionMiddleware:
         initial_session_was_empty: bool = True,
     ) -> None:
         security_flags = "httponly; samesite=lax"
-        if scope.get('scheme') == 'https':
+        if scope.get("scheme") == "https":
             security_flags += "; secure"
 
         if message["type"] == "http.response.start":
