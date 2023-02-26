@@ -265,14 +265,7 @@ class TestAuthSignUPAPIView(BaseTestAPIView):
         request_data = self._sign_up_data(user_invite)
         user_email = request_data["email"]
 
-        await_(
-            User.async_create(
-                dbs,
-                db_commit=True,
-                email=user_email,
-                password=User.make_password("pass"),
-            )
-        )
+        await_(User.async_create(dbs, db_commit=True, email=user_email, password="pass"))
         response = client.post(self.url, json=request_data)
         response_data = self.assert_fail_response(response)
         assert response_data == {
@@ -419,9 +412,7 @@ class TestResetPasswordAPIView(BaseTestAPIView):
         request_user = user
         await_(request_user.update(dbs, is_superuser=True))
         target_user = await_(
-            User.async_create(
-                dbs, db_commit=True, email=self.email, password=User.make_password("pass")
-            )
+            User.async_create(dbs, db_commit=True, email=self.email, password="pass")
         )
 
         client.login(user)

@@ -71,7 +71,7 @@ def mock_target_class(mock_class: Type[BaseMock], monkeypatch):
 
 
 def get_user_data() -> Tuple[str, str]:
-    return f"u_{uuid.uuid4().hex[:10]}@test.com", User.make_password("password")
+    return f"u_{uuid.uuid4().hex[:10]}@test.com", "password"
 
 
 def get_source_id() -> str:
