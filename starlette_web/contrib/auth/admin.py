@@ -1,5 +1,7 @@
 from typing import Any, List, Dict, Optional
 
+from marshmallow.exceptions import ValidationError
+from marshmallow.validate import Email as EmailValidator
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
@@ -40,11 +42,13 @@ class UserView(AdminView):
         return "{} items were successfully deleted".format(affected_rows)
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
-        # TODO: proper email validation
         # TODO: allow setting password, by hashing it here or in _populate_obj
         errors: Dict[str, str] = {}
         cleaned_email = data["email"].strip()
-        if not cleaned_email or "@" not in cleaned_email:
+
+        try:
+            EmailValidator()(cleaned_email)
+        except ValidationError:
             errors["email"] = "Invalid value for field email."
 
         if errors:
