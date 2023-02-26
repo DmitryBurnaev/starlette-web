@@ -1,3 +1,5 @@
+from marshmallow.validate import ValidationError, Email as EmailValidator
+
 from starlette_web.common.management.base import CommandError
 
 
@@ -13,7 +15,8 @@ class AuthCommandMixin:
         if not value:
             raise CommandError(details="Field value is empty.")
 
-        # TODO: proper email validation
         if field_name == "email":
-            if "@" not in value:
+            try:
+                EmailValidator()(value)
+            except ValidationError:
                 raise CommandError(details="Invalid value for email.")
