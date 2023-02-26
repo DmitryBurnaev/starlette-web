@@ -36,7 +36,11 @@ class RedisCache(BaseCache):
 
     @reraise_exception
     async def async_set(self, key: str, value, timeout: Optional[float] = 120):
-        await self.redis.set(key, self.serializer.serialize(value), ex=timeout)
+        await self.redis.set(
+            key,
+            self.serializer.serialize(value),
+            px=int(timeout * 1000) if timeout is not None else None,
+        )
 
     @reraise_exception
     async def async_delete(self, key: str) -> None:
@@ -44,6 +48,9 @@ class RedisCache(BaseCache):
 
     @reraise_exception
     async def async_keys(self, pattern: str) -> List[str]:
+        # Using KEYS is not recommended in production with high-load,
+        # since it's a redis-blocking operation
+        # If you have millions of keys, consider using redis.scan_iter instead
         return [self._force_str(key) for key in (await self.redis.keys(pattern))]
 
     @reraise_exception

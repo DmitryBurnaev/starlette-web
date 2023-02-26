@@ -30,10 +30,12 @@ class BaseCache(metaclass=Singleton):
         raise NotImplementedError
 
     async def async_keys(self, pattern: str) -> List[str]:
+        # Returns list of keys, matching redis-like pattern
+        # See docs: https://redis.io/commands/keys/
         raise NotImplementedError
 
     async def async_has_key(self, key: str) -> bool:
-        return (await self.async_keys(key)) is not None
+        raise NotImplementedError
 
     async def async_get_many(self, keys: Sequence[str]) -> Dict[str, Any]:
         result = dict()
