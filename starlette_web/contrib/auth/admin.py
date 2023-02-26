@@ -40,12 +40,15 @@ class UserView(AdminView):
 
     async def validate(self, request: Request, data: Dict[str, Any]) -> None:
         # TODO: proper email validation
+        # TODO: allow setting password, by hashing it here or in _populate_obj
         errors: Dict[str, str] = {}
         cleaned_email = data["email"].strip()
         if not cleaned_email or "@" not in cleaned_email:
             errors["email"] = "Invalid value for field email."
+
         if errors:
             raise FormValidationError(errors)
+        return await super().validate(request, data)
 
 
 class UserSessionView(AdminView):
