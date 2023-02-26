@@ -1,12 +1,14 @@
 # Adapted from https://github.com/django/django/blob/main/django/core/cache/backends/locmem.py
 
 import math
+import re
 from typing import Any, Optional, Dict, Sequence, AsyncContextManager, List
 
 import anyio
 
-from starlette_web.common.caches.base import BaseCache
+from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import ImproperlyConfigured
+from starlette_web.common.utils.regex import redis_pattern_to_re_pattern
 
 
 _caches: Dict[str, Dict[str, Any]] = {}
@@ -46,9 +48,16 @@ class LocalMemoryCache(BaseCache):
             self._delete_key(key)
 
     async def async_keys(self, pattern: str) -> List[str]:
-        # TODO: Which patterns should be supported?
-        # TODO: Redis-like pattern is not fully-compatible with Python regex
-        return [key for key in self._cache.keys() if not self._has_expired(key)]
+        try:
+            re_pattern = redis_pattern_to_re_pattern(pattern)
+        except RuntimeError as exc:
+            raise CacheError(details=str(exc)) from exc
+
+        return [
+            key
+            for key in self._cache.keys()
+            if not self._has_expired(key) and re.fullmatch(re_pattern, key)
+        ]
 
     async def async_has_key(self, key: str) -> bool:
         async with self._manager_lock:
@@ -75,8 +84,9 @@ class LocalMemoryCache(BaseCache):
             await self.async_set(key, value, timeout=timeout)
 
     async def async_delete_many(self, keys: Sequence[str]) -> None:
-        for key in keys:
-            await self.async_delete(key)
+        async with self._manager_lock:
+            for key in keys:
+                self._delete_key(key)
 
     async def async_clear(self) -> None:
         async with self._manager_lock:
@@ -90,4 +100,6 @@ class LocalMemoryCache(BaseCache):
         blocking_timeout: Optional[float],
         **kwargs,
     ) -> AsyncContextManager:
+        # A stub, that returns same lock for any parameters
+        # Use anyio.Lock directly instead
         return self._lock
