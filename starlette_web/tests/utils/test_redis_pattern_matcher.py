@@ -30,25 +30,25 @@ def test_redis_pattern_matcher():
 
 def test_invalid_patterns():
     with pytest.raises(RuntimeError, match=re.escape("Nested sets in pattern not allowed.")):
-        _ = redis_pattern_to_re_pattern("keys:[[*]]")
+        redis_pattern_to_re_pattern("keys:[[*]]")
 
     with pytest.raises(
         RuntimeError, match=re.escape("Orphan backslash in the end of the pattern.")
     ):
-        _ = redis_pattern_to_re_pattern("keys:[*]\\")
+        redis_pattern_to_re_pattern("keys:[*]\\")
 
     with pytest.raises(
         RuntimeError, match=re.escape("Orphan closing bracket ] in pattern not allowed.")
     ):
-        _ = redis_pattern_to_re_pattern("keys:[*]]")
+        redis_pattern_to_re_pattern("keys:[*]]")
 
     with pytest.raises(
         RuntimeError,
         match=re.escape("Subpattern [^?] is only allowed to exclude a single character."),
     ):
-        _ = redis_pattern_to_re_pattern("keys:[^ab]")
+        redis_pattern_to_re_pattern("keys:[^ab]")
 
     with pytest.raises(
         RuntimeError, match=re.escape("Hyphen outside [] block must be preceeded with backslash.")
     ):
-        _ = redis_pattern_to_re_pattern("keys:-a")
+        redis_pattern_to_re_pattern("keys:-a")
