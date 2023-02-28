@@ -2,7 +2,23 @@ import re
 
 
 def redis_pattern_to_re_pattern(pattern: str) -> re.Pattern:
-    # Official docs for redis key-matching https://redis.io/commands/keys/
+    """
+    A helper function to match redis key pattern with re built-in module,
+    Redis key pattern has different semantics, than regex.
+    Official docs for redis key matching https://redis.io/commands/keys/
+
+    >>> import re
+    >>> from starlette_web.common.utils.regex import redis_pattern_to_re_pattern
+
+    >>> redis_pattern = "keys:*"
+    >>> re_pattern = redis_pattern_to_re_pattern(redis_pattern)
+    >>> re_pattern
+    [0] re.compile('keys:.*')
+    >>> re.fullmatch(re_pattern, "keys:1")
+    [1] <re.Match object; span=(0, 6), match='keys:1'>
+    >>> re.fullmatch(re_pattern, "key:1")
+    [2] None
+    """
     while "**" in pattern:
         pattern = pattern.replace("**", "*")
 
