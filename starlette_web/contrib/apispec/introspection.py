@@ -32,18 +32,18 @@ class APISpecSchemaGenerator(BaseSchemaGenerator):
         for route in initial_routes:
             # Skip any websocket connections
             if isinstance(route, Mount):
-                mounts.append((route.path, route))
+                mounts.append((self._remove_converter(route.path), route))
             elif isinstance(route, Route) and getattr(route, "include_in_schema", True):
-                routes[route.path] = route.endpoint
+                routes[self._remove_converter(route.path)] = route.endpoint
 
         while mounts:
             path, mount = mounts.popleft()
             for route in mount.routes:
                 # Skip any websocket connections
                 if isinstance(route, Mount):
-                    mounts.append((path + route.path, route))
+                    mounts.append((path + self._remove_converter(route.path), route))
                 elif isinstance(route, Route) and getattr(route, "include_in_schema", True):
-                    routes[path + route.path] = route.endpoint
+                    routes[path + self._remove_converter(route.path)] = route.endpoint
 
         self.paths_and_endpoints = routes
 
