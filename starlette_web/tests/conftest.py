@@ -67,7 +67,7 @@ def config():
 def client() -> WebTestClient:
     from starlette_web.common.app import get_app
 
-    with WebTestClient(get_app()) as client:
+    with WebTestClient(get_app(run_checks_on_startup=False)) as client:
         with make_db_session(asyncio.get_event_loop_policy().get_event_loop()) as db_session:
             client.db_session = db_session
             yield client
