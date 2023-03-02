@@ -18,6 +18,8 @@ class AppConfig(BaseAppConfig):
         routes = import_string(settings.ROUTES)
 
         try:
+            # This check mostly fails on invalid indentation
+            # or partially missing properties.
             api_spec = schemas.get_schema(routes)
         except Exception as exc:  # noqa
             # Printing variable values in traceback is the only
@@ -28,6 +30,8 @@ class AppConfig(BaseAppConfig):
             )
 
         try:
+            # This check finds missing whole blocks,
+            # i.e. missing info about path parameter in schema
             validate_spec(api_spec)
         except (OpenAPIValidationError, OpenAPISpecValidatorError) as exc:
             raise ImproperlyConfigured(
