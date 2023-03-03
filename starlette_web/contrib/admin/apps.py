@@ -14,6 +14,6 @@ class AppConfig(BaseAppConfig):
     def initialize(self):
         for installed_app in settings.INSTALLED_APPS:
             try:
-                _ = import_module(installed_app + ".admin")
+                import_module(installed_app + ".admin")
             except (SystemError, ImportError):
                 pass
