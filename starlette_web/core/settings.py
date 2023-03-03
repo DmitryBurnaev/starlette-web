@@ -17,11 +17,12 @@ SECRET_KEY = config("SECRET_KEY", cast=Secret, default="project-secret")
 TEST_MODE = "test" in sys.argv[0]
 
 INSTALLED_APPS = [
-    "starlette_web.common",
-    "starlette_web.tests",
+    "starlette_web.contrib.staticfiles",
     "starlette_web.contrib.apispec",
     "starlette_web.contrib.auth",
     "starlette_web.contrib.admin",
+    "starlette_web.contrib.constance.backends.database",
+    "starlette_web.tests",
 ]
 
 DB_NAME = config("DB_NAME", default="web_project")

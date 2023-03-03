@@ -1,7 +1,6 @@
 import inspect
 import logging
 import logging.config
-from importlib import import_module
 from typing import List, Union, Dict, Callable, Type, TypeVar
 
 from sqlalchemy.orm import sessionmaker
@@ -13,6 +12,7 @@ from webargs_starlette import WebargsHTTPException
 
 from starlette_web.common.caches import caches
 from starlette_web.common.conf import settings
+from starlette_web.common.conf.app_manager import app_manager
 from starlette_web.common.database import make_session_maker
 from starlette_web.common.http.exception_handlers import (
     BaseApplicationErrorHandler,
@@ -47,16 +47,16 @@ class WebApp(Starlette):
 class BaseStarletteApplication:
     app_class: AppClass = WebApp
 
+    def __init__(self, **kwargs):
+        self.run_checks = kwargs.get('run_checks', True)
+
     def pre_app_init(self) -> None:
         """
         Extra actions before app's initialization (can be overridden)
         """
-        # TODO: move this in apps.py setup method of starlette_web.contrib.admin
-        for installed_app in settings.INSTALLED_APPS:
-            try:
-                _ = import_module(installed_app + ".admin")
-            except (SystemError, ImportError):
-                pass
+        app_manager.initialize_apps()
+        if self.run_checks:
+            app_manager.run_apps_checks()
 
     def post_app_init(self, app: AppClass) -> None:
         """
@@ -108,4 +108,5 @@ class BaseStarletteApplication:
 
 def get_app(**kwargs) -> AppClass:
     StarletteApplication = import_string(settings.APPLICATION_CLASS)
-    return StarletteApplication().get_app(**kwargs)
+    run_checks = kwargs.pop('run_checks_on_startup', True)
+    return StarletteApplication(run_checks=run_checks).get_app(**kwargs)

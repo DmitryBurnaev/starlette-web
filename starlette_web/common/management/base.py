@@ -123,5 +123,8 @@ def fetch_command_by_name(command_name: str) -> Type[BaseCommand]:
 
 async def call_command(command_name, command_args: List[str]):
     command = fetch_command_by_name(command_name)
-    app = get_app(use_pool=settings.DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS)
+    app = get_app(
+        use_pool=settings.DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS,
+        run_checks_on_startup=False,
+    )
     await command(app).run_from_code(["command.py", command_name] + command_args)
