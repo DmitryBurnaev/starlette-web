@@ -7,13 +7,18 @@ from starlette_web.common.utils.importing import import_string
 
 
 class AppManager:
+    """
+    A project-wide manager for installed modules (apps, in django terminology).
+    Dynamically introspects %module_name%/apps.py and runs apps' own
+    initializations and checks. Called at Starlette app initialization.
+    """
     def __init__(self):
         self.app_configs: OrderedDict[str, BaseAppConfig] = OrderedDict()
         self.app_names: OrderedDict[str, str] = OrderedDict()
-        self.apps_registered = False
+        self._apps_registered = False
 
     def register_apps(self):
-        if self.apps_registered:
+        if self._apps_registered:
             return
 
         for installed_app in settings.INSTALLED_APPS:
@@ -43,7 +48,7 @@ class AppManager:
             self.app_names[app_config.app_name] = installed_app
             self.app_configs[installed_app] = app_config
 
-        self.apps_registered = True
+        self._apps_registered = True
 
     def initialize_apps(self):
         self.register_apps()
