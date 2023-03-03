@@ -3,6 +3,7 @@ import logging
 import os
 import tempfile
 
+from traceback_with_variables import format_exc
 from starlette_web.common.utils.importing import import_string
 from starlette_web.contrib.scheduler.backends.base import BasePeriodicTaskScheduler
 from starlette_web.contrib.scheduler.app_settings import PosixSettings
@@ -76,8 +77,7 @@ class CrontabScheduler(BasePeriodicTaskScheduler):
             try:
                 await async_job_handler(*job[2], **job[3])
             except Exception as exc:
-                # TODO: format exc
-                logger.critical(str(exc))
+                logger.critical(format_exc(exc))
 
     def remove_jobs(self):
         project_hash = self._get_project_level_hash()

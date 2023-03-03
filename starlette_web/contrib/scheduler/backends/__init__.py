@@ -10,4 +10,4 @@ def get_periodic_scheduler_backend_class() -> Type[BasePeriodicTaskScheduler]:
     if os.name == "nt":
         return BasePeriodicTaskScheduler
 
-    return import_string("starlette_web.contrib.scheduler.backends.crontab.CrontabScheduler")
+    return import_string("starlette_web.contrib.scheduler.backends.posix.CrontabScheduler")
