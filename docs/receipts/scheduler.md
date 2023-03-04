@@ -6,7 +6,7 @@ It operates with system-wide task scheduler, so it has no outer dependencies to 
 - For POSIX systems, Crontab is used (based on `django-crontab`)
 - For Windows, Task Scheduler 2.0 is used (based on `win_tasks.py` from `salt`)
 
-Both runners, 
+For both runners, maximum frequency of running jobs is **1 per minute**.
 
 ## Plugging-in
 
