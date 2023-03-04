@@ -14,6 +14,15 @@ Both runners,
 - Configure list of periodic jobs and other settings (see below)
 - (Optionally) configure logger `starlette_web.contrib.scheduler`
 
+## Usage
+
+```python
+python command.py scheduler --cmd=add
+python command.py scheduler --cmd=remove
+python command.py scheduler --cmd=show
+python command.py scheduler --cmd=run --jobhash=...  # run by OS-scheduler
+```
+
 ## Settings
 
 - `PERIODIC_JOBS_LIST` - list of periodic jobs entries. Each entry is a list with 5 elements:
