@@ -10,7 +10,7 @@ RUN apt-get update \
 		gcc \
 		libpq-dev \
 		python-dev \
-    && pip install .[apispec,testing,admin] \
+    && pip install .[apispec,testing,admin,scheduler] \
 	&& apt-get purge -y --auto-remove gcc python-dev \
 	&& apt-get -y autoremove \
 	&& apt-get clean \
