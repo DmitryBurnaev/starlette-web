@@ -2,7 +2,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-from sqlalchemy.engine.url import URL
 from starlette.config import Config
 from starlette.datastructures import Secret
 
@@ -48,14 +47,7 @@ DATABASE = {
 DATABASE_DSN = config(
     "DB_DSN",
     cast=str,
-    default=URL.create(
-        drivername=DATABASE["driver"],
-        username=DATABASE["username"],
-        password=DATABASE["password"],
-        host=DATABASE["host"],
-        port=DATABASE["port"],
-        database=DATABASE["database"],
-    ),
+    default="{driver}://{username}:{password}@{host}:{port}/{database}".format(**DATABASE),
 )
 
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
