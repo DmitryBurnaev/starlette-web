@@ -16,16 +16,6 @@ class Settings:
             project_settings, "PERIODIC_JOBS_RUN_DIRECTORY", os.getcwd()
         )
         self.SETTINGS_MODULE = self._getattr(project_settings, "STARLETTE_SETTINGS_MODULE", None)
-        self.COMMAND_PREFIX = self._getattr(
-            project_settings,
-            "PERIODIC_JOBS_COMMAND_PREFIX",
-            f"cd {self.RUN_DIRECTORY} &&",
-        )
-        self.COMMAND_SUFFIX = self._getattr(
-            project_settings,
-            "PERIODIC_JOBS_COMMAND_SUFFIX",
-            "",
-        )
         self.BLOCKING_TIMEOUT = 5
 
     @staticmethod
@@ -39,6 +29,16 @@ class Settings:
 class PosixSettings(Settings):
     def __init__(self, project_settings):
         super().__init__(project_settings)
+        self.COMMAND_PREFIX = self._getattr(
+            project_settings,
+            "PERIODIC_JOBS_COMMAND_PREFIX",
+            f"cd {self.RUN_DIRECTORY} &&",
+        )
+        self.COMMAND_SUFFIX = self._getattr(
+            project_settings,
+            "PERIODIC_JOBS_COMMAND_SUFFIX",
+            "",
+        )
         self.CRONTAB_EXECUTABLE = self._getattr(
             project_settings,
             "PERIODIC_JOBS_CRONTAB_EXECUTABLE",
@@ -46,7 +46,7 @@ class PosixSettings(Settings):
         )
         self.CRONTAB_LINE_PATTERN = self._getattr(
             project_settings,
-            "CRONTAB_LINE_PATTERN",
+            "PERIODIC_JOBS_CRONTAB_LINE_PATTERN",
             "%(time)s %(command)s # %(comment)s",
         )
 
