@@ -53,7 +53,7 @@ class WindowsTaskScheduler(BasePeriodicTaskScheduler):
 
     def update_jobs(self):
         all_jobs = [self._hash_job(job) for job in self.settings.PERIODIC_JOBS]
-        new_jobs = set(all_jobs) - set(self._current_jobs)
+        jobs_to_add = set(all_jobs) - set(self._current_jobs)
         jobs_to_delete = set(self._current_jobs) - set(all_jobs)
 
         project_hash = self._get_project_level_hash()
@@ -66,7 +66,7 @@ class WindowsTaskScheduler(BasePeriodicTaskScheduler):
 
             logger.info(f"Removing scheduled task {job_hash}")
 
-        for job_hash in new_jobs:
+        for job_hash in jobs_to_add:
             job = self._get_job_by_hash(job_hash)
 
             if job[0] == "@reboot":
@@ -74,18 +74,20 @@ class WindowsTaskScheduler(BasePeriodicTaskScheduler):
                     trigger_type="OnBoot",
                 )
             else:
+                # Add 5 seconds to ensure Windows has time to prepare entry in scheduler registry
+                now = datetime.datetime.now().astimezone() + datetime.timedelta(seconds=5)
+                it = croniter.croniter("* * * * *", now)
+                start_dt = datetime.datetime.fromtimestamp(next(it)).astimezone()
+                start_time = start_dt.time().strftime("%H:%M")
+                start_date = start_dt.date().strftime("%Y-%m-%d")
+
                 schedule_kwargs = dict(
                     trigger_type="Daily",
                     repeat_interval="1 minute",
                     repeat_duration="1 day",
+                    start_time=start_time,
+                    start_date=start_date,
                 )
-
-            # Add 5 seconds to ensure Windows has time to prepare entry in scheduler registry
-            now = datetime.datetime.now().astimezone() + datetime.timedelta(seconds=5)
-            it = croniter.croniter("* * * * *", now)
-            start_dt = datetime.datetime.fromtimestamp(next(it)).astimezone()
-            start_time = start_dt.time().strftime("%H:%M")
-            start_date = start_dt.date().strftime("%Y-%m-%d")
 
             created = create_task(
                 name=job_hash,
@@ -108,8 +110,6 @@ class WindowsTaskScheduler(BasePeriodicTaskScheduler):
                 force_stop=True,
                 delete_after=False,
                 multiple_instances=not self.settings.LOCK_JOBS,
-                start_time=start_time,
-                start_date=start_date,
                 action_type="Execute",
                 cmd=self.settings.PYTHON_EXECUTABLE,
                 arguments=(
