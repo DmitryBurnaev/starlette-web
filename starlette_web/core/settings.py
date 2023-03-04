@@ -2,7 +2,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-from sqlalchemy.engine.url import URL
 from starlette.config import Config
 from starlette.datastructures import Secret
 
@@ -32,9 +31,9 @@ if TEST_MODE:
 # TODO: refactor database-specific settings with respect to sqlalchemy.create_engine / asyncpg
 DATABASE = {
     "driver": "postgresql+asyncpg",
-    "host": config("DB_HOST", default=None),
-    "port": config("DB_PORT", cast=int, default=None),
-    "username": config("DB_USERNAME", default=None),
+    "host": config("DB_HOST", default="localhost"),
+    "port": config("DB_PORT", cast=int, default=5432),
+    "username": config("DB_USERNAME", default="starlette-web"),
     "password": config("DB_PASSWORD", cast=Secret, default=None),
     "database": DB_NAME,
     "pool_min_size": config("DB_POOL_MIN_SIZE", cast=int, default=1),
@@ -48,14 +47,7 @@ DATABASE = {
 DATABASE_DSN = config(
     "DB_DSN",
     cast=str,
-    default=URL.create(
-        drivername=DATABASE["driver"],
-        username=DATABASE["username"],
-        password=DATABASE["password"],
-        host=DATABASE["host"],
-        port=DATABASE["port"],
-        database=DATABASE["database"],
-    ),
+    default="{driver}://{username}:{password}@{host}:{port}/{database}".format(**DATABASE),
 )
 
 DB_ECHO = config("DB_ECHO", cast=bool, default=False)
