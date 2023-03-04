@@ -48,7 +48,7 @@ class BaseStarletteApplication:
     app_class: AppClass = WebApp
 
     def __init__(self, **kwargs):
-        self.run_checks = kwargs.get('run_checks', True)
+        self.run_checks = kwargs.get("run_checks", True)
 
     def pre_app_init(self) -> None:
         """
@@ -108,5 +108,5 @@ class BaseStarletteApplication:
 
 def get_app(**kwargs) -> AppClass:
     StarletteApplication = import_string(settings.APPLICATION_CLASS)
-    run_checks = kwargs.pop('run_checks_on_startup', True)
+    run_checks = kwargs.pop("run_checks_on_startup", True)
     return StarletteApplication(run_checks=run_checks).get_app(**kwargs)

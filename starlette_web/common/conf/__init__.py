@@ -34,6 +34,7 @@ class Settings:
                 setting_value = getattr(module, setting)
                 _getattr(self, "_user_settings")[setting] = setting_value
 
+        _getattr(self, "_user_settings")["STARLETTE_SETTINGS_MODULE"] = settings_module
         _setattr(self, "_setup_done", True)
 
     def __getattr__(self, key: str) -> Any:

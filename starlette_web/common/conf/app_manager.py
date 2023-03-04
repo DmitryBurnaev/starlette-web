@@ -12,6 +12,7 @@ class AppManager:
     Dynamically introspects %module_name%/apps.py and runs apps' own
     initializations and checks. Called at Starlette app initialization.
     """
+
     def __init__(self):
         self.app_configs: OrderedDict[str, BaseAppConfig] = OrderedDict()
         self.app_names: OrderedDict[str, str] = OrderedDict()

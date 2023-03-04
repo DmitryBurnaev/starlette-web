@@ -1,18 +1,23 @@
 import json
 import hashlib
+import logging
 import os
 import tempfile
 from typing import List, Dict, Tuple, TypeAlias, Union
 
+import anyio
 from filelock import FileLock
+from traceback_with_variables import format_exc
 
 from starlette_web.common.conf import settings as project_settings
 
 # Scheduler is only supposed to be run as management-command
 from starlette_web.common.management.base import CommandError
+from starlette_web.common.utils.importing import import_string
 from starlette_web.contrib.scheduler.app_settings import Settings
 
 
+logger = logging.getLogger("starlette_web.contrib.scheduler")
 JSONType: TypeAlias = Union[
     Dict[str, "JSONType"],
     List["JSONType"],
@@ -22,7 +27,13 @@ JSONType: TypeAlias = Union[
     bool,
     None,
 ]
-JobType = Tuple[str, str, List[JSONType], Dict[str, JSONType]]
+# Arguments:
+# [0] crontab-like schedule (including @reboot)
+# [1] import string for async function to be executed
+# [2] args
+# [3] kwargs
+# [4] timeout
+JobType = Tuple[str, str, List[JSONType], Dict[str, JSONType], Union[float, None]]
 
 
 class BasePeriodicTaskScheduler:
@@ -63,7 +74,18 @@ class BasePeriodicTaskScheduler:
         raise CommandError("Not supported for this platform.")
 
     async def run_job(self, job_hash: str):
-        raise CommandError("Not supported for this platform.")
+        job = self._get_job_by_hash(job_hash)
+        async_job_handler = import_string(job[1])
+
+        with self._get_job_mutex():
+            with anyio.CancelScope() as cancel_scope:
+                if job[4] is not None:
+                    cancel_scope.deadline = anyio.current_time() + job[4]
+
+                try:
+                    await async_job_handler(*job[2], **job[3])
+                except Exception as exc:
+                    logger.critical(format_exc(exc))
 
     def _get_project_level_hash(self) -> str:
         return hashlib.md5(str(project_settings.SECRET_KEY).encode("utf-8")).hexdigest()

@@ -6,8 +6,7 @@ from starlette_web.contrib.scheduler.backends.base import BasePeriodicTaskSchedu
 
 
 def get_periodic_scheduler_backend_class() -> Type[BasePeriodicTaskScheduler]:
-    # TODO: implement WindowsTaskScheduler
     if os.name == "nt":
-        return BasePeriodicTaskScheduler
+        return import_string("starlette_web.contrib.scheduler.backends.win32.WindowsTaskScheduler")
 
     return import_string("starlette_web.contrib.scheduler.backends.posix.CrontabScheduler")

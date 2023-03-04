@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "starlette_web.contrib.auth",
     "starlette_web.contrib.admin",
     "starlette_web.contrib.constance.backends.database",
+    "starlette_web.contrib.scheduler",
     "starlette_web.tests",
 ]
 

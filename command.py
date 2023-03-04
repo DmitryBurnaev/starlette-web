@@ -6,15 +6,23 @@ from starlette_web.common.management.base import fetch_command_by_name, CommandE
 
 
 if __name__ == "__main__":
-    os.environ.setdefault("STARLETTE_SETTINGS_MODULE", "starlette_web.core.settings")
+    settings_module = "starlette_web.core.settings"
 
-    if len(sys.argv) < 2:
+    sys_argv = list(sys.argv).copy()
+    for arg in sys_argv.copy():
+        if arg.startswith("--settings="):
+            settings_module = arg[11:]
+            sys_argv.remove(arg)
+
+    os.environ.setdefault("STARLETTE_SETTINGS_MODULE", settings_module)
+
+    if len(sys_argv) < 2:
         raise CommandError(
             'Missing command name. Correct syntax is: "python command.py command_name ..."'
         )
 
     from starlette_web.common.conf import settings
 
-    command = fetch_command_by_name(sys.argv[1])
+    command = fetch_command_by_name(sys_argv[1])
     app = get_app(use_pool=settings.DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS)
-    command(app).run_from_command_line(sys.argv)
+    command(app).run_from_command_line(sys_argv)
