@@ -1,6 +1,7 @@
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.validation.exceptions import (
-    OpenAPIValidationError, OpenAPISpecValidatorError,
+    OpenAPIValidationError,
+    OpenAPISpecValidatorError,
 )
 from traceback_with_variables import format_exc
 

@@ -3,8 +3,6 @@ import logging
 import os
 import tempfile
 
-from traceback_with_variables import format_exc
-from starlette_web.common.utils.importing import import_string
 from starlette_web.contrib.scheduler.backends.base import BasePeriodicTaskScheduler
 from starlette_web.contrib.scheduler.app_settings import PosixSettings
 
@@ -68,16 +66,6 @@ class CrontabScheduler(BasePeriodicTaskScheduler):
                 job_hash = line[line.find("crontab run"):][:32]
                 job = self._get_job_by_hash(job_hash)
                 logger.info("%s -> %s" % (job, line.strip()))
-
-    async def run_job(self, job_hash: str):
-        job = self._get_job_by_hash(job_hash)
-        async_job_handler = import_string(job[1])
-
-        with self._get_job_mutex():
-            try:
-                await async_job_handler(*job[2], **job[3])
-            except Exception as exc:
-                logger.critical(format_exc(exc))
 
     def remove_jobs(self):
         project_hash = self._get_project_level_hash()

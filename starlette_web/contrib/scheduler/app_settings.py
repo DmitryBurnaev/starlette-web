@@ -2,7 +2,6 @@ import os
 import sys
 from typing import Any
 
-from starlette_web.common.conf import settings
 from starlette_web.common.http.exceptions import ImproperlyConfigured
 
 
@@ -20,14 +19,14 @@ class Settings:
         self.COMMAND_PREFIX = self._getattr(
             project_settings,
             "PERIODIC_JOBS_COMMAND_PREFIX",
-            f"cd {settings.BASE_DIR} &&",
+            f"cd {self.RUN_DIRECTORY} &&",
         )
         self.COMMAND_SUFFIX = self._getattr(
             project_settings,
             "PERIODIC_JOBS_COMMAND_SUFFIX",
             "",
         )
-        self.BLOCKING_TIMEOUT = 60
+        self.BLOCKING_TIMEOUT = 5
 
     @staticmethod
     def _getattr(settings: Any, key: str, default: Any) -> Any:
@@ -49,4 +48,19 @@ class PosixSettings(Settings):
             project_settings,
             "CRONTAB_LINE_PATTERN",
             "%(time)s %(command)s # %(comment)s",
+        )
+
+
+class Win32Settings(Settings):
+    def __init__(self, project_settings):
+        super().__init__(project_settings)
+        self.USERNAME = self._getattr(
+            project_settings,
+            "PERIODIC_JOBS_USERNAME",
+            "System",
+        )
+        self.PASSWORD = self._getattr(
+            project_settings,
+            "PERIODIC_JOBS_PASSWORD",
+            None,
         )
