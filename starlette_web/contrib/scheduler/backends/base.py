@@ -74,16 +74,16 @@ class BasePeriodicTaskScheduler:
         raise CommandError("Not supported for this platform.")
 
     async def run_job(self, job_hash: str):
-        job = self._get_job_by_hash(job_hash)
-        async_job_handler = import_string(job[1])
+        cron_pattern, async_func, job_args, job_kwargs, timeout = self._get_job_by_hash(job_hash)
+        async_job_handler = import_string(async_func)
 
         with self._get_job_mutex():
             with anyio.CancelScope() as cancel_scope:
-                if job[4] is not None:
-                    cancel_scope.deadline = anyio.current_time() + job[4]
+                if timeout is not None:
+                    cancel_scope.deadline = anyio.current_time() + timeout
 
                 try:
-                    await async_job_handler(*job[2], **job[3])
+                    await async_job_handler(*job_args, **job_kwargs)
                 except Exception as exc:
                     logger.critical(format_exc(exc))
 

@@ -18,7 +18,7 @@ class CrontabScheduler(BasePeriodicTaskScheduler):
         self.crontab_lines = []
 
     def _read_jobs(self):
-        self.crontab_lines = os.popen("%s -l" % self.settings.CRONTAB_EXECUTABLE).readlines()
+        self.crontab_lines = os.popen(f"{self.settings.CRONTAB_EXECUTABLE} -l").readlines()
 
     def _write_jobs(self):
         fd, path = tempfile.mkstemp()
@@ -28,7 +28,7 @@ class CrontabScheduler(BasePeriodicTaskScheduler):
                 continue
             tmp.write(line.strip() + "\n")
         tmp.close()
-        os.system("%s %s" % (self.settings.CRONTAB_EXECUTABLE, path))
+        os.system(f"{self.settings.CRONTAB_EXECUTABLE} {path}")
         os.unlink(path)
 
     def add_jobs(self):
@@ -65,7 +65,7 @@ class CrontabScheduler(BasePeriodicTaskScheduler):
             if project_hash in line and "crontab run" in line:
                 job_hash = line[line.find("crontab run"):][:32]
                 job = self._get_job_by_hash(job_hash)
-                logger.info("%s -> %s" % (job, line.strip()))
+                logger.info(f"{job} -> {line.strip()}")
 
     def remove_jobs(self):
         project_hash = self._get_project_level_hash()
