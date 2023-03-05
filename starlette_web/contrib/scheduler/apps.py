@@ -18,7 +18,7 @@ class AppConfig(BaseAppConfig):
 
         for job in jobs_list:
             try:
-                _ = json.JSONEncoder(sort_keys=True).encode(job)
+                json.JSONEncoder(sort_keys=True).encode(job)
             except (TypeError, ValueError) as exc:
                 raise ImproperlyConfigured(
                     message=f"Cannot json-encode job {job}",
@@ -34,6 +34,6 @@ class AppConfig(BaseAppConfig):
 
             if job[0] != "@reboot":
                 try:
-                    _ = next(croniter.croniter(job[0]))
+                    next(croniter.croniter(job[0]))
                 except CroniterError as exc:
                     raise ImproperlyConfigured(details=str(exc)) from exc

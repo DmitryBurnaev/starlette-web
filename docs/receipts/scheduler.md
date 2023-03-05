@@ -16,7 +16,7 @@ For both runners, maximum frequency of running jobs is **1 per minute**.
 
 ## Usage
 
-```python
+```bash
 python command.py scheduler --cmd=add
 python command.py scheduler --cmd=remove
 python command.py scheduler --cmd=show
