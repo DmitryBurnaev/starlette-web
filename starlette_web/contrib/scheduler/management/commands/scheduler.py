@@ -12,9 +12,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument(
-            "--cmd", choices=["add", "show", "remove", "run"], type=str, required=True
+            "cmd", choices=["add", "show", "remove", "run"], type=str, required=True
         )
-        parser.add_argument("--jobhash", type=str, required=False)
+        parser.add_argument("jobhash", type=str, required=False)
 
     async def handle(self, **options):
         scheduler_class = get_periodic_scheduler_backend_class()
