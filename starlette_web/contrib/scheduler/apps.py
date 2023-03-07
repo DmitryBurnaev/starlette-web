@@ -33,6 +33,9 @@ class AppConfig(BaseAppConfig):
                 )
 
             if job[0] != "@reboot":
+                # If not @reboot, crontab pattern must be of specific form "[0] [1] [2] [3] [4]"
+                # Here cron generator is created, and we yield 1 element
+                # to initialize the pattern check inside croniter-lib
                 try:
                     next(croniter.croniter(job[0]))
                 except CroniterError as exc:
