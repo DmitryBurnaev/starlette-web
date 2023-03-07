@@ -77,7 +77,7 @@ class BasePeriodicTaskScheduler:
         cron_pattern, async_func, job_args, job_kwargs, timeout = self._get_job_by_hash(job_hash)
         async_job_handler = import_string(async_func)
 
-        with self._get_job_mutex():
+        with self._get_job_mutex(job_hash):
             with anyio.CancelScope() as cancel_scope:
                 if timeout is not None:
                     cancel_scope.deadline = anyio.current_time() + timeout
@@ -102,10 +102,11 @@ class BasePeriodicTaskScheduler:
 
         raise CommandError(details=f"Periodic job with hash = {job_hash} not found.")
 
-    def _get_job_mutex(self):
+    def _get_job_mutex(self, job_hash: str):
         if self.settings.LOCK_JOBS:
             lock_file = os.path.join(
-                tempfile.gettempdir(), self._get_project_level_hash() + ".lock"
+                tempfile.gettempdir(),
+                self._get_project_level_hash() + "_" + job_hash + ".lock"
             )
             return FileLock(lock_file, timeout=self.settings.BLOCKING_TIMEOUT)
         else:
