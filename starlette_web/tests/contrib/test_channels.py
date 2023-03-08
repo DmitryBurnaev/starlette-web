@@ -28,9 +28,14 @@ class TestChannelLayers:
                 await anyio.sleep(0.1)
                 await channel.publish("test_group", f"Message {i}")
 
-            # Channels is bound to application lifecycle and will loop forever
-            # This is a mock for tests, to have it finished earlier
-            # Exception will propagate to task group and will close infinite consumers as well
+            # Tests utilize subscribers in an infinite-loop manner,
+            # so an outer exception must be raised in order for it to stop.
+            # In real application subscribers are expected to be in Websockets,
+            # which receive WebsocketDisconnected exception when finished,
+            # causing subscriber to stop.
+            # This is a mock for tests.
+            # Exception will propagate to task group and
+            # will close infinite consumers as well.
             await anyio.sleep(0.1)
             raise Exception
 

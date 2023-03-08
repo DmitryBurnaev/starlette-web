@@ -50,6 +50,7 @@ class BaseStarletteApplication:
 
     def __init__(self, **kwargs):
         self.run_checks = kwargs.get("run_checks", True)
+        self._event_handlers = []
 
     def pre_app_init(self) -> None:
         """
@@ -107,13 +108,19 @@ class BaseStarletteApplication:
             _ = caches[conn_name]
 
     def _setup_channels(self, app: AppClass):
-        shutdown_handlers = []
-
         for conn_name in settings.CHANNEL_LAYERS:
             channel = channels[conn_name]
-            app.add_event_handler("startup", channel.__aenter__)
-            shutdown_handlers.append(channel.shutdown)
+            self._event_handlers.append((channel.__aenter__, channel.shutdown))
 
+    def _manage_event_handlers(self, app: AppClass):
+        shutdown_handlers = []
+
+        for startup_handler, shutdown_handler in self._event_handlers:
+            app.add_event_handler("startup", startup_handler)
+            shutdown_handlers.append(shutdown_handler)
+
+        # Take care of nesting event handlers, which may provide
+        # context-manager cancel scopes, which must be properly nested LIFO
         for shutdown_handler in shutdown_handlers[::-1]:
             app.add_event_handler("shutdown", shutdown_handler)
 
