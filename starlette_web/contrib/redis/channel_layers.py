@@ -2,8 +2,10 @@ from typing import Any, Type
 
 from redis import asyncio as aioredis
 from redis.asyncio.client import PubSub
+from redis.exceptions import ConnectionError
 
 from starlette_web.common.channels.event import Event
+from starlette_web.common.channels.exceptions import ListenerClosed
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
 
@@ -31,15 +33,21 @@ class RedisPubSubChannelLayer(BaseChannelLayer):
         await self._pubsub.unsubscribe(group)
 
     async def publish(self, group: str, message: Any) -> None:
-        message = self._serializer.serialize({
-            'group': group,
-            'data': message,
-        })
+        message = self._serializer.serialize(
+            {
+                "group": group,
+                "data": message,
+            }
+        )
         await self.redis.publish(group, message)
 
     async def next_published(self) -> Event:
         while True:
-            response = await self._pubsub.parse_response(block=True)
+            try:
+                response = await self._pubsub.parse_response(block=True)
+            except ConnectionError as exc:
+                raise ListenerClosed(details=str(exc)) from exc
+
             if response is None:
                 continue
 
@@ -53,4 +61,4 @@ class RedisPubSubChannelLayer(BaseChannelLayer):
                 continue
 
             message = self._serializer.deserialize(message)
-            return Event(group=message['group'], message=message['data'])
+            return Event(group=message["group"], message=message["data"])

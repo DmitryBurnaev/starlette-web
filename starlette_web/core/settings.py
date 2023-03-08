@@ -80,7 +80,15 @@ CHANNEL_LAYERS = {
     "locmem": {
         "BACKEND": "starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer",
         "OPTIONS": {},
-    }
+    },
+    "default": {
+        "BACKEND": "starlette_web.contrib.redis.channel_layers.RedisPubSubChannelLayer",
+        "OPTIONS": {
+            "host": config("REDIS_HOST", default="localhost"),
+            "port": config("REDIS_PORT", default=6379),
+            "db": config("REDIS_DB", default=0),
+        },
+    },
 }
 
 PASSWORD_HASHERS = [

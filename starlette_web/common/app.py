@@ -107,10 +107,15 @@ class BaseStarletteApplication:
             _ = caches[conn_name]
 
     def _setup_channels(self, app: AppClass):
+        shutdown_handlers = []
+
         for conn_name in settings.CHANNEL_LAYERS:
             channel = channels[conn_name]
             app.add_event_handler("startup", channel.__aenter__)
-            app.add_event_handler("shutdown", channel.shutdown)
+            shutdown_handlers.append(channel.shutdown)
+
+        for shutdown_handler in shutdown_handlers[::-1]:
+            app.add_event_handler("shutdown", shutdown_handler)
 
 
 def get_app(**kwargs) -> AppClass:
