@@ -1,3 +1,4 @@
+import sys
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, AsyncIterator, Optional, Any
 
@@ -7,18 +8,10 @@ from anyio.streams.memory import MemoryObjectReceiveStream
 
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.channels.event import Event
-from starlette_web.common.http.exceptions import BaseApplicationError
+from starlette_web.common.channels.exceptions import Unsubscribed, ListenerClosed
 
 
 _empty = object()
-
-
-class ChannelsError(BaseApplicationError):
-    pass
-
-
-class Unsubscribed(ChannelsError):
-    message = "Subscriber unsubscribed from group."
 
 
 class Channel:
@@ -44,11 +37,9 @@ class Channel:
             await self._task_group.__aexit__(*args)
             self._task_group = None
 
-        return False
-
     async def shutdown(self):
         # Helper for starlette.router.shutdown, which does not accept arguments
-        return await self.__aexit__(None, None, None)
+        await self.__aexit__(*sys.exc_info())
 
     async def connect(self) -> None:
         await self._channel_layer.connect()
@@ -59,7 +50,11 @@ class Channel:
 
     async def _listener(self) -> None:
         while True:
-            event = await self._channel_layer.next_published()
+            try:
+                event = await self._channel_layer.next_published()
+            except ListenerClosed:
+                break
+
             async with self._manager_lock:
                 for send_stream in list(self._subscribers.get(event.group, [])):
                     await send_stream.send(event)
@@ -75,7 +70,9 @@ class Channel:
             async with self._manager_lock:
                 if not self._subscribers.get(group):
                     await self._channel_layer.subscribe(group)
-                    self._subscribers[group] = {send_stream, }
+                    self._subscribers[group] = {
+                        send_stream,
+                    }
                 else:
                     self._subscribers[group].add(send_stream)
 

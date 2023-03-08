@@ -8,9 +8,7 @@ class Event:
 
     def __eq__(self, other: object) -> bool:
         return (
-            isinstance(other, Event)
-            and self.group == other.group
-            and self.message == other.message
+            isinstance(other, Event) and self.group == other.group and self.message == other.message
         )
 
     def __repr__(self) -> str:

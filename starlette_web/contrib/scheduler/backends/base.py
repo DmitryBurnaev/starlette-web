@@ -105,8 +105,7 @@ class BasePeriodicTaskScheduler:
     def _get_job_mutex(self, job_hash: str):
         if self.settings.LOCK_JOBS:
             lock_file = os.path.join(
-                tempfile.gettempdir(),
-                self._get_project_level_hash() + "_" + job_hash + ".lock"
+                tempfile.gettempdir(), self._get_project_level_hash() + "_" + job_hash + ".lock"
             )
             return FileLock(lock_file, timeout=self.settings.BLOCKING_TIMEOUT)
         else:

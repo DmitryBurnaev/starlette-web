@@ -1,14 +1,17 @@
 from typing import Dict, Type
 
 from starlette_web.common.conf import settings
-from starlette_web.common.channels.base import Channel, ChannelsError
+from starlette_web.common.channels.base import Channel
+from starlette_web.common.channels.exceptions import ChannelsError
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.utils import import_string
 
 
 def _create_channels(alias: str) -> Channel:
     try:
-        channel_layer_class: Type[BaseChannelLayer] = import_string(settings.CHANNEL_LAYERS[alias]["BACKEND"])
+        channel_layer_class: Type[BaseChannelLayer] = import_string(
+            settings.CHANNEL_LAYERS[alias]["BACKEND"]
+        )
         return Channel(channel_layer_class(**settings.CHANNEL_LAYERS[alias]["OPTIONS"]))
     except (ImportError, KeyError) as exc:
         raise ChannelsError from exc
