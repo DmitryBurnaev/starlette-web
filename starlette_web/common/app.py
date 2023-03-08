@@ -11,6 +11,7 @@ from starlette.routing import Route, Mount, WebSocketRoute
 from webargs_starlette import WebargsHTTPException
 
 from starlette_web.common.caches import caches
+from starlette_web.common.channels import channels
 from starlette_web.common.conf import settings
 from starlette_web.common.conf.app_manager import app_manager
 from starlette_web.common.database import make_session_maker
@@ -93,6 +94,7 @@ class BaseStarletteApplication:
 
         self._setup_logging(app)
         self._setup_caches(app)
+        self._setup_channels(app)
 
         self.post_app_init(app)
         return app
@@ -101,9 +103,14 @@ class BaseStarletteApplication:
         logging.config.dictConfig(settings.LOGGING)
 
     def _setup_caches(self, app: AppClass):
-        if hasattr(settings, "CACHES"):
-            for conn_name in settings.CACHES:
-                _ = caches[conn_name]
+        for conn_name in settings.CACHES:
+            _ = caches[conn_name]
+
+    def _setup_channels(self, app: AppClass):
+        for conn_name in settings.CHANNEL_LAYERS:
+            channel = channels[conn_name]
+            app.add_event_handler("startup", channel.__aenter__)
+            app.add_event_handler("shutdown", channel.shutdown)
 
 
 def get_app(**kwargs) -> AppClass:

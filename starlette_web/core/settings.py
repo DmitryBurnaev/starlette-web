@@ -76,6 +76,13 @@ CACHES = {
     },
 }
 
+CHANNEL_LAYERS = {
+    "locmem": {
+        "BACKEND": "starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer",
+        "OPTIONS": {},
+    }
+}
+
 PASSWORD_HASHERS = [
     "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
