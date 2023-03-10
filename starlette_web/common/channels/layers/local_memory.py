@@ -20,19 +20,22 @@ class InMemoryChannelLayer(BaseChannelLayer):
         self._send_stream, self._receive_stream = anyio.create_memory_object_stream()
 
     async def disconnect(self) -> None:
-        pass
+        self._subscribed.clear()
+        self._send_stream = None
+        self._receive_stream = None
 
     async def subscribe(self, group: str) -> None:
         self._subscribed.add(group)
 
     async def unsubscribe(self, group: str) -> None:
-        self._subscribed.discard(group)
+        self._subscribed.remove(group)
 
     async def publish(self, group: str, message: Any) -> None:
         event = Event(group=group, message=message)
         await self._send_stream.send(event)
 
     async def next_published(self) -> Event:
+        assert self._receive_stream
         while True:
             event = await self._receive_stream.receive()
             if event.group in self._subscribed:

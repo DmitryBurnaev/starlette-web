@@ -1,10 +1,10 @@
 import sys
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, AsyncIterator, Optional, Any
+from typing import AsyncGenerator, AsyncIterator, Optional, Any, Dict, Set
 
 import anyio
 from anyio._core._tasks import TaskGroup
-from anyio.streams.memory import MemoryObjectReceiveStream
+from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
 
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.channels.event import Event
@@ -17,25 +17,26 @@ _empty = object()
 class Channel:
     EXIT_MAX_DELAY = 60
 
-    def __init__(self, backend: BaseChannelLayer):
+    def __init__(self, channel_layer: BaseChannelLayer):
         self._task_group: Optional[TaskGroup] = None
-        self._channel_layer = backend
-        self._subscribers = dict()
+        self._channel_layer = channel_layer
+        self._subscribers: Dict[str, Set[MemoryObjectSendStream]] = dict()
         self._manager_lock = anyio.Lock()
+        self._task_group_handler = None
 
     async def __aenter__(self) -> "Channel":
-        self._task_group = await anyio.create_task_group().__aenter__()
+        self._task_group_handler = anyio.create_task_group()
+        self._task_group = await self._task_group_handler.__aenter__()
         await self.connect()
         return self
 
     async def __aexit__(self, *args: Any, **kwargs: Any):
-        with anyio.move_on_after(self.EXIT_MAX_DELAY, shield=True):
+        with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
             await self.disconnect()
+            self._subscribers.clear()
 
-        if self._task_group:
-            self._task_group.cancel_scope.cancel()
-            await self._task_group.__aexit__(*args)
-            self._task_group = None
+        self._task_group.cancel_scope.cancel()
+        await self._task_group_handler.__aexit__(*args)
 
     async def shutdown(self):
         # Helper for starlette.router.shutdown, which does not accept arguments
@@ -56,8 +57,11 @@ class Channel:
                 break
 
             async with self._manager_lock:
-                for send_stream in list(self._subscribers.get(event.group, [])):
-                    await send_stream.send(event)
+                subscribers_list = list(self._subscribers.get(event.group, []))
+
+            async with anyio.create_task_group() as nursery:
+                for send_stream in subscribers_list:
+                    nursery.start_soon(send_stream.send, event)
 
     async def publish(self, group: str, message: Any) -> None:
         await self._channel_layer.publish(group, message)
@@ -79,15 +83,21 @@ class Channel:
             yield Subscriber(receive_stream)
 
         finally:
-            async with self._manager_lock:
-                self._subscribers[group].remove(send_stream)
-                if not self._subscribers.get(group):
-                    del self._subscribers[group]
+            try:
+                with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+                    async with self._manager_lock:
+                        self._subscribers[group].remove(send_stream)
+                        if not self._subscribers.get(group):
+                            del self._subscribers[group]
 
-                with anyio.move_on_after(self.EXIT_MAX_DELAY, shield=True):
-                    await self._channel_layer.unsubscribe(group)
+                            await self._channel_layer.unsubscribe(group)
 
-            await send_stream.send(_empty)
+            except anyio.get_cancelled_exc_class():
+                receive_stream.close()
+                send_stream.close()
+
+            finally:
+                await send_stream.send(_empty)
 
 
 class Subscriber:
@@ -99,7 +109,7 @@ class Subscriber:
             while True:
                 yield await self.receive()
         except Unsubscribed:
-            return
+            pass
 
     async def receive(self) -> Event:
         item = await self._receive_stream.receive()

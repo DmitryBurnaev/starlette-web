@@ -57,6 +57,13 @@ class BaseCommand:
     async def handle(self, **options):
         raise NotImplementedError
 
+    async def _handle_wrapper(self, **options):
+        try:
+            await self.app.router.startup()
+            await self.handle(**options)
+        finally:
+            await self.app.router.shutdown()
+
     def prepare_command_function(
         self,
         argv,
@@ -69,7 +76,7 @@ class BaseCommand:
         self.add_arguments(self.parser)
         namespace = self.parser.parse_args(args=argv[2:])
         kwargs = namespace.__dict__
-        return partial(self.handle, **kwargs)
+        return partial(self._handle_wrapper, **kwargs)
 
     def run_from_command_line(self, argv: List[str]):
         func = self.prepare_command_function(argv, True)
