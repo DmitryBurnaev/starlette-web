@@ -20,6 +20,9 @@ class Command(BaseCommand):
         channel_ctx = Channel(RedisPubSubChannelLayer(**redis_options))
 
         with anyio.fail_after(3):
+            # Small delay to let subscribers initiate
+            await anyio.sleep(0.2)
+
             async with channel_ctx as channel:
                 await channel.publish(group, "Message 0")
                 await channel.publish(group, "Message 1")
