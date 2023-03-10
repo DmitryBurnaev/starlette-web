@@ -55,7 +55,7 @@ class RedisPubSubChannelLayer(BaseChannelLayer):
             if message is None:
                 continue
 
-            if type(message) is dict and "data" in message:
+            if hasattr(message, "__getitem__") and "data" in message:
                 message = message["data"]
             else:
                 continue
