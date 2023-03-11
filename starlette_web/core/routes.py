@@ -13,6 +13,7 @@ from starlette_web.tests.views import (
     AuthenticationWebsocketTestEndpoint,
     FinitePeriodicTaskWebsocketTestEndpoint,
     InfinitePeriodicTaskWebsocketTestEndpoint,
+    ChatWebsocketTestEndpoint,
 )
 
 
@@ -31,4 +32,5 @@ routes = [
     WebSocketRoute(
         "/ws/test_websocket_infinite_periodic", InfinitePeriodicTaskWebsocketTestEndpoint
     ),
+    WebSocketRoute("/ws/test_websocket_chat", ChatWebsocketTestEndpoint),
 ]
