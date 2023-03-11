@@ -22,6 +22,8 @@ class InMemoryChannelLayer(BaseChannelLayer):
 
     async def disconnect(self) -> None:
         self._subscribed.clear()
+        self._send_stream.close()
+        self._receive_stream.close()
         self._send_stream = None
         self._receive_stream = None
 
