@@ -12,6 +12,8 @@ from starlette_web.common.utils.serializers import BaseSerializer, PickleSeriali
 
 class RedisPubSubChannelLayer(BaseChannelLayer):
     # Cross-process channel layer, uses fire-and-forget scheme
+    # If you are using sharded redis, you'll have to inherit the class
+    # and redefine some commands to their sharded versions
     serializer_class: Type[BaseSerializer] = PickleSerializer
     redis: aioredis.Redis
 

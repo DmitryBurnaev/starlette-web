@@ -2,15 +2,15 @@
 
 Channels is a common module in `starlette_web`, designed to provide a pub-sub functionality.
 It is named after `django-channels`, however is based off `https://github.com/encode/broadcaster`.
-The core is adapted to `anyio`.
+The core is adapted to `anyio`, whereas underlying channel layers may depend on `asyncio`-based libraries.
 
-The exact type of delivering message is based on underlying channel layer, and may either require
-acknowledge, or be fire-and-forget.
+The exact type of delivering pipeline is based on underlying channel layer, and may either require
+acknowledgement, or be fire-and-forget.
 
 Supported channel layers:
 
 - `starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer` -single-process, for testing
-- `starlette_web.contrib.redis.channel_layers.RedisPubSubChannelLayer` - cross-process fire-and-forget layer
+- `starlette_web.contrib.redis.channel_layers.RedisPubSubChannelLayer` - cross-process, fire-and-forget
 
 ## Example
 
@@ -28,10 +28,44 @@ async with Channel(InMemoryChannelLayer()) as channel:
             await process_event(event)
 ```
 
+## Subscribing to multiple groups/channels
+
+Currently, this not supported by default, since different brokers support this differently, 
+and some do not support at all. You may define a custom channel layer for this purpose. Example:
+
+```python3
+from starlette_web.contrib.redis.channel_layers import RedisPubSubChannelLayer
+
+
+class RedisMultipleChannelLayer(RedisPubSubChannelLayer):
+    def subscribe(self, groups: str) -> None:
+        groups = groups.split(";")
+        # Redis SUBSCRIBE command accepts multiple arguments
+        # https://redis.io/commands/subscribe/
+        await self._pubsub.subscribe(*groups)
+
+    def unsubscribe(self, groups: str) -> None:
+        groups = groups.split(";")
+        # Redis UNSUBSCRIBE command accepts multiple arguments
+        # https://redis.io/commands/unsubscribe/
+        await self._pubsub.unsubscribe(*groups)
+
+
+class RedisMultiplePatternsChannelLayer(RedisPubSubChannelLayer):
+    def subscribe(self, patterns: str) -> None:
+        patterns = patterns.split(";")
+        # https://redis.io/commands/psubscribe/
+        await self._pubsub.psubscribe(*patterns)
+
+    def unsubscribe(self, patterns: str) -> None:
+        patterns = patterns.split(";")
+        # https://redis.io/commands/punsubscribe/
+        await self._pubsub.punsubscribe(*patterns)
+```
+
 ## Known issues
 
-Channels cannot be used project-globally in the same way, as caches are, 
-but have to be instantiated every time you want to use them, with `async with` block.
+Channels cannot be instantiated project-wise, in the same way as caches.
 In `channels`, the channel layer is instantiated for the whole duration of `async with` block,
 and holds a set of memory streams, which it uses to fire messages to subscribers.
 **Subscribers may be instantiated in a different thread**, than the main application, 
@@ -45,4 +79,5 @@ responsibility of `starlette_web.common.channels`.
 In comparison, this is not an issue for caches, since all operations in caches are atomic
 and do not require pair-wise synchronization.
 
-In practice, this means, that you have to instantiate channels every time you need to use them.
+In practice, this means, that you have to instantiate channels with `async with` block, 
+every time you need to use them.
