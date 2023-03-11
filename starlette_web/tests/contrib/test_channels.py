@@ -9,6 +9,7 @@ from starlette_web.common.caches import caches
 from starlette_web.common.channels.base import Channel, Event
 from starlette_web.common.channels.layers.local_memory import InMemoryChannelLayer
 from starlette_web.contrib.redis.channel_layers import RedisPubSubChannelLayer
+from starlette_web.contrib.postgres.channel_layers import PostgreSQLChannelLayer
 from starlette_web.tests.helpers import await_
 
 
@@ -23,6 +24,13 @@ class TestChannelLayers:
     def test_redis_pubsub_channel_layer(self):
         redis_options = settings.CHANNEL_LAYERS["redispubsub"]["OPTIONS"]
         channel_ctx = Channel(RedisPubSubChannelLayer(**redis_options))
+        self.run_channels_test(channel_ctx)
+        self.run_channels_test(channel_ctx)
+        self.run_channels_test(channel_ctx)
+
+    def test_postgres_channel_layer(self):
+        psql_options = {"dsn": settings.DATABASE_DSN.replace("+asyncpg", "")}
+        channel_ctx = Channel(PostgreSQLChannelLayer(**psql_options))
         self.run_channels_test(channel_ctx)
         self.run_channels_test(channel_ctx)
         self.run_channels_test(channel_ctx)
