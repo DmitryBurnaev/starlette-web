@@ -9,8 +9,9 @@ acknowledgement, or be fire-and-forget.
 
 Supported channel layers:
 
-- `starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer` -single-process, for testing
+- `starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer` -single-process, fire-and-forget, for testing
 - `starlette_web.contrib.redis.channel_layers.RedisPubSubChannelLayer` - cross-process, fire-and-forget
+- `starlette_web.contrib.postgres.channel_layers.PostgreSQLChannelLayer` - cross-process, fire-and-forget
 
 ## Example
 
@@ -30,8 +31,10 @@ async with Channel(InMemoryChannelLayer()) as channel:
 
 ## Subscribing to multiple groups/channels
 
-Currently, this not supported by default, since different brokers support this differently, 
-and some do not support at all. You may define a custom channel layer for this purpose. Example:
+Currently, this not implemented for default channel layers, 
+since different brokers support such behavior differently, 
+and some do not support at all. 
+You may define a custom channel layer for this purpose. Example:
 
 ```python3
 from starlette_web.contrib.redis.channel_layers import RedisPubSubChannelLayer
@@ -68,16 +71,17 @@ class RedisMultiplePatternsChannelLayer(RedisPubSubChannelLayer):
 Channels cannot be instantiated project-wise, in the same way as caches.
 In `channels`, the channel layer is instantiated for the whole duration of `async with` block,
 and holds a set of memory streams, which it uses to fire messages to subscribers.
-**Subscribers may be instantiated in a different thread**, than the main application, 
-which goes against the fact that all `anyio` operations **are not threadsafe**.
+**Subscribers may be instantiated in a different thread**, then the main application, 
+which goes against the fact that all `anyio` operations are **by-design not threadsafe**.
 
-The exact reason boils down to the fact, that async Queues depend on async Events, 
-which do not function between different event-loops/threads. A cross-thread/cross-event-loop
-pub-sub would require using synchronous `threading.Queue` instead, which is out of scope of
-responsibility of `starlette_web.common.channels`.
+The exact reason boils down to the fact, that async Queues, which are used for synchronization,
+depend on async Events, which do not function between different event-loops/threads. 
+A cross-thread/cross-event-loop pub-sub would require using synchronous `threading.Queue` instead, 
+which is out of scope of responsibility of `starlette_web.common.channels`.
 
 In comparison, this is not an issue for caches, since all operations in caches are atomic
 and do not require pair-wise synchronization.
 
 In practice, this means, that you have to instantiate channels with `async with` block, 
-every time you need to use them.
+every time you need to use them. See `starlette_web.tests.contrib.test_channels.TestChannelLayers`
+for examples of usage.
