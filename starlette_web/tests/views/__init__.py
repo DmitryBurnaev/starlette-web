@@ -7,4 +7,5 @@ from starlette_web.tests.views.websocket import (
     AuthenticationWebsocketTestEndpoint,
     FinitePeriodicTaskWebsocketTestEndpoint,
     InfinitePeriodicTaskWebsocketTestEndpoint,
+    ChatWebsocketTestEndpoint,
 )
