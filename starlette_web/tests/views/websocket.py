@@ -134,6 +134,10 @@ class ChatWebsocketTestEndpoint(BaseWSEndpoint):
             await self._channels.publish("chatroom", data["message"])
 
         elif data["request_type"] == "connect":
+            # TODO: examine anyio KeyError due to WeakRef
+            # We have to use explicit await here, instead of calling self.task_group.spawn_soon
+            # since otherwise this _background_handler will close, call _unregister and close
+            # the task_group altogether, since no other tasks are spawned at this moment
             await self._run_dialogue(websocket)
 
         else:

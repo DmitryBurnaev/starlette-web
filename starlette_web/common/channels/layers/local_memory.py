@@ -10,6 +10,7 @@ from starlette_web.common.channels.layers.base import BaseChannelLayer
 
 
 class InMemoryChannelLayer(BaseChannelLayer):
+    # Single-process channel layer, uses fire-and-forget scheme
     def __init__(self, **options):
         super().__init__(**options)
         self._subscribed: Set = set()
