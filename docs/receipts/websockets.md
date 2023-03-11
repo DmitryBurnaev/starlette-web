@@ -7,6 +7,7 @@ Typical use-cases are:
 - infinitely push messages from server to client
 - accept messages from client and perform short-timed actions
 - in turns, accept and send messages from and to client
+- chats
 
 ### Creating background task
 
@@ -38,6 +39,7 @@ Receipts:
   registration methods to monitor, which handlers do what, and pass data between
   receiving handlers and sending handler via local memory class-variable, 
   database or such.
+- for example of simple chat, see `tests/contrib/test_websocket_chat.py`
 
 ## Synchronizing multiple tasks
 

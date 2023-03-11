@@ -14,6 +14,9 @@ def test_websocket_chat(client):
                 response_pool_2.append(websocket_2.receive_json())
 
             websocket.send_json({"request_type": "connect"})
+
+            # These messages will be sent to first websocket, which is already instantiated,
+            # but second websocket will not receive them.
             websocket.send_json({"request_type": "publish", "message": "Unreceived message 1"})
             websocket.receive_json()
             websocket.send_json({"request_type": "publish", "message": "Unreceived message 2"})
