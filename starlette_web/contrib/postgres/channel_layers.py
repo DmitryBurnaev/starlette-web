@@ -11,9 +11,6 @@ from starlette_web.common.channels.event import Event
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.http.exceptions import ImproperlyConfigured, NotSupportedError
 
-import logging
-logger = logging.getLogger("starlette_web")
-
 
 class PostgreSQLChannelLayer(BaseChannelLayer):
     def __init__(self, **options) -> None:
@@ -29,7 +26,6 @@ class PostgreSQLChannelLayer(BaseChannelLayer):
             async with self._manager_lock:
                 self._send_stream, self._receive_stream = anyio.create_memory_object_stream()
                 self._conn = await asyncpg.connect(**self._connection_options)
-                logger.info(self._conn)
         except ValueError as exc:
             raise ImproperlyConfigured(details=str(exc)) from exc
 
@@ -47,7 +43,6 @@ class PostgreSQLChannelLayer(BaseChannelLayer):
     async def _listener(self, *args: Any) -> None:
         connection, pid, channel, payload = args
         event = Event(group=channel, message=payload)
-        logger.info(event)
         await self._send_stream.send(event)
 
     async def unsubscribe(self, group: str) -> None:
@@ -61,7 +56,9 @@ class PostgreSQLChannelLayer(BaseChannelLayer):
         # https://www.postgresql.org/docs/current/sql-notify.html
         try:
             assert type(message) == str, "Message must be a string"
-            assert len(message.encode("utf-8")) <= 8000, "Message byte-length must be at most 8000 symbols"
+            assert (
+                len(message.encode("utf-8")) <= 8000
+            ), "Message byte-length must be at most 8000 symbols"
         except AssertionError as exc:
             raise NotSupportedError(details=str(exc)) from exc
 
