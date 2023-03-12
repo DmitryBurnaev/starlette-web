@@ -77,10 +77,6 @@ CACHES = {
 }
 
 CHANNEL_LAYERS = {
-    "locmem": {
-        "BACKEND": "starlette_web.common.channels.layers.local_memory.InMemoryChannelLayer",
-        "OPTIONS": {},
-    },
     "redispubsub": {
         "BACKEND": "starlette_web.contrib.redis.channel_layers.RedisPubSubChannelLayer",
         "OPTIONS": {
