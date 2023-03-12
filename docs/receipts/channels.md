@@ -66,6 +66,20 @@ class RedisMultiplePatternsChannelLayer(RedisPubSubChannelLayer):
         await self._pubsub.punsubscribe(*patterns)
 ```
 
+## Acknowledgement
+
+If you want to publish messages and guarantee, that recipient has got them, you need to use
+broker that allows acknowledgement for messages. Again, this is not provided by default, and 
+you'll have to define a custom channel layer for this purpose. For examples, see kafka 
+backend and proposed mqtt backend for `encode/broadcaster`:
+
+- https://github.com/encode/broadcaster/blob/956571d030d33d6cb820758ec5ed8fe79c3288c6/broadcaster/_backends/kafka.py
+- https://github.com/encode/broadcaster/blob/0e48df3a129998036b2e454b5b54e5dddc00d8dc/broadcaster/_backends/mqtt.py
+
+For Redis, use redis Streams which support acknowledgment:  
+- https://redis.io/commands/xack/
+- https://github.com/encode/broadcaster/blob/3cfcc8b41339862b1f5d50f42ab027bcae92d78c/broadcaster/_backends/redis_stream.py
+
 ## Known issues
 
 Channels cannot be instantiated project-wise, in the same way as caches.

@@ -38,7 +38,9 @@ class InMemoryChannelLayer(BaseChannelLayer):
         await self._send_stream.send(event)
 
     async def next_published(self) -> Event:
-        assert self._receive_stream
+        if not self._receive_stream:
+            raise RuntimeError("Getting next published requires not-null self._receive_stream")
+
         while True:
             event = await self._receive_stream.receive()
             if event.group in self._subscribed:
