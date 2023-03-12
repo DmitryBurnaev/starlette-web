@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Any, Optional
 
 import anyio
@@ -15,6 +16,7 @@ from starlette_web.contrib.auth.backend import JWTAuthenticationBackend
 from starlette_web.contrib.redis.channel_layers import RedisPubSubChannelLayer
 
 
+logger = logging.getLogger("starlette_web.tests")
 locmem_cache = caches["locmem"]
 
 
@@ -128,6 +130,7 @@ class ChatWebsocketTestEndpoint(BaseWSEndpoint):
     async def _background_handler(self, task_id: str, websocket: WebSocket, data: Dict):
         async with self._manager_lock:
             if not self._channels_init:
+                logger.debug("No initialized channels detected. Quit handler")
                 return
 
         if data["request_type"] == "publish":
