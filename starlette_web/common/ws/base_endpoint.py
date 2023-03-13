@@ -67,7 +67,8 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
     async def on_receive(self, websocket: WebSocket, data: Any) -> None:
         cleaned_data = self._validate(data)
-        self.task_group.start_soon(self._background_handler_wrap, websocket, cleaned_data)
+        task_id = get_random_string(50)
+        self.task_group.start_soon(self._background_handler_wrap, task_id, websocket, cleaned_data)
 
     async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
         if self.task_group:
@@ -79,8 +80,7 @@ class BaseWSEndpoint(WebSocketEndpoint):
 
         logger.debug("WS connection has been closed.")
 
-    async def _background_handler_wrap(self, websocket: WebSocket, data: Dict):
-        task_id = get_random_string(50)
+    async def _background_handler_wrap(self, task_id: str, websocket: WebSocket, data: Dict):
         task_result = None
 
         try:

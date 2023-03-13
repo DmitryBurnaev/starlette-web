@@ -58,9 +58,10 @@ data manager.
 task group and cancels all tasks within that scope. Simply return inside background
 handler, if you want to cancel a single task.
 
-**AVOID** stuff like this https://stackoverflow.com/a/60675826
-and, in general, passing event-handling primitives between tasks, 
-other than class-level anyio.Lock()
+**NOT RECOMMENDED** to use stuff like this https://stackoverflow.com/a/60675826. 
+However, should you need to do so, you may redefine method 
+`starlette_web.common.ws.base_endpoint.BaseWSEndpoint.on_receive` to use
+`anyio.TaskGroup.start` and return `CancelScope` from within background handler.
 
 ## Manually calling websocket.receive
 
