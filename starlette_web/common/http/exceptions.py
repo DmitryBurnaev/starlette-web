@@ -39,6 +39,12 @@ class HttpError(BaseApplicationError):
     message = "Some HTTP error happened."
 
 
+class InvalidParameterError(BaseApplicationError):
+    status_code = 400
+    message = "Requested data is not valid."
+    response_status = ResponseStatus.INVALID_PARAMETERS
+
+
 class AuthenticationFailedError(BaseApplicationError):
     status_code = 401
     response_status = ResponseStatus.AUTH_FAILED
@@ -55,6 +61,12 @@ class SignatureExpiredError(AuthenticationFailedError):
     status_code = 401
     response_status = ResponseStatus.SIGNATURE_EXPIRED
     message = "Authentication credentials are invalid."
+
+
+class InviteTokenInvalidationError(BaseApplicationError):
+    status_code = 401
+    message = "Requested token is expired or does not exist."
+    response_status = ResponseStatus.INVITE_ERROR
 
 
 class PermissionDeniedError(BaseApplicationError):
@@ -75,21 +87,41 @@ class MethodNotAllowedError(BaseApplicationError):
     response_status = ResponseStatus.NOT_ALLOWED
 
 
-class InviteTokenInvalidationError(BaseApplicationError):
-    status_code = 401
-    message = "Requested token is expired or does not exist."
-    response_status = ResponseStatus.INVITE_ERROR
+class NotAcceptableError(BaseApplicationError):
+    status_code = 406
+    message = (
+        "Request cannot be processed, "
+        "Accept-* headers are incompatible with server."
+    )
+    response_status = ResponseStatus.NOT_ALLOWED
 
 
-class InvalidParameterError(BaseApplicationError):
-    status_code = 400
-    message = "Requested data is not valid."
-    response_status = ResponseStatus.INVALID_PARAMETERS
+class ConflictError(BaseApplicationError):
+    status_code = 409
+    message = "Request conflicts with current state of server."
+    response_status = ResponseStatus.CONFLICT
+
+
+class ImATeapotError(BaseApplicationError):
+    status_code = 418
+    message = "The server cannot brew a coffee, because it is a teapot."
+    response_status = ResponseStatus.I_AM_A_TEAPOT
+
+
+class UnprocessableEntryError(BaseApplicationError):
+    status_code = 422
+    message = "Could not process request due to logical errors in data."
+    response_status = ResponseStatus.UNPROCESSABLE_ENTRY
 
 
 class InvalidResponseError(BaseApplicationError):
     status_code = 500
     message = "Response data couldn't be serialized."
+
+
+class NotImplementedByServerError(BaseApplicationError):
+    status_code = 501
+    message = "Functionality is not supported by the server."
 
 
 class SendRequestError(BaseApplicationError):
