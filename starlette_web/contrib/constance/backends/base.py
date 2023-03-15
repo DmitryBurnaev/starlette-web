@@ -1,8 +1,8 @@
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, ByteString
 
 from starlette_web.common.http.exceptions import NotSupportedError, UnexpectedError
 from starlette_web.common.utils.serializers import (
-    BaseSerializer,
+    BytesSerializer,
     PickleSerializer,
     DeserializeError,
 )
@@ -10,23 +10,22 @@ from starlette_web.common.utils.serializers import (
 
 class BaseConstanceBackend:
     empty = object()
-    serializer_class: Type[BaseSerializer] = PickleSerializer
+    serializer_class: Type[BytesSerializer] = PickleSerializer
 
     def __init__(self):
-        self.serializer: BaseSerializer = self.serializer_class()
+        self.serializer: BytesSerializer = self.serializer_class()
 
-    def _preprocess_response(self, response):
+    def _preprocess_response(self, response: ByteString) -> Any:
         if response is None:
             return self.empty
 
-        # TODO: maybe support memoryview ?
-        if type(response) != bytes:
-            raise NotSupportedError
+        if isinstance(response, (memoryview, bytearray)):
+            response = bytes(response)
 
         try:
             return self.serializer.deserialize(response)
         except DeserializeError as exc:
-            raise UnexpectedError(details=str(exc))
+            raise UnexpectedError(details=str(exc)) from exc
 
     async def mget(self, keys: List[str]) -> Dict[str, Any]:
         raise NotSupportedError(details="Constance backend not initialized.")

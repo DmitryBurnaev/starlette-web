@@ -7,14 +7,14 @@ from redis.exceptions import ConnectionError
 from starlette_web.common.channels.event import Event
 from starlette_web.common.channels.exceptions import ListenerClosed
 from starlette_web.common.channels.layers.base import BaseChannelLayer
-from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
+from starlette_web.common.utils.serializers import BytesSerializer, PickleSerializer
 
 
 class RedisPubSubChannelLayer(BaseChannelLayer):
     # Cross-process channel layer, uses fire-and-forget scheme
     # If you are using sharded redis, you'll have to inherit the class
     # and redefine some commands to their sharded versions
-    serializer_class: Type[BaseSerializer] = PickleSerializer
+    serializer_class: Type[BytesSerializer] = PickleSerializer
     redis: aioredis.Redis
 
     def __init__(self, **options):
