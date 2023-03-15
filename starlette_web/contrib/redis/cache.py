@@ -4,7 +4,7 @@ from redis import asyncio as aioredis
 
 from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.http.exceptions import UnexpectedError
-from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer
+from starlette_web.common.utils.serializers import BytesSerializer, PickleSerializer
 from starlette_web.contrib.redis.redislock import RedisLock
 
 
@@ -22,7 +22,7 @@ def reraise_exception(func):
 
 class RedisCache(BaseCache):
     redis: aioredis.Redis
-    serializer_class: Type[BaseSerializer] = PickleSerializer
+    serializer_class: Type[BytesSerializer] = PickleSerializer
     lock_class = RedisLock
 
     def __init__(self, options: Dict[str, Any]):
