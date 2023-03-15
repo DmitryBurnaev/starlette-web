@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import Type, Union, Iterable, ClassVar, Optional, Mapping, List, Any, Dict
 
 from marshmallow import Schema, ValidationError
@@ -88,7 +89,7 @@ class BaseHTTPEndpoint(HTTPEndpoint):
             raise UnexpectedError(msg_template % (err,))
 
         finally:
-            await session_maker.__aexit__(None, None, None)
+            await session_maker.__aexit__(*sys.exc_info())
             self.request.state.db_session = None
 
         await response(self.scope, self.receive, self.send)
