@@ -1,6 +1,7 @@
 import logging
 from typing import Optional, List
 
+import anyio
 import httpx
 
 from starlette_web.common.conf import settings
@@ -12,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class SendgridAPIEmailSender(BaseEmailSender):
+    EXIT_MAX_DELAY = 60
+
     def __init__(self):
         self.request_url = f"https://api.sendgrid.com/{settings.SENDGRID_API_VERSION}/mail/send"
         self.request_header = {"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"}
@@ -44,7 +47,8 @@ class SendgridAPIEmailSender(BaseEmailSender):
 
     async def _close(self):
         if self.client:
-            await self.client.aclose()
+            with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+                await self.client.aclose()
         self.client = None
 
     async def send_email(

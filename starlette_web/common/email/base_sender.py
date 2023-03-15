@@ -1,5 +1,7 @@
 from typing import Optional, List
 
+import anyio
+
 
 class EmailSenderError(Exception):
     def __init__(
@@ -18,6 +20,8 @@ class EmailSenderError(Exception):
 
 
 class BaseEmailSender:
+    EXIT_MAX_DELAY = 60
+
     async def _open(self):
         return self
 
@@ -38,7 +42,8 @@ class BaseEmailSender:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._close()
+        with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+            await self._close()
 
         if exc_type:
             message = f"{exc_type}: {exc_val}"

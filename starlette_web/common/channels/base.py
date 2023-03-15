@@ -31,12 +31,14 @@ class Channel:
         return self
 
     async def __aexit__(self, *args: Any, **kwargs: Any):
+        self._subscribers.clear()
+        self._task_group.cancel_scope.cancel()
+        retval = await self._task_group_handler.__aexit__(*args)
+
         with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
             await self.disconnect()
-            self._subscribers.clear()
 
-        self._task_group.cancel_scope.cancel()
-        await self._task_group_handler.__aexit__(*args)
+        return retval
 
     async def shutdown(self):
         # Helper for starlette.router.shutdown, which does not accept arguments
