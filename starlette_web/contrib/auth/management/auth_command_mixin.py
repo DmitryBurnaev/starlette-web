@@ -1,6 +1,8 @@
 from marshmallow.validate import ValidationError, Email as EmailValidator
 
+from starlette_web.common.http.exceptions import InvalidParameterError
 from starlette_web.common.management.base import CommandError
+from starlette_web.contrib.auth.password_validation import validate_password as _validate_password
 
 
 class AuthCommandMixin:
@@ -20,3 +22,13 @@ class AuthCommandMixin:
                 EmailValidator()(value)
             except ValidationError:
                 raise CommandError(details="Invalid value for email.")
+
+    def validate_password(self, password, user=None):
+        try:
+            _validate_password(password, user=user)
+        except InvalidParameterError as exc:
+            print(f"Weak password: {exc.details}")
+            answer = input("Skip validation and continue? (y/n): ")
+
+            if answer.strip() in ["n", "N", "no"]:
+                raise exc

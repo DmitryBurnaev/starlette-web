@@ -3,6 +3,7 @@ from starlette_web.contrib.auth.models import User
 from starlette_web.contrib.auth.management.auth_command_mixin import AuthCommandMixin
 
 
+# TODO: use logging ?
 class Command(AuthCommandMixin, BaseCommand):
     help = "Change a password of existing User (contrib.auth)"
 
@@ -20,6 +21,8 @@ class Command(AuthCommandMixin, BaseCommand):
             if password_1 != password_2:
                 raise CommandError(details="Password mismatch.")
 
+            self.validate_password(password_1, user=user)
+
             await User.async_update(
                 db_session=session,
                 db_commit=True,
@@ -27,5 +30,4 @@ class Command(AuthCommandMixin, BaseCommand):
                 update_data=dict(password=User.make_password(password_1)),
             )
 
-            # TODO: use logging ?
             print(f"Password for user {user} updated successfully.")
