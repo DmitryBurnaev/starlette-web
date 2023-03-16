@@ -27,6 +27,16 @@ class BaseSerializer:
     def __eq__(self, other):
         return self.__class__ == other.__class__
 
+    @staticmethod
+    def serializes_to_bytes():
+        return False
+
+
+class BytesSerializer(BaseSerializer):
+    @staticmethod
+    def serializes_to_bytes():
+        return True
+
 
 class JSONSerializer(BaseSerializer):
     encoder_class = json.JSONEncoder
@@ -45,7 +55,7 @@ class JSONSerializer(BaseSerializer):
             raise DeserializeError from exc
 
 
-class PickleSerializer(BaseSerializer):
+class PickleSerializer(BytesSerializer):
     # TODO: maybe add option to use dill ?
     def serialize(self, content: Any) -> Any:
         try:

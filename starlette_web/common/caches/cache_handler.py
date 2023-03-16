@@ -32,23 +32,3 @@ class CacheHandler:
 
 
 caches = CacheHandler()
-
-
-class DefaultCacheProxy:
-    def __getattr__(self, name):
-        return getattr(caches["default"], name)
-
-    def __setattr__(self, name, value):
-        return setattr(caches["default"], name, value)
-
-    def __delattr__(self, name):
-        return delattr(caches["default"], name)
-
-    def __contains__(self, key):
-        return key in caches["default"]
-
-    def __eq__(self, other):
-        return caches["default"] == other
-
-
-cache = DefaultCacheProxy()
