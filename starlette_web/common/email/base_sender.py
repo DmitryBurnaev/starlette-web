@@ -2,24 +2,15 @@ from typing import Optional, List
 
 import anyio
 
+from starlette_web.common.http.exceptions import BaseApplicationError
 
-class EmailSenderError(Exception):
-    def __init__(
-        self,
-        message: Optional[str] = None,
-        details: Optional[str] = None,
-    ):
-        self.message = message or ""
-        self.details = details or ""
 
-    def to_dict(self):
-        return {
-            "details": self.details,
-            "message": self.message,
-        }
+class EmailSenderError(BaseApplicationError):
+    pass
 
 
 class BaseEmailSender:
+    MAX_BULK_SIZE = 1
     EXIT_MAX_DELAY = 60
 
     async def _open(self):
@@ -32,12 +23,9 @@ class BaseEmailSender:
         try:
             await self._open()
         except Exception as exc:
-            await self._close()
-
-            message = f"{type(exc)}: {exc}"
-            new_exc = EmailSenderError(message=message)
-            new_exc.__cause__ = exc
-            raise new_exc
+            with anyio.fail_after(self.EXIT_MAX_DELAY, shield=True):
+                await self._close()
+            raise EmailSenderError(details=str(exc)) from exc
 
         return self
 
@@ -46,10 +34,7 @@ class BaseEmailSender:
             await self._close()
 
         if exc_type:
-            message = f"{exc_type}: {exc_val}"
-            new_exc = EmailSenderError(message=message)
-            new_exc.__cause__ = exc_val
-            raise new_exc
+            raise EmailSenderError(details=str(exc_val)) from exc_val
 
     async def send_email(
         self,
