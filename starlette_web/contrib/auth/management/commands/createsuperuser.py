@@ -20,6 +20,8 @@ class Command(AuthCommandMixin, BaseCommand):
             if password_1 != password_2:
                 raise CommandError(details="Password mismatch.")
 
+            self.validate_password(password_1, user=user)
+
             user = await User.async_create(
                 db_session=session,
                 db_commit=True,

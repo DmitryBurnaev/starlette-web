@@ -40,6 +40,7 @@ from starlette_web.contrib.auth.schemas import (
     ResetPasswordRequestSchema,
     ResetPasswordResponseSchema,
 )
+from starlette_web.contrib.auth.password_validation import validate_password
 
 logger = logging.getLogger(__name__)
 
@@ -192,6 +193,7 @@ class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
             is_applied__is=False,
             expired_at__gt=datetime.utcnow(),
         )
+
         if not user_invite:
             details = "Invitation link is expired or unavailable"
             logger.error(
@@ -203,6 +205,8 @@ class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
 
         if email != user_invite.email:
             raise InvalidParameterError(message="Email does not match with your invitation.")
+
+        validate_password(cleaned_data["password_1"], User(email=email))
 
         cleaned_data["user_invite"] = user_invite
         return cleaned_data
@@ -470,8 +474,9 @@ class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
             description: Authentication failed
         tags: ["Authorization"]
         """
-        """Check is email unique and create new User"""
         cleaned_data = await self._validate(request)
+        validate_password(cleaned_data["password_1"], None)
+
         user, _, _ = await JWTAuthenticationBackend(request, self.scope).authenticate_user(
             jwt_token=cleaned_data["token"],
             token_type=TOKEN_TYPE_RESET_PASSWORD,

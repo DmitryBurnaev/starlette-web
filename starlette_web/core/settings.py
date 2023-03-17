@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import sys
 import tempfile
 from pathlib import Path
@@ -89,6 +91,12 @@ CHANNEL_LAYERS = {
 
 PASSWORD_HASHERS = [
     "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+
+PASSWORD_VALIDATORS = [
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.PasswordLengthValidator"},
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.UsernameSimilarityValidator"},
 ]
 
 EMAIL_SENDER = None

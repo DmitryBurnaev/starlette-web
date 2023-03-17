@@ -1,4 +1,3 @@
-import sys
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, AsyncIterator, Optional, Any, Dict, Set
 
@@ -39,10 +38,6 @@ class Channel:
             await self.disconnect()
 
         return retval
-
-    async def shutdown(self):
-        # Helper for starlette.router.shutdown, which does not accept arguments
-        await self.__aexit__(*sys.exc_info())
 
     async def connect(self) -> None:
         await self._channel_layer.connect()
@@ -91,7 +86,6 @@ class Channel:
                         self._subscribers[group].remove(send_stream)
                         if not self._subscribers.get(group):
                             del self._subscribers[group]
-
                             await self._channel_layer.unsubscribe(group)
 
             except anyio.get_cancelled_exc_class():
