@@ -40,10 +40,6 @@ class Channel:
 
         return retval
 
-    async def shutdown(self):
-        # Helper for starlette.router.shutdown, which does not accept arguments
-        await self.__aexit__(*sys.exc_info())
-
     async def connect(self) -> None:
         await self._channel_layer.connect()
         self._task_group.start_soon(self._listener)
@@ -91,7 +87,6 @@ class Channel:
                         self._subscribers[group].remove(send_stream)
                         if not self._subscribers.get(group):
                             del self._subscribers[group]
-
                             await self._channel_layer.unsubscribe(group)
 
             except anyio.get_cancelled_exc_class():
