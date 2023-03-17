@@ -93,19 +93,13 @@ PASSWORD_HASHERS = [
     "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "BACKEND": "starlette_web.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-    {
-        "BACKEND": "starlette_web.contrib.auth.password_validation.PasswordLengthValidator",
-    },
-    {
-        "BACKEND": "starlette_web.contrib.auth.password_validation.UsernameSimilarityValidator",
-    },
+PASSWORD_VALIDATORS = [
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.PasswordLengthValidator"},
+    {"BACKEND": "starlette_web.contrib.auth.password_validation.UsernameSimilarityValidator"},
 ]
 
-EMAIL_SENDER = "starlette_web.contrib.sendgrid.email.SendgridAPIEmailSender"
+EMAIL_SENDER = None
 
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
 

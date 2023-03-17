@@ -30,5 +30,5 @@ class AuthCommandMixin:
             print(f"Weak password: {exc.details}")
             answer = input("Skip validation and continue? (y/n): ")
 
-            if answer.strip() in ["n", "N", "no"]:
+            if answer.strip() not in ["y", "Y", "yes"]:
                 raise exc

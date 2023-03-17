@@ -206,8 +206,7 @@ class SignUpAPIView(JWTSessionMixin, BaseHTTPEndpoint):
         if email != user_invite.email:
             raise InvalidParameterError(message="Email does not match with your invitation.")
 
-        _user = User(email=cleaned_data["email"])
-        validate_password(cleaned_data["password_1"], _user)
+        validate_password(cleaned_data["password_1"], User(email=email))
 
         cleaned_data["user_invite"] = user_invite
         return cleaned_data
@@ -475,7 +474,6 @@ class ChangePasswordAPIView(JWTSessionMixin, BaseHTTPEndpoint):
             description: Authentication failed
         tags: ["Authorization"]
         """
-        """Check is email unique and create new User"""
         cleaned_data = await self._validate(request)
         validate_password(cleaned_data["password_1"], None)
 

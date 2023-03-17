@@ -1,7 +1,10 @@
 from difflib import SequenceMatcher
-from typing import Optional, List
+from functools import cache
+from typing import Optional
 
+from starlette_web.common.conf import settings
 from starlette_web.common.http.exceptions import NotSupportedError, InvalidParameterError
+from starlette_web.common.utils.importing import import_string
 from starlette_web.contrib.auth.models import User
 
 
@@ -60,12 +63,16 @@ class NumericPasswordValidator(BasePasswordValidator):
             raise InvalidParameterError(details="Password is entirely numeric.")
 
 
-# Variable is seeded in apps.py
-password_validators: List[BasePasswordValidator] = []
+@cache
+def _get_validators():
+    validators = []
+    for validator_setting in settings.PASSWORD_VALIDATORS:
+        validator_class = import_string(validator_setting["BACKEND"])
+        options = validator_setting.get("OPTIONS", {})
+        validators.append(validator_class(**options))
+    return validators
 
 
 def validate_password(password, user: Optional[User] = None):
-    global password_validators
-
-    for validator in password_validators:
+    for validator in _get_validators():
         validator(password, user)
