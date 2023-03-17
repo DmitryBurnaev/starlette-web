@@ -91,7 +91,7 @@ PASSWORD_HASHERS = [
     "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 
-EMAIL_SENDER = "starlette_web.contrib.sendgrid.email.SendgridAPIEmailSender"
+EMAIL_SENDER = None
 
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
 
