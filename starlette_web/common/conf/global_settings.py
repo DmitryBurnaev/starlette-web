@@ -49,8 +49,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"BACKEND": "starlette_web.contrib.auth.password_validation.UsernameSimilarityValidator"},
 ]
 
+# see https://pyjwt.readthedocs.io/en/latest/algorithms.html for details
 AUTH_JWT_EXPIRES_IN = 300  # 5 min
 AUTH_JWT_REFRESH_EXPIRES_IN = 30 * 24 * 3600  # 30 days
-AUTH_JWT_ALGORITHM = "HS512"  # see https://pyjwt.readthedocs.io/en/latest/algorithms.html for details
+AUTH_JWT_ALGORITHM = "HS512"
 AUTH_INVITE_LINK_EXPIRES_IN = 3 * 24 * 3600  # 3 day
 AUTH_RESET_PASSWORD_LINK_EXPIRES_IN = 3 * 3600  # 3 hours
