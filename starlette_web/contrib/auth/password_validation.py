@@ -66,7 +66,7 @@ class NumericPasswordValidator(BasePasswordValidator):
 @cache
 def _get_validators():
     validators = []
-    for validator_setting in settings.PASSWORD_VALIDATORS:
+    for validator_setting in settings.AUTH_PASSWORD_VALIDATORS:
         validator_class = import_string(validator_setting["BACKEND"])
         options = validator_setting.get("OPTIONS", {})
         validators.append(validator_class(**options))

@@ -329,7 +329,8 @@ class InviteUserAPIView(BaseHTTPEndpoint):
         cleaned_data = await self._validate(request)
         email = cleaned_data["email"]
         token = UserInvite.generate_token()
-        expired_at = datetime.utcnow() + timedelta(seconds=settings.INVITE_LINK_EXPIRES_IN)
+        expired_at = datetime.utcnow() + timedelta(
+            seconds=settings.AUTH_INVITE_LINK_EXPIRES_IN)
 
         if user_invite := await UserInvite.async_get(self.db_session, email=email):
             logger.info("INVITE: update for %s (expired %s) token [%s]", email, expired_at, token)
@@ -444,7 +445,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
         token, _ = encode_jwt(
             payload,
             token_type=TOKEN_TYPE_RESET_PASSWORD,
-            expires_in=settings.RESET_PASSWORD_LINK_EXPIRES_IN,
+            expires_in=settings.AUTH_RESET_PASSWORD_LINK_EXPIRES_IN,
         )
         return token
 

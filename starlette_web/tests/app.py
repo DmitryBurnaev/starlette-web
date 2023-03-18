@@ -23,5 +23,5 @@ class TestStarletteApplication(BaseStarletteApplication):
             )
             sentry_sdk.init(sentry_dsn, integrations=[logging_integration])
 
-    def get_middleware(self):
-        return super().get_middleware() + [Middleware(SentryAsgiMiddleware)]
+    def get_middlewares(self):
+        return super().get_middlewares() + [Middleware(SentryAsgiMiddleware)]

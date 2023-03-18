@@ -71,7 +71,7 @@ def test_additional_hasher():
     salt = uuid.uuid4().hex
 
     # Python 3.7+ guarantees order of keys, so PBKDF2PasswordHasher is always first
-    # as long as it is first in settings.PASSWORD_HASHERS
+    # as long as it is first in settings.AUTH_PASSWORD_HASHERS
     # https://mail.python.org/pipermail/python-dev/2017-December/151283.html
     encoded_password = make_password(raw_password, salt)
     pdkdf2_password = PBKDF2PasswordHasher().encode(raw_password, salt)

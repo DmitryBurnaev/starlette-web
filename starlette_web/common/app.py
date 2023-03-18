@@ -68,8 +68,8 @@ class BaseStarletteApplication:
     def get_debug(self) -> bool:
         return settings.APP_DEBUG
 
-    def get_middleware(self) -> List[Middleware]:
-        return settings.MIDDLEWARE
+    def get_middlewares(self) -> List[Middleware]:
+        return settings.MIDDLEWARES
 
     def get_routes(self) -> List[Union[WebSocketRoute, Route, Mount]]:
         return import_string(settings.ROUTES)
@@ -88,7 +88,7 @@ class BaseStarletteApplication:
             routes=self.get_routes(),
             exception_handlers=self.get_exception_handlers(),
             debug=self.get_debug(),
-            middleware=self.get_middleware(),
+            middleware=self.get_middlewares(),
             **kwargs,
         )
 

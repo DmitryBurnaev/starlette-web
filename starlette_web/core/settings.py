@@ -84,9 +84,8 @@ CHANNEL_LAYERS = {
     },
 }
 
-EMAIL_FROM = config("EMAIL_FROM", default="").strip("'\"")
-
-TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
+# TODO: think, whether we want to create tempdir in settings
+TMP_PATH = Path(tempfile.mkdtemp(prefix="starlette_web__"))
 
 SITE_URL = config("SITE_URL", default="") or "https://web.project.com"
 SENTRY_DSN = config("SENTRY_DSN", default=None)
@@ -101,7 +100,9 @@ LOGGING = {
             "datefmt": "%d.%m.%Y %H:%M:%S",
         },
     },
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "standard"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "standard"},
+    },
     "loggers": {
         "uvicorn": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "starlette_web": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
