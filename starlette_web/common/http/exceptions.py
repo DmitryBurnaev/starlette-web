@@ -22,12 +22,11 @@ class BaseApplicationError(Exception):
     def __str__(self):
         return f"{self.message}\n{self.details}".strip()
 
-    # TODO: maybe replace/combine with __iter__ ?
-    def to_dict(self):
-        return {
-            "message": self.message,
-            "details": self.details,
-        }
+    def __iter__(self):
+        yield "message", self.message
+        yield "details", self.details
+        yield "status_code", self.status_code
+        yield "response_status", self.response_status
 
 
 class ImproperlyConfigured(BaseApplicationError):

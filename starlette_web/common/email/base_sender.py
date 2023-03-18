@@ -6,7 +6,8 @@ from starlette_web.common.http.exceptions import BaseApplicationError
 
 
 class EmailSenderError(BaseApplicationError):
-    pass
+    status_code = 503
+    message = "Error when sending email."
 
 
 class BaseEmailSender:

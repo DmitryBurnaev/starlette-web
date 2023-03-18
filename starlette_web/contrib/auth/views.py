@@ -368,7 +368,7 @@ class InviteUserAPIView(BaseHTTPEndpoint):
                 html_content=body.strip(),
             )
         except EmailSenderError as exc:
-            raise SendRequestError(**exc.to_dict())
+            raise SendRequestError(**dict(exc))
 
     async def _validate(self, request, *_) -> dict:
         cleaned_data = (await super()._validate(request)) or dict()
@@ -432,7 +432,7 @@ class ResetPasswordAPIView(BaseHTTPEndpoint):
                 html_content=body.strip(),
             )
         except EmailSenderError as exc:
-            raise SendRequestError(**exc.to_dict())
+            raise SendRequestError(**dict(exc))
 
     @staticmethod
     def _generate_token(user: User) -> str:
