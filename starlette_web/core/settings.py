@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "starlette_web.tests",
 ]
 
+DB_ECHO = config("DB_ECHO", cast=bool, default=False)
 DB_NAME = config("DB_NAME", default="web_project")
 if TEST_MODE:
     DB_NAME = config("DB_NAME_TEST", default="web_project_test")
@@ -53,12 +54,6 @@ DATABASE_DSN = config(
     default="{driver}://{username}:{password}@{host}:{port}/{database}".format(**DATABASE),
 )
 
-DB_ECHO = config("DB_ECHO", cast=bool, default=False)
-DB_ASYNC_SESSION_CLASS = "sqlalchemy.ext.asyncio.AsyncSession"
-DB_USE_CONNECTION_POOL_FOR_MANAGEMENT_COMMANDS = False
-DB_POOL_RECYCLE = config("DB_POOL_RECYCLE", cast=int, default=3600)
-
-APPLICATION_CLASS = "starlette_web.tests.app.TestStarletteApplication"
 ROUTES = "starlette_web.core.routes.routes"
 
 CACHES = {
@@ -89,29 +84,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-PASSWORD_HASHERS = [
-    "starlette_web.contrib.auth.hashers.PBKDF2PasswordHasher",
-]
-
-PASSWORD_VALIDATORS = [
-    {"BACKEND": "starlette_web.contrib.auth.password_validation.NumericPasswordValidator"},
-    {"BACKEND": "starlette_web.contrib.auth.password_validation.PasswordLengthValidator"},
-    {"BACKEND": "starlette_web.contrib.auth.password_validation.UsernameSimilarityValidator"},
-]
-
-EMAIL_SENDER = None
+EMAIL_FROM = config("EMAIL_FROM", default="").strip("'\"")
 
 TMP_PATH = Path(tempfile.mkdtemp(prefix="web_project__"))
 
-JWT_EXPIRES_IN = config("JWT_EXPIRES_IN", default=(5 * 60), cast=int)  # 5 min
-JWT_REFRESH_EXPIRES_IN = 30 * 24 * 3600  # 30 days
-JWT_ALGORITHM = "HS512"  # see https://pyjwt.readthedocs.io/en/latest/algorithms.html for details
-
-SENDGRID_API_KEY = config("SENDGRID_API_KEY", default="")
-SENDGRID_API_VERSION = "v3"
-EMAIL_FROM = config("EMAIL_FROM", default="").strip("'\"")
-INVITE_LINK_EXPIRES_IN = 3 * 24 * 3600  # 3 day
-RESET_PASSWORD_LINK_EXPIRES_IN = 3 * 3600  # 3 hours
 SITE_URL = config("SITE_URL", default="") or "https://web.project.com"
 SENTRY_DSN = config("SENTRY_DSN", default=None)
 

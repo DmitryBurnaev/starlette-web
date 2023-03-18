@@ -69,7 +69,7 @@ class BaseStarletteApplication:
         return settings.APP_DEBUG
 
     def get_middleware(self) -> List[Middleware]:
-        return []
+        return settings.MIDDLEWARE
 
     def get_routes(self) -> List[Union[WebSocketRoute, Route, Mount]]:
         return import_string(settings.ROUTES)

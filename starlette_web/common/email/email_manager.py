@@ -27,9 +27,6 @@ class EmailManager:
         if self.sender:
             return self.sender
 
-        if not hasattr(settings, "EMAIL_SENDER"):
-            raise ImproperlyConfigured("In order to send emails, settings.EMAIL_SENDER must be set")
-
         self._switch_to_email_sender_class(settings.EMAIL_SENDER)
         return self.sender
 
