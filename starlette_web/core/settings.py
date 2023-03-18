@@ -1,7 +1,6 @@
 # flake8: noqa
 
 import sys
-import tempfile
 from pathlib import Path
 
 from starlette.config import Config
@@ -83,9 +82,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-# TODO: think, whether we want to create tempdir in settings
-TMP_PATH = Path(tempfile.mkdtemp(prefix="starlette_web__"))
 
 SITE_URL = config("SITE_URL", default="") or "https://web.project.com"
 SENTRY_DSN = config("SENTRY_DSN", default=None)
