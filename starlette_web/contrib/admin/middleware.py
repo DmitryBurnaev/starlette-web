@@ -39,7 +39,7 @@ class AdminSessionMiddleware:
     ) -> None:
         self.app = app
         self.session_cookie = SessionJWTAuthenticationBackend.cookie_name
-        self.max_age = settings.JWT_REFRESH_EXPIRES_IN
+        self.max_age = settings.AUTH_JWT_REFRESH_EXPIRES_IN
         self.path = "/"
         self.session_maker = make_session_maker(use_pool=False)
 

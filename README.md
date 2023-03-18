@@ -27,7 +27,6 @@ Common parts are related to starlette web-framework and can be used for building
 
 | argument          |                    description                    |             default |
 |:------------------|:-------------------------------------------------:|--------------------:|
-| JWT_EXPIRES_IN    |         Default time for token's lifespan         |           300 (sec) |
 | APP_DEBUG         |               Run app in debug mode               |               False |
 | LOG_LEVEL         |        Allows to set current logging level        |               DEBUG |
 | SENTRY_DSN        | Sentry dsn (if not set, error logs won't be sent) |                     |
@@ -35,8 +34,6 @@ Common parts are related to starlette web-framework and can be used for building
 | REDIS_PORT        |                    Redis port                     |                6379 |
 | REDIS_DB          |                     Redis db                      |                   0 |
 | DB_NAME_TEST      |         Custom name for DB name for tests         | `DB_NAME` + `_test` |
-| SENDGRID_API_KEY  | Is needed for sending Email (invite, passw., etc) |                     |
-| EMAIL_FROM        |            Is needed for sending Email            |                     |
 | DB_ECHO           |         Sending all db queries to stdout          |               False |
 | CONSTANCE_BACKEND |        Backend class for constance storage        |                     |
 | CONSTANCE_CONFIG  |                  Constants                        |                     |

@@ -73,7 +73,7 @@ class PBKDF2PasswordHasher(BasePasswordHasher):
 class PasswordManager(metaclass=Singleton):
     def __init__(self):
         self._password_hashers: Dict[str, BasePasswordHasher] = dict()
-        for password_hasher in settings.PASSWORD_HASHERS:
+        for password_hasher in settings.AUTH_PASSWORD_HASHERS:
             self._add_password_hasher(password_hasher)
 
     def _add_password_hasher(self, hasher: Union[str, BasePasswordHasher]) -> None:
@@ -92,10 +92,10 @@ class PasswordManager(metaclass=Singleton):
 
     def make_password(self, password: str, salt: Optional[str] = None) -> str:
         try:
-            hasher = settings.PASSWORD_HASHERS[0]
+            hasher = settings.AUTH_PASSWORD_HASHERS[0]
         except IndexError:
             raise ImproperlyConfigured(
-                "At least 1 password hasher must be defined at settings.PASSWORD_HASHERS"
+                "At least 1 password hasher must be defined at settings.AUTH_PASSWORD_HASHERS"
             )
 
         return self._password_hashers[hasher].encode(password, salt)
