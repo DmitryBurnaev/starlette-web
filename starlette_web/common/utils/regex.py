@@ -1,14 +1,13 @@
-import fnmatch
 import re
 
 
 def redis_pattern_to_re_pattern(pattern: str) -> re.Pattern:
+    # flake8: noqa
+    # Source: https://github.com/jamesls/fakeredis/pull/184/files#diff-abc1f5739597cb0cca80af31f32bc494b8d994472058fafdc57dba7ca4a8732dR242
     """
     A helper function to match redis key pattern with re built-in module,
     Redis key pattern has different semantics, than regex.
     Official docs for redis key matching https://redis.io/commands/keys/
-
-    Source: https://github.com/jamesls/fakeredis/pull/184/files#diff-abc1f5739597cb0cca80af31f32bc494b8d994472058fafdc57dba7ca4a8732dR242  # flake8: noqa
 
     >>> import re
     >>> from starlette_web.common.utils.regex import redis_pattern_to_re_pattern

@@ -106,5 +106,5 @@ class BaseCacheTester:
         end_time = time.time()
         run_time = end_time - start_time
 
-        # Time should be around (sleep_time + (number_of_tests - 1) * timeout) = 5
-        assert abs(run_time - (sleep_time + (number_of_tests - 1) * timeout)) < 0.2
+        expected_runtime = (sleep_time + (number_of_tests - 1) * timeout)
+        assert abs(run_time - expected_runtime) < 0.2

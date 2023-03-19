@@ -117,11 +117,16 @@ class RedisCache(BaseCache):
         blocking_timeout: Optional[float] = None,
         **kwargs,
     ) -> AsyncContextManager:
+        # Warning: may hang, if sleep (default 0.1) is less than timeout/blocking_timeout
+        # May be connected to https://github.com/redis/redis-py/issues/2579
+        kwargs.pop("sleep", 0)
+
         return self.redis.lock(
             name,
             timeout=timeout,
             blocking_timeout=blocking_timeout,
             lock_class=self.lock_class,
+            sleep=0,
             **kwargs,
         )
 
