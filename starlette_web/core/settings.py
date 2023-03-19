@@ -55,6 +55,9 @@ DATABASE_DSN = config(
 
 ROUTES = "starlette_web.core.routes.routes"
 
+FILECACHE_DIR = PROJECT_ROOT_DIR / "filecache"
+FILECACHE_DIR.mkdir(exist_ok=True)
+
 CACHES = {
     "default": {
         "BACKEND": "starlette_web.contrib.redis.RedisCache",
@@ -73,7 +76,7 @@ CACHES = {
     "files": {
         "BACKEND": "starlette_web.common.files.cache.FileCache",
         "OPTIONS": {
-            "CACHE_DIR": "D:\\Projects\\filecache",
+            "CACHE_DIR": FILECACHE_DIR,
         },
     },
 }
