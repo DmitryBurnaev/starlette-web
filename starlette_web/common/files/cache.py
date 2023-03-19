@@ -15,7 +15,11 @@ from starlette_web.common.caches.base import BaseCache, CacheError
 from starlette_web.common.files.filelock import FileLock
 from starlette_web.common.http.exceptions import ImproperlyConfigured
 from starlette_web.common.utils.regex import redis_pattern_to_re_pattern
-from starlette_web.common.utils.serializers import BaseSerializer, PickleSerializer, DeserializeError
+from starlette_web.common.utils.serializers import (
+    BaseSerializer,
+    PickleSerializer,
+    DeserializeError,
+)
 
 
 class FileCache(BaseCache):
@@ -60,7 +64,7 @@ class FileCache(BaseCache):
     def _sync_get_deadline(self, _file: BinaryIO) -> float:
         try:
             deadline = _file.read(32)
-            if deadline[:32-21] == self.timestamp_bom:
+            if deadline[:11] == self.timestamp_bom:
                 # pickle.dumps of float is always 21 bytes
                 return pickle.loads(deadline[-21:])
         except DeserializeError:
