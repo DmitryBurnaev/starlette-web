@@ -22,6 +22,12 @@ def test_redis_pattern_matcher():
     assert re.fullmatch(re_pattern, "hallo")
     assert re.fullmatch(re_pattern, "hxllo")
 
+    re_pattern = redis_pattern_to_re_pattern("h[^e-z]llo")
+    assert re.fullmatch(re_pattern, "hello") is None
+    assert re.fullmatch(re_pattern, "hzllo") is None
+    assert re.fullmatch(re_pattern, "hallo")
+    assert re.fullmatch(re_pattern, "hAllo")
+
     re_pattern = redis_pattern_to_re_pattern("h[a-b]llo")
     assert re.fullmatch(re_pattern, "hallo")
     assert re.fullmatch(re_pattern, "hbllo")
@@ -29,26 +35,5 @@ def test_redis_pattern_matcher():
 
 
 def test_invalid_patterns():
-    with pytest.raises(RuntimeError, match=re.escape("Nested sets in pattern not allowed.")):
-        redis_pattern_to_re_pattern("keys:[[*]]")
-
-    with pytest.raises(
-        RuntimeError, match=re.escape("Orphan backslash in the end of the pattern.")
-    ):
-        redis_pattern_to_re_pattern("keys:[*]\\")
-
-    with pytest.raises(
-        RuntimeError, match=re.escape("Orphan closing bracket ] in pattern not allowed.")
-    ):
-        redis_pattern_to_re_pattern("keys:[*]]")
-
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape("Subpattern [^?] is only allowed to exclude a single character."),
-    ):
-        redis_pattern_to_re_pattern("keys:[^ab]")
-
-    with pytest.raises(
-        RuntimeError, match=re.escape("Hyphen outside [] block must be preceeded with backslash.")
-    ):
-        redis_pattern_to_re_pattern("keys:-a")
+    with pytest.raises(re.error):
+        redis_pattern_to_re_pattern("[")

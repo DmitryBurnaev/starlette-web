@@ -50,7 +50,7 @@ class LocalMemoryCache(BaseCache):
     async def async_keys(self, pattern: str) -> List[str]:
         try:
             re_pattern = redis_pattern_to_re_pattern(pattern)
-        except RuntimeError as exc:
+        except re.error as exc:
             raise CacheError(details=str(exc)) from exc
 
         return [
@@ -96,8 +96,8 @@ class LocalMemoryCache(BaseCache):
     def lock(
         self,
         name: str,
-        timeout: Optional[float],
-        blocking_timeout: Optional[float],
+        timeout: Optional[float] = 20.0,
+        blocking_timeout: Optional[float] = None,
         **kwargs,
     ) -> AsyncContextManager:
         # A stub, that returns same lock for any parameters

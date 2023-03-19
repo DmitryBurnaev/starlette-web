@@ -70,6 +70,12 @@ CACHES = {
             "name": "locmem",
         },
     },
+    "files": {
+        "BACKEND": "starlette_web.common.files.cache.FileCache",
+        "OPTIONS": {
+            "CACHE_DIR": "D:\\Projects\\filecache",
+        },
+    },
 }
 
 CHANNEL_LAYERS = {
