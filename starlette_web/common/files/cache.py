@@ -16,7 +16,7 @@ from starlette_web.common.files.filelock import FileLock
 from starlette_web.common.http.exceptions import ImproperlyConfigured
 from starlette_web.common.utils.regex import redis_pattern_to_re_pattern
 from starlette_web.common.utils.serializers import (
-    BaseSerializer,
+    BytesSerializer,
     PickleSerializer,
     DeserializeError,
 )
@@ -27,7 +27,7 @@ class FileCache(BaseCache):
     lock_class = FileLock
     _manager_lock_blocking_timeout = 10
     _manager_lock_timeout = 1.0
-    serializer_class: Type[BaseSerializer] = PickleSerializer
+    serializer_class: Type[BytesSerializer] = PickleSerializer
     timestamp_bom = b"ND16C7Bh9Xd"
 
     def __init__(self, options: Dict[str, Any]):
@@ -37,7 +37,12 @@ class FileCache(BaseCache):
             raise ImproperlyConfigured(
                 details="Invalid CACHE_DIR value for FileCache"
             )
+
         self.serializer = self.serializer_class()
+        if not self.serializer.serializes_to_bytes():
+            raise ImproperlyConfigured(
+                details="serializer_class must be instance of BytesSerializer"
+            )
 
     async def async_get(self, key: str) -> Any:
         async with self._get_manager_lock():
@@ -67,6 +72,10 @@ class FileCache(BaseCache):
             if deadline[:11] == self.timestamp_bom:
                 # pickle.dumps of float is always 21 bytes
                 return pickle.loads(deadline[-21:])
+            else:
+                _file.seek(0)
+                return math.inf
+
         except DeserializeError:
             _file.seek(0)
             return math.inf
