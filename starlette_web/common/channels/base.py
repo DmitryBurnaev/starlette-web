@@ -3,11 +3,16 @@ from typing import AsyncGenerator, AsyncIterator, Optional, Any, Dict, Set
 
 import anyio
 from anyio._core._tasks import TaskGroup
-from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
+from anyio.streams.memory import (
+    MemoryObjectReceiveStream,
+    MemoryObjectSendStream,
+    EndOfStream,
+    ClosedResourceError,
+)
 
 from starlette_web.common.channels.layers.base import BaseChannelLayer
 from starlette_web.common.channels.event import Event
-from starlette_web.common.channels.exceptions import Unsubscribed, ListenerClosed
+from starlette_web.common.channels.exceptions import ListenerClosed
 
 
 _empty = object()
@@ -88,12 +93,8 @@ class Channel:
                             del self._subscribers[group]
                             await self._channel_layer.unsubscribe(group)
 
-            except anyio.get_cancelled_exc_class():
-                receive_stream.close()
-                send_stream.close()
-
             finally:
-                await send_stream.send(_empty)
+                send_stream.close()
 
 
 class Subscriber:
@@ -101,15 +102,10 @@ class Subscriber:
         self._receive_stream = receive_stream
 
     async def __aiter__(self) -> Optional[AsyncGenerator]:
-        try:
-            while True:
-                yield await self.receive()
-        except Unsubscribed:
-            pass
-
-    async def receive(self) -> Event:
-        item = await self._receive_stream.receive()
-        if item is _empty:
-            raise Unsubscribed()
-
-        return item
+        async with self._receive_stream:
+            try:
+                while True:
+                    event: Event = await self._receive_stream.receive()
+                    yield event
+            except (EndOfStream, ClosedResourceError):
+                pass
