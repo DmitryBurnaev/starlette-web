@@ -158,12 +158,13 @@ class FileCache(BaseCache):
 
     @staticmethod
     def _key_name(key: str) -> str:
-        # 160 base256 => 256 base32
+        # 151-155 base256 => 248 base32
+        # 156-160 base256 => 256 base32
         # Linux supports only 255 bytes for filename,
         # as for Windows, lengthy paths also not recommended
         encoded_key = key.encode("utf-8")
-        if len(encoded_key) >= 160:
-            raise CacheError(details="Key length exceeds 159 bytes.")
+        if len(encoded_key) >= 156:
+            raise CacheError(details="Key length must not exceed 155 bytes.")
 
         return base64.b32encode(encoded_key).decode().replace("=", "8")
 
